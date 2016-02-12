@@ -1,6 +1,9 @@
 package sw805f16.codenamewims;
 
 import android.content.Context;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.net.wifi.ScanResult;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -16,6 +19,7 @@ import android.hardware.SensorManager;
 
 import java.lang.reflect.Array;
 import java.util.Collections;
+import java.util.List;
 import java.util.Vector;
 
 public class MainActivity extends AppCompatActivity {
@@ -32,8 +36,6 @@ public class MainActivity extends AppCompatActivity {
     float vecoutputX[] = new float[2];
     float vecoutputY[] = new float[2];
     float vecoutputZ[] = new float[2];
-
-
 
     /*Magnetic Readings*/
     public double magX;
@@ -55,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
     int i = 0;
     int y = 0;
 
+    /*Wifi stuff*/
+    WifiManager wifi;
+    List<ScanResult> scan;
 
 
     private SensorManager mSensorManager;
@@ -74,18 +79,12 @@ public class MainActivity extends AppCompatActivity {
                 magY = event.values[1];
                 magZ = event.values[2];
 
-
-
                 result = rotatevector(magX,magY,(float)angleZ);
-
-
-                //rotateMagneticFieldVector(angleX,angleY,angleZ,magX,magY,magZ);
 
             }
 
             else if(sens.getType() == Sensor.TYPE_ROTATION_VECTOR)
             {
-                vecvals = lowPass(event.values.clone(),vecvals);
 
                 vecX = event.values[0];
                 vecY = event.values[1];
@@ -101,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
 
 
             }
-
         }
 
         @Override
@@ -113,6 +111,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+
+        wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+
+        wifi.startScan();
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
@@ -129,7 +131,10 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                scan = wifi.getScanResults();
+                for(ScanResult s : scan){
+                    s.
+                }
 
             }
         });
@@ -140,8 +145,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume(){
             super.onResume();
 
-        mSensorManager.registerListener(listener, mSensor, 20000);
-        mSensorManager.registerListener(listener, cSensor, 20000);
+        mSensorManager.registerListener(listener, mSensor, 200000);
+        mSensorManager.registerListener(listener, cSensor, 100000);
 
     }
 
@@ -238,13 +243,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public double correctdegrees(double degr){
+        /*
         if(degr<0)
         {
             return 180+(180+degr);
         }
         else {
             return degr;
-        }
+        }*/
+
+        return degr;
     }
 
     /*Smoothing algorithm provided by:
