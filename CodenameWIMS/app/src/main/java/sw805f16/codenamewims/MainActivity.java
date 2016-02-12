@@ -1,6 +1,7 @@
 package sw805f16.codenamewims;
 
 import android.content.Context;
+import android.opengl.Matrix;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -10,24 +11,57 @@ import android.view.View;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.view.ViewDebug;
 import android.widget.TextView;
 import android.hardware.SensorManager;
 
+import java.lang.reflect.Array;
+import java.util.Collections;
+import java.util.Vector;
+
 public class MainActivity extends AppCompatActivity {
 
-    public float magX;
-    public float magY;
-    public float magZ;
-    public float[] magmX = {0,0,0};
-    public float[] magmY = {0,0,0};
-    public float orientation;
-    int i = 0;
+    /*For smoothing purposes*/
+    static final float ALPHA = 0.15f;
 
-    public double vectorlength11;
+    /*Orientation Vector smoothing arrays*/
+    float vecvals[];
+    float vecinputX[] = new float[2];
+    float vecinputY[] = new float[2];
+    float vecinputZ[] = new float[2];
+    float vecoutput[] = new float[2];
+    float vecoutputX[] = new float[2];
+    float vecoutputY[] = new float[2];
+    float vecoutputZ[] = new float[2];
+
+
+
+    /*Magnetic Readings*/
+    public double magX;
+    public double magY;
+    public double magZ;
+    double result[] = new double[2];
+
+    /*Rotation Vector Readings*/
+    double vecX = 0;
+    double vecY = 0;
+    double vecZ = 0;
+
+    /*Degrees Readings*/
+    double angleX;
+    double angleY;
+    double angleZ;
+
+    /*Incrementors*/
+    int i = 0;
+    int y = 0;
+
+
+
     private SensorManager mSensorManager;
     private Sensor mSensor;
     private Sensor cSensor;
+
+
 
     private SensorEventListener listener = new SensorEventListener() {
         @Override
@@ -36,49 +70,35 @@ public class MainActivity extends AppCompatActivity {
 
             if(sens.getType() == Sensor.TYPE_MAGNETIC_FIELD){
 
-                double tempmagX = event.values[0];
-                double tempmagY = event.values[1];
-
-                double magdX1 = tempmagX;
-                double magdx2 = tempmagX;
-                double magdY1 = tempmagY;
-                double magdy2 = tempmagY;
+                magX = event.values[0];
+                magY = event.values[1];
+                magZ = event.values[2];
 
 
 
-                double orientationd = Math.toRadians((double) orientation);
-                magdX1 = (magdX1*Math.cos(orientationd))-(magdY1*Math.sin(orientationd));
-                magdY1 = (magdx2*Math.sin(orientationd))+(magdY1*Math.cos(orientationd));
-
-                magmX[i%3] = (float)magdX1;
-                magmY[i%3] = (float) magdY1;
+                result = rotatevector(magX,magY,(float)angleZ);
 
 
-                magX = (magmX[0] + magmX[1] + magmX[2])/3;
-                magY = (magmY[0] + magmY[1] + magmY[2])/3;
-
-                i++;
-
-                if(i == 3000){
-                    i = 0;
-                }
-
+                //rotateMagneticFieldVector(angleX,angleY,angleZ,magX,magY,magZ);
 
             }
-            else if(sens.getType() == Sensor.TYPE_ORIENTATION)
+
+            else if(sens.getType() == Sensor.TYPE_ROTATION_VECTOR)
             {
-                float orientationtemp = event.values[0];
+                vecvals = lowPass(event.values.clone(),vecvals);
 
-                if(orientationtemp > 180)
-                {
-                    orientation = orientationtemp - 360;
-                }
-                else
-                {
-                    orientation = orientationtemp;
-                }
+                vecX = event.values[0];
+                vecY = event.values[1];
+                vecZ = event.values[2];
 
-                orientation = event.values[0];
+
+                angleX = correctdegrees((vecX * 180));
+                angleY = correctdegrees((vecY * 180));
+                angleZ = correctdegrees((vecZ * 180));
+
+
+                writeToVec(vecX,vecY,vecZ);
+
 
             }
 
@@ -90,43 +110,25 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        cSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+        cSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Magnetometer should update", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                TextView magnetX = (TextView) findViewById(R.id.magX);
-                TextView magnetY = (TextView) findViewById(R.id.magY);
-                TextView magnetZ = (TextView) findViewById(R.id.magZ);
-                TextView vectorlenght = (TextView) findViewById(R.id.vectorlength);
-                TextView loc = (TextView) findViewById(R.id.location);
-                TextView orien = (TextView) findViewById(R.id.orientation);
-
-                vectorlength11 = Math.sqrt(Math.pow(magX,2)+Math.pow(magY,2)+Math.pow(magZ,2));
-
-                magnetX.setText("X: " + Float.toString(magX));
-                magnetY.setText("Y: " + Float.toString(magY));
-                magnetZ.setText("Z: " + Float.toString(magZ));
-                vectorlenght.setText(Integer.toString(mSensor.getMinDelay()));
-                orien.setText(Float.toString(orientation));
-
-                whereami(loc, magX, magY);
 
 
             }
@@ -137,31 +139,126 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume(){
             super.onResume();
-            mSensorManager.registerListener(listener, mSensor, 50000);
-            mSensorManager.registerListener(listener, cSensor, 50000);
+
+        mSensorManager.registerListener(listener, mSensor, 20000);
+        mSensorManager.registerListener(listener, cSensor, 20000);
+
+    }
+
+    public void writeToVec(double x, double y, double z)
+    {
+
+        TextView X = (TextView) findViewById(R.id.vectorX);
+        TextView Y = (TextView) findViewById(R.id.vectorY);
+        TextView Z = (TextView) findViewById(R.id.vectorZ);
+        TextView orientX = (TextView) findViewById(R.id.orientationX);
+        TextView orientY = (TextView) findViewById(R.id.orientationY);
+        TextView orientZ = (TextView) findViewById(R.id.orientationZ);
+
+        X.setText("Raw RotX: " + Double.toString(x));
+        Y.setText("Raw RotY: " + Double.toString(y));
+        Z.setText("Raw RotZ " + Double.toString(z));
+
+        orientX.setText("Degrees X: " + Double.toString(angleX));
+        orientY.setText("Degrees Y: " + Double.toString(angleY));
+        orientZ.setText("Degrees Z: " + Double.toString(angleZ));
 
 
-        }
+    }
 
-    public void whereami(TextView text, Float x,Float y){
+    /***
+     * hence:
+     * x' = x cos f - y sin f
+     * y' = y cos f + x sin f
+     * @param x
+     * @param y
+     * @param degrees
+     * @return
+     */
+    public double[] rotatevector(double x, double y, float degrees){
+        double res[] = new double[2];
 
-        if(x < 2.5 && x > -5.5 && y < 10.5 && y > 2.5){
-            text.setText("Dør");
+        res[0] = x*Math.cos(Math.toRadians(degrees)) - y*Math.sin(Math.toRadians(degrees));
+        res[1] = y*Math.cos(Math.toRadians(degrees)) + x*Math.sin(Math.toRadians(degrees));
+
+        TextView magnetX = (TextView) findViewById(R.id.magX);
+        TextView magnetY = (TextView) findViewById(R.id.magY);
+
+        magnetX.setText("magX: " + Double.toString(res[0]));
+        magnetY.setText("magY: " + Double.toString(res[1]));
+
+        return res;
+
+    }
+
+
+    public void rotateMagneticFieldVector(double degreeX,double degreeY, double degreeZ, double mX, double mY, double mZ)
+    {
+
+        float MagneticVector[] = {(float)mX,(float) mY, (float)mZ,1};
+
+        float Xrotated[];
+        float Yrotated[];
+        float Zrotated[];
+
+
+        // First the X axis
+        Xrotated = rotatevector1((float)degreeX,MagneticVector,1f,0f,0f);
+
+        // Secondly Y rotated
+        Yrotated = rotatevector1((float)degreeY,Xrotated,0f,1f,0f);
+
+        //Lastly Z rotated
+        Zrotated = rotatevector1((float)degreeZ,Yrotated,0f,0f,1f);
+
+
+        TextView magnetX = (TextView) findViewById(R.id.magX);
+        TextView magnetY = (TextView) findViewById(R.id.magY);
+        TextView magnetZ = (TextView) findViewById(R.id.magZ);
+
+
+        magnetX.setText("magX: " + Float.toString(Zrotated[0]));
+        magnetY.setText("magY: " + Float.toString(Zrotated[1]));
+        magnetZ.setText("magZ: " + Float.toString(Zrotated[2]));
+
+    }
+
+
+    public float[] rotatevector1(float degr,float vec[], float x,float y,float z){
+
+        float[] matrix = new float[16];
+        float[] rotatedVector = new float[4];
+
+        Matrix.setIdentityM(matrix, 0);
+        Matrix.rotateM(matrix, 0, degr, x, y, z);
+        Matrix.multiplyMV(rotatedVector, 0, matrix, 0, vec, 0);
+
+        return rotatedVector;
+
+    }
+
+    public double correctdegrees(double degr){
+        if(degr<0)
+        {
+            return 180+(180+degr);
         }
-        else if ( x < -0.5 && x > -8.5 && y < 14.5 && y > 6.5 ){
-            text.setText("Vindue");
-        }
-        else if(x < -6 && x > -14 && y < 8 && y > 0){
-            text.setText("Hjørne 1");
-        }
-        else if( x < 16 && x  > 10 && y < 8 && y > 0){
-            text.setText("Hjørne 2");
-        }
-        else{
-            text.setText("Cant locate");
+        else {
+            return degr;
         }
     }
 
+    /*Smoothing algorithm provided by:
+    * http://blog.thomnichols.org/2011/08/smoothing-sensor-data-with-a-low-pass-filter
+    *
+    * */
+    protected float[] lowPass( float[] input, float[] output ) {
+        if ( output == null ) return input;
+
+        for ( int i=0; i<input.length; i++ ) {
+            output[i] = output[i] + ALPHA * (input[i] - output[i]);
+        }
+        return output;
+    }
 }
 
 
