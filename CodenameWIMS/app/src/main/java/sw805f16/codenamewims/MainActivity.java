@@ -14,6 +14,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+
+/**
+ * Adresss for server: "nielsema.ddns.net:3000"
+ * 
+ * */
+
 public class MainActivity extends AppCompatActivity {
 
     Boolean clicked = false;
