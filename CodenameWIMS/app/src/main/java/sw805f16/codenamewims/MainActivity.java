@@ -33,11 +33,14 @@ public class MainActivity extends AppCompatActivity {
 
         Button but = (Button)findViewById(R.id.talskrift);
         Bitmap bit = BitmapFactory.decodeResource(getResources(), R.drawable.mapb);
+
         map = new ImageView(getApplicationContext());
         final FrameLayout frame = (FrameLayout) findViewById(R.id.ramme);
+        final PositionOverlayFactory fac = new PositionOverlayFactory(getApplicationContext());
         map.setImageBitmap(bit);
         frame.addView(map);
-        frame.addView(new PositionOverlayFactory().getPostitionOverlay(18,18,getApplicationContext()));
+
+        frame.addView(fac.getPostitionOverlay(50, 50));
 
 
         but.setOnClickListener(new View.OnClickListener() {
@@ -47,17 +50,17 @@ public class MainActivity extends AppCompatActivity {
                 frame.removeViewAt(1);
 
                 if(i==1){
-                    frame.addView(new PositionOverlayFactory().getPostitionOverlay(10, 10, getApplicationContext()));
+                    frame.addView(fac.getPostitionOverlay(50, 50));
                     i++;
                 } else if(i == 2){
-                    frame.addView(new PositionOverlayFactory().getPostitionOverlay(18, 10, getApplicationContext()));
+                    frame.addView(fac.getPostitionOverlay(100, 50));
                     i++;
                 }else if (i ==3){
-                    frame.addView(new PositionOverlayFactory().getPostitionOverlay(18, 18, getApplicationContext()));
+                    frame.addView(fac.getPostitionOverlay(100, 100));
                     i++;
                 }else
                 {
-                    frame.addView(new PositionOverlayFactory().getPostitionOverlay(10, 18, getApplicationContext()));
+                    frame.addView(fac.getPostitionOverlay(50, 100));
                     i = 1;
                 }
 

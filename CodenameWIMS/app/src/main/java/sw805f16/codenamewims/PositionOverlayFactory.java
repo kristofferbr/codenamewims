@@ -10,11 +10,19 @@ import android.widget.ImageView;
  *
  */
 public class PositionOverlayFactory{
+    Context con;
+    PositionOverlay pos;
 
-    public ImageView getPostitionOverlay(int x, int y, Context con)
+
+    public PositionOverlayFactory(Context contt){
+        con = contt;
+        pos = new PositionOverlay(con);
+    }
+
+
+    public ImageView getPostitionOverlay(int x, int y)
     {
-        PositionOverlay pos = new PositionOverlay(x,y,con);
-        return pos.generateImageView();
+        return pos.generateImageView(x,y);
     }
 
 

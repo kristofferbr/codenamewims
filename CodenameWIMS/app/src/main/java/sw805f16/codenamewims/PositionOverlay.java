@@ -20,44 +20,53 @@ public class PositionOverlay {
 
 
     /*Global values used for the creation of the imageview*/
-    int positionX;
-    int positionY;
     ImageView overlay;
-    Canvas can;
     Paint paints = new Paint();
     Context con;
+    Bitmap emptyBit;
 
 
     /*****
      * The constructor the class which has the needed parameters for generating the view
-     * @param x The offset in X
-     * @param y The offset in Y
      * @param context The applicationContext
      */
-    PositionOverlay(int x, int y, Context context){
+    PositionOverlay(Context context){
 
-        positionX = x;
-        positionY = y;
         con = context;
     }
 
 
     /***
      * The function that generates the Imageview
+     * @param positionX is the X offset
+     * @param positionY is the Y offset
      * @return Imageview with a point in the specified location
      */
-    public ImageView generateImageView()
+    public ImageView generateImageView(int positionX, int positionY)
     {
 
-        Bitmap emptyBit = Bitmap.createBitmap(50,50,Bitmap.Config.ARGB_8888);
-        can = new Canvas(emptyBit);
+
+
+        /*The bitmap on which the point is drawn*/
+        emptyBit = Bitmap.createBitmap(200,200,Bitmap.Config.ARGB_8888);
+
+
+        Canvas can = new Canvas(emptyBit);
+
+        /*Is set to transparrent so the view below is visible*/
         can.drawColor(Color.TRANSPARENT);
-        can.drawPoint((float) positionX, (float) positionY, paints);
+
+        /*The point is drawn*/
+        can.drawCircle((float) positionX, (float) positionY,5f, paints);
+        //can.drawPoint((float) positionX, (float) positionY, paints);
+
+        /*The imageview is Instantiated*/
         overlay = new ImageView(con);
 
+        /*The bitmap is added to the Imageview*/
         overlay.setImageBitmap(emptyBit);
 
-
+        /*Returns the Imageview*/
         return overlay;
     }
 
