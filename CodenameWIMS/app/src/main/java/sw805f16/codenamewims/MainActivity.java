@@ -24,6 +24,12 @@ public class MainActivity extends AppCompatActivity {
     ImageView map;
 
 
+    public int addTwoNumbers(int x, int y)
+    {
+        return x+y;
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
