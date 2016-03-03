@@ -50,7 +50,7 @@ public class PositionOverlay {
         /*The bitmap on which the point is drawn*/
         emptyBit = Bitmap.createBitmap(200,200,Bitmap.Config.ARGB_8888);
 
-
+        /*Make the canvas draw on the bitmap*/
         Canvas can = new Canvas(emptyBit);
 
         /*Is set to transparrent so the view below is visible*/
