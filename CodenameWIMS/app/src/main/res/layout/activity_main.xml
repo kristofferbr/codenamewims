@@ -39,7 +39,20 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_centerHorizontal="true"
-            android:id="@+id/ramme"></FrameLayout>
+            android:id="@+id/ramme">
+
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="200dp"
+            android:layout_height="375dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Large Text"
+            android:id="@+id/response"
+            android:layout_gravity="right|top"
+            android:maxLines="100"
+            android:ellipsize="none"
+            android:breakStrategy="balanced" />
 
     </RelativeLayout>
 
