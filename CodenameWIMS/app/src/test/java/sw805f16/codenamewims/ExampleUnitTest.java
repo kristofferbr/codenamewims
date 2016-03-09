@@ -1,7 +1,13 @@
 package sw805f16.codenamewims;
 
+import android.view.View;
+
 import org.apache.tools.ant.helper.ProjectHelper2;
 import org.junit.Test;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runner.*;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
@@ -30,11 +36,15 @@ public class ExampleUnitTest {
 
         MainActivity man = Robolectric.setupActivity(MainActivity.class);
 
+        View w = man.findViewById(R.id.zoombutton);
+        w.performClick();
+
+
         assertEquals(man.addTwoNumbers(1,2),3);
 
-
-
-
-
     }
+
+
+
+
 }
