@@ -36,8 +36,8 @@ public class ExampleUnitTest {
 
         MainActivity man = Robolectric.setupActivity(MainActivity.class);
 
-        View w = man.findViewById(R.id.zoombutton);
-        w.performClick();
+        //View w = man.findViewById(R.id.zoombutton);
+        //w.performClick();
 
 
         assertEquals(man.addTwoNumbers(1,2),3);

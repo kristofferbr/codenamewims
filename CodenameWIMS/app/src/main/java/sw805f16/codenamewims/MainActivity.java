@@ -1,5 +1,6 @@
 package sw805f16.codenamewims;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.Matrix;
@@ -47,88 +48,57 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //Scale = new ScaleGestureDetector(this,new ScaleDetector());
-        /* Finds the button */
-        Button but = (Button)findViewById(R.id.talskrift);
-        Bitmap bit = BitmapFactory.decodeResource(getResources(), R.drawable.mapb);
-
-        /*Set the map on the view*/
-        map = new ImageView(getApplicationContext());
-        final FrameLayout frame = (FrameLayout) findViewById(R.id.ramme);
-        final PositionOverlayFactory fac = new PositionOverlayFactory(getApplicationContext());
-        map.setImageBitmap(bit);
-        frame.addView(map);
-
-        /*Sets a beginning overlay with a dot*/
-        frame.addView(fac.getPostitionOverlay(50, 50));
-
 
         /*Instantiate a Request Queue and a Requrst String*/
-        final RequestQueue rqueue = Volley.newRequestQueue(this);
-        final String url = "http://nielsema.ddns.net:3000/api/product";
+        //final RequestQueue rqueue = Volley.newRequestQueue(this);
+        //final String url = "http://nielsema.ddns.net:3000/api/product";
 
-
-
-
-
+        Button but = (Button) findViewById(R.id.chooseStore);
 
         but.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(),StoreMapActivity.class);
 
-                request(rqueue,url);
-                /*
-                frame.removeViewAt(1);
-
-                if(i==1){
-                    frame.addView(fac.getPostitionOverlay(50, 50));
-                    i++;
-                } else if(i == 2){
-                    frame.addView(fac.getPostitionOverlay(100, 50));
-                    i++;
-                }else if (i ==3){
-                    frame.addView(fac.getPostitionOverlay(100, 100));
-                    i++;
-                }else
-                {
-                    frame.addView(fac.getPostitionOverlay(50, 100));
-                    i = 1;
-                }
-                */
+                startActivity(intent);
+                /*Start the storemap activity*/
             }
         });
 
     }
 
 
-
-
-    public void request(RequestQueue req, String url){
-
-        StringRequest stringreq = new StringRequest(Request.Method.GET,url,
-                new Response.Listener<String>(){
-
-                    TextView tex = (TextView) findViewById(R.id.response);
-
-                    @Override
-                    public void onResponse(String response){
-                        /*Set this response to a textview of sorts*/
-                        tex.setText(response.substring(0));
-                    }
-
-                },
-                new Response.ErrorListener(){
-                    TextView tex = (TextView) findViewById(R.id.response);
-                    @Override
-                    public void onErrorResponse(VolleyError error){
-                        tex.setText("INGEN FORBINDELSE");
-                        /*Do something with the error*/
-                    }
-                }
-        );
-
-        req.add(stringreq);
-    }
+    /****
+     * The function that performs a request against our server
+     * @param req The queue to add the request
+     * @param url The url to request
+     */
+//    public void request(RequestQueue req, String url){
+//
+//        StringRequest stringreq = new StringRequest(Request.Method.GET,url,
+//                new Response.Listener<String>(){
+//
+//                    TextView tex = (TextView) findViewById(R.id.response);
+//
+//                    @Override
+//                    public void onResponse(String response){
+//                        /*Set this response to a textview of sorts*/
+//                        tex.setText(response.substring(0));
+//                    }
+//
+//                },
+//                new Response.ErrorListener(){
+//                    TextView tex = (TextView) findViewById(R.id.response);
+//                    @Override
+//                    public void onErrorResponse(VolleyError error){
+//                        tex.setText("INGEN FORBINDELSE");
+//                        /*Do something with the error*/
+//                    }
+//                }
+//        );
+//
+//        req.add(stringreq);
+//    }
 
 
 
