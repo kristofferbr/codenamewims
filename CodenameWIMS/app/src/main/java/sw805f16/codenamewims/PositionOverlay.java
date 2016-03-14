@@ -6,7 +6,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -48,7 +50,7 @@ public class PositionOverlay {
 
 
         /*The bitmap on which the point is drawn*/
-        emptyBit = Bitmap.createBitmap(200,200,Bitmap.Config.ARGB_8888);
+        emptyBit = Bitmap.createBitmap(500,750,Bitmap.Config.ARGB_8888);
 
         /*Make the canvas draw on the bitmap*/
         Canvas can = new Canvas(emptyBit);
@@ -62,6 +64,9 @@ public class PositionOverlay {
 
         /*The imageview is Instantiated*/
         overlay = new ImageView(con);
+
+        ViewGroup.LayoutParams param = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        overlay.setLayoutParams(param);
 
         /*The bitmap is added to the Imageview*/
         overlay.setImageBitmap(emptyBit);

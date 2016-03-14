@@ -5,10 +5,13 @@ import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -29,47 +32,54 @@ public class StoreMapActivity extends AppCompatActivity {
 
     // URL til map /api/store/ID/map
     public boolean isInFront = false;
-    public String store_id = "56d81f53b50334c9534d0729"; // The ID of føtex! :)
+    public String store_id = "56e6a28a28c3e3314a6849df"; // The ID of føtex! :)
     RequestQueue rqueue;
+    float scale = 1;
+    ScaleGestureDetector Scale;
+    SearchView search;
+    JSONArray products;
+    PositionOverlayFactory posfac;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_store_map);
+        Scale = new ScaleGestureDetector(this,new ScaleDetector());
         rqueue = Volley.newRequestQueue(this);
-        Button but = (Button)findViewById(R.id.button);
-        final PositionOverlayFactory posfac = new PositionOverlayFactory(this);
+        posfac = new PositionOverlayFactory(this);
+
+        requestItemsOfStore(store_id);
+
+        search = (SearchView) findViewById(R.id.searchView);
+        search.setQueryHint("Items...");
+
+        search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                int[] res;
+
+                // Sees if the search Query is matching any products from the store
+                res = searchProductReturnCoordinates(products, query);
+
+                // If the query matches a product, the resulting location is marked on the map
+                if (res[0] != 0) {
+
+                    DrawLocationOnMap(res[0],res[1]);
+
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
 
         getMapLayout();
 
-        FrameLayout fram = (FrameLayout) findViewById(R.id.MapFrame);
 
-        fram.addView(posfac.getPostitionOverlay(20,20));
-
-
-        but.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                requestItemsOfStore(store_id);
-
-                /*
-                FrameLayout fram = (FrameLayout) findViewById(R.id.MapFrame);
-
-
-                if(fram.getChildCount() == 1){
-                    fram.addView(posfac.getPostitionOverlay(20,20));
-
-                } else
-                {
-                    fram.removeViewAt(1);
-                    fram.addView(posfac.getPostitionOverlay(20,50));
-                }
-
-                */
-            }
-        });
     }
 
     @Override
@@ -112,10 +122,13 @@ public class StoreMapActivity extends AppCompatActivity {
     }
 
 
+    /***
+     * Gets the Item along with its location on the map
+     *
+     * @param storeID The ID of the store to retrieve the products from
+     */
     public void requestItemsOfStore(String storeID){
-
-        String url = "http://nielsema.ddns.net:3000/api/store/56d81f53b50334c9534d0729/products";
-        final TextView tex = (TextView) findViewById(R.id.textView);
+        String url = "http://nielsema.ddns.net:3000/api/store/" + store_id +"/products";
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
@@ -123,19 +136,11 @@ public class StoreMapActivity extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
                             String results = "";
                         try {
-                            JSONArray products = response.getJSONArray("products");
+                            products = response.getJSONArray("products");
 
-                            // Loops through all the products that the store has and writes them out
-                            for(int counter = 0; counter <products.length(); counter++){
-                                JSONObject pro = products.getJSONObject(counter);
-                                results = results + getProductAndCoordinates(pro);
-                            }
-
-                            tex.setText(results);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-
                     }
                 }, new Response.ErrorListener() {
 
@@ -161,7 +166,7 @@ public class StoreMapActivity extends AppCompatActivity {
             JSONObject acpro = product.getJSONObject("product");
             JSONObject location = product.getJSONObject("location");
 
-            res = acpro.getString("name") + ": x:" + location.getString("x") + " y:" + location.getString("y");
+            res = acpro.getString("name") + ": x;" + location.getString("x") + " y;" + location.getString("y");
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -171,6 +176,110 @@ public class StoreMapActivity extends AppCompatActivity {
 
     }
 
+
+    /***
+     *
+     * @param product JSON array of products belonging to the store
+     * @param query The search query
+     * @return Integer array where res[0] = x and res[1] = y
+     */
+    public int[] searchProductReturnCoordinates(JSONArray product, String query) {
+
+        JSONObject acpro;
+        JSONObject locatio;
+        int[] res = {0, 0};
+
+        for (int i = 0; i < product.length(); i++) {
+
+            try {
+                acpro = product.getJSONObject(i).getJSONObject("product");
+                String productq = acpro.getString("name");
+
+                if (query.equalsIgnoreCase(productq)) {
+                    locatio = product.getJSONObject(i).getJSONObject("location");
+
+                    res[0] = locatio.getInt("x");
+                    res[1] = locatio.getInt("y");
+                    return res;
+                }
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+        return res;
+    }
+
+
+    // A needed override in order to be able to zooom...
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Scale.onTouchEvent(event);
+        return true;
+    }
+
+
+    /***
+     * This class must be in here, for some reason.
+     * Can't seperate it.
+     */
+    public class ScaleDetector extends ScaleGestureDetector.SimpleOnScaleGestureListener{
+
+        FrameLayout v = (FrameLayout) findViewById(R.id.MapFrame);
+
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+
+            float tempscale = 1;
+
+            tempscale = detector.getScaleFactor() * (scale);
+
+
+            v.setScaleX(tempscale);
+            v.setScaleY(tempscale);
+
+            return super.onScale(detector);
+        }
+
+        @Override
+        public boolean onScaleBegin(ScaleGestureDetector detector) {
+
+            v.setScaleX(scale);
+            v.setScaleY(scale);
+
+            return super.onScaleBegin(detector);
+        }
+
+        @Override
+        public void onScaleEnd(ScaleGestureDetector detector) {
+
+            scale = v.getScaleX();
+
+            super.onScaleEnd(detector);
+        }
+    }
+
+
+    /***
+     * The function that draws the point on the map
+     * @param x The X coordinate
+     * @param y The Y coordniate
+     */
+    public void DrawLocationOnMap(int x, int y){
+
+        FrameLayout fram = (FrameLayout) findViewById(R.id.MapFrame);
+
+        if (fram.getChildCount() == 1) {
+            fram.addView(posfac.getPostitionOverlay(x, y));
+
+        } else {
+            fram.removeViewAt(1);
+            fram.addView(posfac.getPostitionOverlay(x, y));
+        }
+
+    }
 }
 
 
