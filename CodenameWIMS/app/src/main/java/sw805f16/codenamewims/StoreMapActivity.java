@@ -1,13 +1,16 @@
 package sw805f16.codenamewims;
 
+import android.content.ClipData;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
+import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -39,6 +42,13 @@ public class StoreMapActivity extends AppCompatActivity {
     SearchView search;
     JSONArray products;
     PositionOverlayFactory posfac;
+    // Variables for dragging
+    FrameLayout fram;
+    float xOnStart = 0;
+    float yOnStart = 0;
+    float posX;
+    float posY;
+
 
 
     @Override
@@ -65,7 +75,7 @@ public class StoreMapActivity extends AppCompatActivity {
                 // If the query matches a product, the resulting location is marked on the map
                 if (res[0] != 0) {
 
-                    DrawLocationOnMap(res[0],res[1]);
+                    DrawLocationOnMap(res[0], res[1]);
 
                 }
                 return true;
@@ -77,8 +87,9 @@ public class StoreMapActivity extends AppCompatActivity {
             }
         });
 
-        getMapLayout();
+       fram =(FrameLayout) findViewById(R.id.MapFrame);
 
+        getMapLayout();
 
     }
 
@@ -213,10 +224,30 @@ public class StoreMapActivity extends AppCompatActivity {
     }
 
 
-    // A needed override in order to be able to zooom...
+    // A needed override in order to be able to zooom... and drag maybe..
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
         Scale.onTouchEvent(event);
+
+        if(event.getAction() == MotionEvent.ACTION_DOWN)
+        {
+            xOnStart = event.getX();
+            yOnStart = event.getY();
+            posX = fram.getX();
+            posY  = fram.getY();
+        }
+
+        if(event.getAction() == MotionEvent.ACTION_MOVE)
+        {
+
+            float offsetX = xOnStart - event.getX();
+            float offsetY = yOnStart - event.getY();
+            fram.setX(posX - offsetX);
+            fram.setY(posY - offsetY);
+
+        }
+
         return true;
     }
 
@@ -249,6 +280,7 @@ public class StoreMapActivity extends AppCompatActivity {
             v.setScaleX(scale);
             v.setScaleY(scale);
 
+
             return super.onScaleBegin(detector);
         }
 
@@ -280,6 +312,7 @@ public class StoreMapActivity extends AppCompatActivity {
         }
 
     }
+
 }
 
 

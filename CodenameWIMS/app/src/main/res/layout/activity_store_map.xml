@@ -14,7 +14,8 @@
         android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
         android:id="@+id/MapFrame"
-        android:layout_below="@+id/searchView">
+        android:layout_below="@+id/searchView"
+        android:nestedScrollingEnabled="true">
 
         <ImageView
             android:layout_width="match_parent"
