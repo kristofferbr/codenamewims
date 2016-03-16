@@ -15,7 +15,8 @@
         android:layout_centerHorizontal="true"
         android:id="@+id/MapFrame"
         android:layout_below="@+id/searchView"
-        android:nestedScrollingEnabled="true">
+        android:nestedScrollingEnabled="true"
+        android:focusable="true">
 
         <ImageView
             android:layout_width="match_parent"
@@ -33,5 +34,12 @@
         android:layout_alignRight="@+id/MapFrame"
         android:layout_alignEnd="@+id/MapFrame"
         android:layout_alignParentTop="true" />
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/resultView"
+        android:layout_below="@+id/searchView"
+        android:visibility="invisible" />
 
 </RelativeLayout>

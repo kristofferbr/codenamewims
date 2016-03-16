@@ -1,21 +1,23 @@
 package sw805f16.codenamewims;
 
-import android.content.ClipData;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Base64;
-import android.view.DragEvent;
+
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+
+import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
+
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -23,12 +25,13 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class StoreMapActivity extends AppCompatActivity {
 
@@ -36,6 +39,7 @@ public class StoreMapActivity extends AppCompatActivity {
     // URL til map /api/store/ID/map
     public boolean isInFront = false;
     public String store_id = "56e6a28a28c3e3314a6849df"; // The ID of føtex! :)
+    public String base_url= "http://nielsema.ddns.net/sw8/api/store/";
     RequestQueue rqueue;
     float scale = 1;
     ScaleGestureDetector Scale;
@@ -48,6 +52,9 @@ public class StoreMapActivity extends AppCompatActivity {
     float yOnStart = 0;
     float posX;
     float posY;
+    ListView listResults;
+    final ArrayList<String> results = new ArrayList<>();
+    ArrayAdapter<String> adapter;
 
 
 
@@ -55,14 +62,45 @@ public class StoreMapActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_store_map);
+        // Set variables for gestures
         Scale = new ScaleGestureDetector(this,new ScaleDetector());
+        // Instantiate the Volley request queue
         rqueue = Volley.newRequestQueue(this);
+
+        // Variables used for searching
+         adapter = new ArrayAdapter<>(getApplicationContext(),
+                                      R.layout.simple_list_view,
+                                      results);
+
+
+        // Instantiate the factory for generating overlays
         posfac = new PositionOverlayFactory(this);
 
+        //The listview in which the results from searches are submittet
+        listResults = (ListView) findViewById(R.id.resultView);
+        listResults.setAdapter(adapter);
+
+        //Set onclicklisteners on the items that appears in the Listview when searching
+        listResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView tes = (TextView)view;
+                search.setQuery(tes.getText(),false);
+            }
+        });
+
+        // Gets the items of the chosen store
         requestItemsOfStore(store_id);
 
+        // Set the correct listeners on the search widget
         search = (SearchView) findViewById(R.id.searchView);
-        search.setQueryHint("Items...");
+        search.setOnSearchClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listResults.setVisibility(View.VISIBLE);
+            }
+        });
+
 
         search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -83,6 +121,8 @@ public class StoreMapActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
+
+                putSuggestionsInList(newText);
                 return false;
             }
         });
@@ -107,16 +147,27 @@ public class StoreMapActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onBackPressed(){
+        if(listResults.getVisibility() == View.VISIBLE){
+            listResults.setVisibility(View.INVISIBLE);
+        }else{
+            super.onBackPressed();
+        }
+
+    }
+
     /****
      * Retrieves the layout from the server
      */
     public void getMapLayout(){
 
-        final String url = "http://nielsema.ddns.net:3000/api/store/" + store_id +"/map";
+        final String url = base_url + store_id +"/map";
         final ImageView mImageView = (ImageView) findViewById(R.id.storemap);
 
         /*Generates the request along with a listener that is triggered when image is received*/
         ImageRequest imagereq = new ImageRequest(url, new Response.Listener<Bitmap>() {
+
             @Override
             public void onResponse(Bitmap bitmap) {
                 mImageView.setImageBitmap(bitmap);
@@ -126,6 +177,7 @@ public class StoreMapActivity extends AppCompatActivity {
                     public void onErrorResponse(VolleyError error) {
 
                         mImageView.setImageResource(R.drawable.prik);
+                        error.printStackTrace();
                     }
                 });
 
@@ -139,7 +191,7 @@ public class StoreMapActivity extends AppCompatActivity {
      * @param storeID The ID of the store to retrieve the products from
      */
     public void requestItemsOfStore(String storeID){
-        String url = "http://nielsema.ddns.net:3000/api/store/" + store_id +"/products";
+        String url = base_url + store_id +"/products";
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
@@ -313,6 +365,33 @@ public class StoreMapActivity extends AppCompatActivity {
 
     }
 
+
+    /***
+     * Function for filling the resultview with suggestions based on the text in the window
+     * @param newtext the string that is compared with the product list
+     */
+    public void putSuggestionsInList(String newtext)
+    {
+        results.clear();
+        String tempName="";
+
+        if(!newtext.equals("")) {
+
+            for (int i = 0; i < products.length(); i++) {
+
+                try {
+                    tempName = products.getJSONObject(i).getJSONObject("product").getString("name");
+
+
+                    if (tempName.toLowerCase().contains(newtext.toLowerCase()) || tempName.equalsIgnoreCase(newtext))
+                        results.add(tempName);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+        adapter.notifyDataSetChanged();
+    }
 }
-
-
