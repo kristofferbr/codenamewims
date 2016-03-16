@@ -12,13 +12,34 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true">
+        android:layout_centerHorizontal="true"
+        android:id="@+id/MapFrame"
+        android:layout_below="@+id/searchView"
+        android:nestedScrollingEnabled="true"
+        android:focusable="true">
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:id="@+id/storemap"
             android:layout_gravity="center" />
+
     </FrameLayout>
+
+    <SearchView
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:id="@+id/searchView"
+        android:layout_gravity="right|top"
+        android:layout_alignRight="@+id/MapFrame"
+        android:layout_alignEnd="@+id/MapFrame"
+        android:layout_alignParentTop="true" />
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/resultView"
+        android:layout_below="@+id/searchView"
+        android:visibility="invisible" />
+
 </RelativeLayout>
