@@ -119,62 +119,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * This method ranks the stores after similarity between the query and the keys in the stores HashMap
-     * @param query The search query
-     */
-    public void rankSearchResults(String query) {
-        String key = "";
-        //We have a local HashMap of storenames and associated rank
-        HashMap<String, Double> ranks = new HashMap<>();
-        //We use the normalized levenshtein similarity between the strings
-        NormalizedLevenshtein similarity = new NormalizedLevenshtein();
-        Iterator iterator;
 
-        //We instantiate the iterator with the stores HasMap iterator
-        iterator = stores.entrySet().iterator();
-        Map.Entry pair;
-
-        //Here we iterate through the stores HashMap
-        while(iterator.hasNext()) {
-            //We extract the pairs
-            pair = (Map.Entry) iterator.next();
-            key = (String) pair.getKey();
-            //We add the key and the similarity score with the query to the ranks HashMap
-            ranks.put(key, similarity.similarity(query, key));
-        }
-
-        double highest;
-
-        //Here we use the global store HashMap instead of the local ranks, because they initially are the same size
-        for (int i = 0; i < stores.size(); i++) {
-            //We re-instantiate the iterator to iterate over ranks HashMap and set the highest value to 0
-            iterator = ranks.entrySet().iterator();
-            highest = 0;
-
-            //Here we iterate over the ranks HashMap
-            while (iterator.hasNext()) {
-                pair = (Map.Entry) iterator.next();
-
-                //If the value in the extracted pair is greater than or equal to the highest value and above a threshold
-                //The string key is set the pair key and the highest value is updated
-                if (((Double) pair.getValue()) >= highest && ((Double) pair.getValue()) > 0.5) {
-                    key = (String) pair.getKey();
-                    highest = (Double) pair.getValue();
-                }
-            }
-            //If the highest value has not been set and there are more than one entry in the ranks HashMap
-            //Then that means there were no meaningful matches for the query
-            if (highest == 0 && ranks.size() > 1) {
-                Toast.makeText(MainActivity.this, "There was no match to the search", Toast.LENGTH_SHORT).show();
-                break;
-            }
-            //When the storename with the highest similarity with query is found it is added to the list
-            rankedResults.add(key);
-            //When we are done with the storename it is removed from the ranks HashMap
-            ranks.remove(key);
-        }
-    }
 
 
     /****
@@ -198,8 +143,6 @@ public class MainActivity extends AppCompatActivity {
 
         req.add(jsonRequest);
     }
-
-
 
     /*Code for Scaling with pinch gestures*/
     /**

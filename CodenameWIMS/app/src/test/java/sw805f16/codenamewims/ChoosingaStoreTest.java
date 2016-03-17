@@ -1,34 +1,21 @@
 package sw805f16.codenamewims;
-import android.test.suitebuilder.annotation.Suppress;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ListView;
 import android.widget.SearchView;
-import android.widget.TextView;
 
-import org.apache.tools.ant.helper.ProjectHelper2;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runner.*;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowIntent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-
-import imports.StartedMatcher;
+import java.util.Iterator;
+import java.util.Map;
 
 import static org.junit.Assert.*;
-import static org.robolectric.Shadows.*;
 import static org.hamcrest.CoreMatchers.*;
 
 /**
@@ -115,14 +102,19 @@ public class ChoosingaStoreTest {
     @Test
     public void search_result_ranking() {
         main.extractInformationFromJson(dummyJson);
-        main.rankSearchResults("føtex");
+        Iterator testIt = main.getStores().entrySet().iterator();
+        ArrayList<String> testValues = new ArrayList<>();
+        Map.Entry pair;
+        while (testIt.hasNext()) {
+            pair = (Map.Entry) testIt.next();
+            testValues.add((String) pair.getKey());
+        }
 
-        ArrayList<String> testList = main.getRankedSearchResults();
+        ArrayList<String> testList = SearchRanking.rankSearchResults("føtex", testValues);
         assertThat(testList.get(0), is("føtex"));
         assertTrue(!testList.contains("netto"));
 
-        main.rankSearchResults("tex");
-        testList = main.getRankedSearchResults();
+        testList = SearchRanking.rankSearchResults("tex", testValues);
         assertThat(testList.get(0), is("føtex"));
     }
 
