@@ -1,5 +1,8 @@
 package sw805f16.codenamewims;
+import android.view.View;
+import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -9,6 +12,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowListView;
+import org.robolectric.shadows.ShadowView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +22,8 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
+
+import static org.robolectric.Shadows.*;
 
 /**
  * Created by kbrod on 09/03/2016.
@@ -71,10 +78,17 @@ public class ChoosingaStoreTest {
         // When I am at the home screen
         // I can tap the search bar
         // Then I can enter the name of a store
+        main.extractInformationFromJson(dummyJson);
         search.setQuery("Føtex", true);
 
         // I then retreive a list of candidates to choose from
-
+        ListView results = (ListView) main.findViewById(R.id.query_results);
+        assertThat(results.getVisibility(), is(View.VISIBLE));
+        ShadowListView shadowResults = (ShadowListView) shadowOf(main.findViewById(R.id.query_results));
+        shadowResults.populateItems();
+        search.setQuery("", false);
+        shadowResults.performItemClick(0);
+        assertThat(search.getQuery().toString(), is("Føtex"));
         // As a user
         // When I am at SOME PLACE
 
@@ -90,7 +104,7 @@ public class ChoosingaStoreTest {
 
     @Test
     public void extract_information_from_json_test() {
-        //The string is made into an actual JSONArray and passed to the method
+        //The string is passed to the method
         main.extractInformationFromJson(dummyJson);
 
         HashMap<String, String> testMap = main.getStores();
@@ -101,21 +115,29 @@ public class ChoosingaStoreTest {
 
     @Test
     public void search_result_ranking() {
+        //We pass the json array to the extract method
         main.extractInformationFromJson(dummyJson);
+        //We make an iterator to go through the stores HashMap in MainActvity
         Iterator testIt = main.getStores().entrySet().iterator();
         ArrayList<String> testValues = new ArrayList<>();
         Map.Entry pair;
+        //We extract the keys and put them in the test array
         while (testIt.hasNext()) {
             pair = (Map.Entry) testIt.next();
             testValues.add((String) pair.getKey());
         }
 
+        //Then we rank the query føtex with the list of strings
         ArrayList<String> testList = SearchRanking.rankSearchResults("føtex", testValues);
+        //We assert that highest ranking result is føtex and that netto is not in the list
         assertThat(testList.get(0), is("føtex"));
-        assertTrue(!testList.contains("netto"));
+        assertTrue(!testList.contains("fetto"));
 
-        testList = SearchRanking.rankSearchResults("tex", testValues);
+        //Here we try it if the user dit not input the entire query
+        testList = SearchRanking.rankSearchResults("fø", testValues);
         assertThat(testList.get(0), is("føtex"));
     }
+
+
 
 }

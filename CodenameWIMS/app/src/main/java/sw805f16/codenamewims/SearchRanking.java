@@ -10,7 +10,7 @@ import info.debatty.java.stringsimilarity.NormalizedLevenshtein;
 /**
  * Created by replacedleaf60 on 3/17/16.
  */
-public class SearchRanking {
+public abstract class SearchRanking {
 
     /**
      * This method ranks the stores after similarity between the query and the provided search set
@@ -61,5 +61,11 @@ public class SearchRanking {
             ranks.remove(key);
         }
         return returnList;
+    }
+
+
+    public static String capitaliseFirstLetter(String str) {
+        str = str.substring(0, 1).toUpperCase() + str.substring(1);
+        return str;
     }
 }

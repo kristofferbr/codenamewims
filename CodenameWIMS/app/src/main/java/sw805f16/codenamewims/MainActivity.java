@@ -13,10 +13,14 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,15 +57,18 @@ import info.debatty.java.stringsimilarity.NormalizedLevenshtein;
 
 
 /**
- * Adresss for server: "nielsema.ddns.net:3000"
+ * Adresss for server: "nielsema.ddns.net/sw8"
  *
  * */
 
 public class MainActivity extends AppCompatActivity {
 
     HashMap<String, String> stores = new HashMap<>();
-    ArrayList<String> rankedResults = new ArrayList<>();
     JSONArray json;
+    SearchView searchView;
+    ListView searchResults;
+    ArrayList<String> resultList;
+    ArrayAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +85,56 @@ public class MainActivity extends AppCompatActivity {
 //            e.printStackTrace();
 //        }
 
+        searchView = (SearchView) findViewById(R.id.search);
+        searchResults = (ListView) findViewById(R.id.query_results);
+        resultList = new ArrayList<>();
+        adapter = new ArrayAdapter<>(getApplicationContext(),
+                                     R.layout.simple_list_view,
+                                     resultList);
+        searchResults.setAdapter(adapter);
+
+        searchResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView text = (TextView) view;
+                searchView.setQuery(SearchRanking.capitaliseFirstLetter(text.getText().toString()), true);
+                searchResults.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                populateSuggestionList(newText);
+                searchResults.setVisibility(View.VISIBLE);
+                return false;
+            }
+        });
+
+    }
+
+    private void populateSuggestionList(String query) {
+        String key = "";
+        resultList.clear();
+        Iterator it = stores.entrySet().iterator();
+        Map.Entry pair;
+
+        while (it.hasNext()) {
+            pair = (Map.Entry) it.next();
+            key = (String) pair.getKey();
+            if (key.contains(query.toLowerCase())) {
+                resultList.add(key);
+            }
+        }
+
+        resultList = SearchRanking.rankSearchResults(query, resultList);
+
+        adapter.notifyDataSetChanged();
     }
 
     /**
@@ -86,14 +143,6 @@ public class MainActivity extends AppCompatActivity {
      */
     public HashMap<String, String> getStores() {
         return stores;
-    }
-
-    /**
-     * This method is used by the test classes to evaluate the ranked search results list
-     * @return The rankedResults ArrayList of this instance
-     */
-    public ArrayList<String> getRankedSearchResults() {
-        return rankedResults;
     }
 
 
@@ -143,51 +192,5 @@ public class MainActivity extends AppCompatActivity {
 
         req.add(jsonRequest);
     }
-
-    /*Code for Scaling with pinch gestures*/
-    /**
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        Scale.onTouchEvent(event);
-        return true;
-    }
-
-    public class ScaleDetector extends ScaleGestureDetector.SimpleOnScaleGestureListener{
-
-
-        ImageView v = (ImageView) findViewById(R.id.billede);
-
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-
-            float tempscale = 1;
-
-            tempscale = detector.getScaleFactor() * (scale);
-
-
-            v.setScaleX(tempscale);
-            v.setScaleY(tempscale);
-
-            return super.onScale(detector);
-        }
-
-        @Override
-        public boolean onScaleBegin(ScaleGestureDetector detector) {
-
-            v.setScaleX(scale);
-            v.setScaleY(scale);
-
-            return super.onScaleBegin(detector);
-        }
-
-        @Override
-        public void onScaleEnd(ScaleGestureDetector detector) {
-
-            scale = v.getScaleX();
-
-            super.onScaleEnd(detector);
-        }
-    }
-*/
 
 }
