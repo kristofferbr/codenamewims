@@ -12,9 +12,23 @@
     android:gravity="center_horizontal"
     android:clickable="true">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/title"
+        android:layout_centerHorizontal="true"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/storemapbutton"
+        android:layout_centerHorizontal="true"
+        android:text="Store Map"/>
+
     <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/searchframe">
 
         <SearchView
             android:layout_width="450px"

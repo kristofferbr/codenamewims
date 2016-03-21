@@ -1,59 +1,29 @@
 package sw805f16.codenamewims;
 
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.opengl.Matrix;
-import android.service.voice.VoiceInteractionSession;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.*;
-import com.android.volley.toolbox.BasicNetwork;
-import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.JsonRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.AbstractSet;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import info.debatty.java.stringsimilarity.Jaccard;
-import info.debatty.java.stringsimilarity.Levenshtein;
-import info.debatty.java.stringsimilarity.NormalizedLevenshtein;
 
 
 /**
@@ -69,71 +39,110 @@ public class MainActivity extends AppCompatActivity {
     ListView searchResults;
     ArrayList<String> resultList;
     ArrayAdapter adapter;
+    String storeId;
+    boolean pickedSuggestion = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        try {
-//            RequestQueue queue = Volley.newRequestQueue(this);
-//            String url = "http://nielsema.ddns.net/sw8/api/store";
-//
-//            request(queue, url);
-//            extractInformationFromJson(json);
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
+        //We make a request to the server and receives the list of stores
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = "http://nielsema.ddns.net/sw8/api/store";
+
+        request(queue, url);
+        //extractInformationFromJson(json);
+
 
         searchView = (SearchView) findViewById(R.id.search);
         searchResults = (ListView) findViewById(R.id.query_results);
         resultList = new ArrayList<>();
+        //Here we set up the adapter for the results listview
         adapter = new ArrayAdapter<>(getApplicationContext(),
                                      R.layout.simple_list_view,
                                      resultList);
         searchResults.setAdapter(adapter);
 
+        //When clicking the items the searchview searches for the contents of the item
         searchResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView text = (TextView) view;
-                searchView.setQuery(SearchRanking.capitaliseFirstLetter(text.getText().toString()), true);
+                //If the user has clicked the suggestion item this bool is flipped
+                pickedSuggestion = true;
+                //We set the query to the text in the item and submit it
+                searchView.setQuery(text.getText().toString(), true);
                 searchResults.setVisibility(View.INVISIBLE);
             }
         });
 
+        //When searching we display a listview of suggestions
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                //If the submit butten is pressed using the listview's onItemClick() method the title is set
+                //If it is not the listview is populated like with onQueryTextChange()
+                if (pickedSuggestion || stores.containsKey(query.toLowerCase())) {
+                    TextView titleText = (TextView) findViewById(R.id.title);
+                    titleText.setText(SearchRanking.capitaliseFirstLetters(query));
+                    //The search field is emptied
+                    searchView.setQuery("", false);
+                    storeId = stores.get(query);
+                } else {
+                    Toast.makeText(MainActivity.this, "No match for: " + query + ". Please pick a suggestion or search for another store", Toast.LENGTH_SHORT).show();
+                    populateSuggestionList(query);
+                }
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
+                //Each time the query text is modified the list of suggestions is updated
                 populateSuggestionList(newText);
                 searchResults.setVisibility(View.VISIBLE);
                 return false;
             }
         });
 
+        Button storemapButton = (Button) findViewById(R.id.storemapbutton);
+
+        storemapButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), StoreMapActivity.class);
+                intent.putExtra("storeId", storeId);
+                startActivity(intent);
+            }
+        });
     }
 
+    /**
+     * This method populates the listview with suggestions
+     * @param query The query from which to populate after
+     */
     private void populateSuggestionList(String query) {
         String key = "";
+        //We need to clear the list, otherwise the suggestion list explodes
         resultList.clear();
+        //We make an iterator and iterate over the stores hashmap
         Iterator it = stores.entrySet().iterator();
         Map.Entry pair;
 
         while (it.hasNext()) {
             pair = (Map.Entry) it.next();
             key = (String) pair.getKey();
-            if (key.contains(query.toLowerCase())) {
+            //If the key of the pair contains the query it is added to the result list
+            //We remove any potential special characters
+            if (key.contains(SearchRanking.removeSpecialCharacters(query).toLowerCase())) {
                 resultList.add(key);
             }
         }
 
+        //After the immediate matches are added to the list it is sorted by rank
         resultList = SearchRanking.rankSearchResults(query, resultList);
 
+        //Then we notify the adapter that the list is modified
         adapter.notifyDataSetChanged();
     }
 
@@ -156,12 +165,14 @@ public class MainActivity extends AppCompatActivity {
             JSONObject tmpObject;
             //Because this method is only called when we have a new JSON array we clear stores
             stores.clear();
+            String key = "";
 
             //Here we loop over the json objects in the json array
             for (int i = 0; i < jsonArray.length(); i++) {
                 tmpObject = jsonArray.getJSONObject(i);
                 //We extract the storename and the id and place them in a HasMap
-                stores.put(tmpObject.getString("name").toLowerCase(), tmpObject.getString("_id"));
+                key = SearchRanking.removeSpecialCharacters(tmpObject.getString("name")).toLowerCase();
+                stores.put(key, tmpObject.getString("_id"));
             }
         } catch (JSONException e) {
             e.printStackTrace();

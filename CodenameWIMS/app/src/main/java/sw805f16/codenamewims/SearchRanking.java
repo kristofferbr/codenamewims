@@ -64,8 +64,45 @@ public abstract class SearchRanking {
     }
 
 
-    public static String capitaliseFirstLetter(String str) {
+    /**
+     * This method capitalises the first letter in the provided string
+     * @param str The string that is capitalised
+     * @return The capitalised string
+     */
+    private static String capitaliseFirstLetter(String str) {
         str = str.substring(0, 1).toUpperCase() + str.substring(1);
         return str;
+    }
+
+    /**
+     * This method capitalises the first letter of all the words in a string
+     * @param str Input string
+     * @return A string with capitalised first letters
+     */
+    public static String capitaliseFirstLetters(String str) {
+        String tmpString = "";
+        //We split the string at whitespaces
+        String[] strParts = str.split("\\s");
+        for (String st : strParts) {
+            //Then we reassemble the string and call the capitaliseFirstLetter method on each words
+            tmpString = tmpString + capitaliseFirstLetter(st) + " ";
+        }
+        //We return the string while trimming leading and trailing whitespaces
+        return tmpString.trim();
+    }
+
+    /**
+     * This method removes special characters from the input string and returns the modified string
+     * @param str Input string
+     * @return Modified string with no special characters
+     */
+    public static String removeSpecialCharacters(String str) {
+        String tmpString = "";
+        //We replace all instances of special characters with a whitespace
+        tmpString = str.replaceAll("-|\\.|,|\"|'|:|;|\\\\|/|_|\\[|\\]|\\{|\\}|\\(|\\)|\\?", " ");
+        //The above could introduce redundant whitespaces, so we remove all instances of more than two
+        //whitespaces
+        tmpString = tmpString.replaceAll("\\s{2,}", " ");
+        return tmpString;
     }
 }

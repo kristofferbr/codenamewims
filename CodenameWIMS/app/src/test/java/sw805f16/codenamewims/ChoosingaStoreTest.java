@@ -1,5 +1,7 @@
 package sw805f16.codenamewims;
+import android.content.Intent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -12,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowIntent;
 import org.robolectric.shadows.ShadowListView;
 import org.robolectric.shadows.ShadowView;
 
@@ -73,37 +76,43 @@ public class ChoosingaStoreTest {
     // As a user
     // I want to be able to choose the store
     // so that I can retrieve the correct map and item list
-    public void choosing_a_store_test(){
+    public void choosing_a_store_test() throws Exception {
         // As a user
         // When I am at the home screen
         // I can tap the search bar
         // Then I can enter the name of a store
         main.extractInformationFromJson(dummyJson);
-        search.setQuery("Føtex", true);
+        //We search for føtex
+        search.setQuery("Føtex", false);
 
         // I then retreive a list of candidates to choose from
+
+        //We first find the listview that shows when the text in the searchbar is changed
         ListView results = (ListView) main.findViewById(R.id.query_results);
-        assertThat(results.getVisibility(), is(View.VISIBLE));
+        //We also instantiate a shadow of the list view, because it has the populateItems() method
+        //that we use to trigger the events and the adapter
         ShadowListView shadowResults = (ShadowListView) shadowOf(main.findViewById(R.id.query_results));
         shadowResults.populateItems();
+
+        //First we assert whether the listview becomes visible when the text is changed
+        assertThat(results.getVisibility(), is(View.VISIBLE));
+
+        //Next we assert whether the first item in the list is føtex
+        String text = (String) results.getItemAtPosition(0);
+        assertThat(text, is("føtex"));
+
+        //Next we want to see whether, when clicking the first item, that the title text is Føtex,
+        //whether the listview turns invisible again and if the searchbar is empty
         search.setQuery("", false);
         shadowResults.performItemClick(0);
-        assertThat(search.getQuery().toString(), is("Føtex"));
-        // As a user
-        // When I am at SOME PLACE
-
-        // I can change the store by first tapping SOME BUTTON
-
-        // Then Search
-
-        // Then choose another store
-
-        // Repeat indtil det er implementeret i alle steder i applikationen
-
+        TextView testText = (TextView) main.findViewById(R.id.title);
+        assertThat(testText.getText().toString(), is("Føtex"));
+        assertThat(results.getVisibility(), is(View.INVISIBLE));
+        assertThat(search.getQuery().toString(), is(""));
     }
 
     @Test
-    public void extract_information_from_json_test() {
+    public void extract_information_from_json_test() throws Exception {
         //The string is passed to the method
         main.extractInformationFromJson(dummyJson);
 
@@ -114,7 +123,7 @@ public class ChoosingaStoreTest {
     }
 
     @Test
-    public void search_result_ranking() {
+    public void search_result_ranking() throws Exception {
         //We pass the json array to the extract method
         main.extractInformationFromJson(dummyJson);
         //We make an iterator to go through the stores HashMap in MainActvity
@@ -131,13 +140,38 @@ public class ChoosingaStoreTest {
         ArrayList<String> testList = SearchRanking.rankSearchResults("føtex", testValues);
         //We assert that highest ranking result is føtex and that netto is not in the list
         assertThat(testList.get(0), is("føtex"));
-        assertTrue(!testList.contains("fetto"));
+        assertFalse(testList.contains("netto"));
 
         //Here we try it if the user dit not input the entire query
         testList = SearchRanking.rankSearchResults("fø", testValues);
         assertThat(testList.get(0), is("føtex"));
+
+        //Here we see whether the capitalise method works
+        String testString = SearchRanking.capitaliseFirstLetters("føtex");
+        assertThat(testString, is("Føtex"));
+
+        //Then we test whether the removeSpecialCharacters() method works
+        testString = SearchRanking.removeSpecialCharacters("føtex - aalborg øst");
+        assertThat(testString, is("føtex aalborg øst"));
+        //And if the capitaliseFirstLetters() method can handle multiple words
+        testString = SearchRanking.capitaliseFirstLetters(testString);
+        assertThat(testString, is("Føtex Aalborg Øst"));
     }
 
+    @Test
+    public void change_from_start_to_storemap() throws Exception {
+        main.extractInformationFromJson(dummyJson);
+        Button testButton = (Button) main.findViewById(R.id.storemapbutton);
 
+        //We search for føtex and submit the search
+        search.setQuery("føtex", true);
+        //We click the button and assert whether it starts the right activity
+        testButton.performClick();
+        //We peek at the next activity that starts from main
+        Intent intent = shadowOf(main).peekNextStartedActivity();
+        assertThat(StoreMapActivity.class.getCanonicalName(), is(intent.getComponent().getClassName()));
+        //We also check whether the extra with the store id is the right id
+        assertThat(intent.getStringExtra("storeId"), is("56e6a28a28c3e3314a6849df"));
+    }
 
 }
