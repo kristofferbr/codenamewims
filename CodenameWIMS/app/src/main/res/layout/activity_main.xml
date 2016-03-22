@@ -12,13 +12,36 @@
     android:gravity="center_horizontal"
     android:clickable="true">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/title"
+        android:layout_centerHorizontal="true"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Choose Store"
-        android:id="@+id/chooseStore"
-        android:gravity="center_vertical|center_horizontal"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:id="@+id/storemapbutton"
+        android:layout_centerHorizontal="true"
+        android:text="Store Map"/>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/searchframe">
+
+        <SearchView
+            android:layout_width="450px"
+            android:layout_height="wrap_content"
+            android:id="@+id/search"
+            android:layout_gravity="center_horizontal"/>
+
+        <ListView
+            android:layout_width="500px"
+            android:layout_height="500px"
+            android:id="@+id/query_results"
+            android:fadeScrollbars="true"
+            android:layout_gravity="center"
+            android:visibility="invisible"/>
+    </FrameLayout>
 </RelativeLayout>
