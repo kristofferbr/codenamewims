@@ -77,15 +77,14 @@ public class ChoosingaStoreTest {
     // I want to be able to choose the store
     // so that I can retrieve the correct map and item list
     public void choosing_a_store_test() throws Exception {
-        // As a user
+        // Given I am a user
         // When I am at the home screen
-        // I can tap the search bar
-        // Then I can enter the name of a store
+        // And I search for the name of a store
         main.extractInformationFromJson(dummyJson);
         //We search for føtex
         search.setQuery("Føtex", false);
 
-        // I then retreive a list of candidates to choose from
+        // Then I retreive a list of candidates to choose from
 
         //We first find the listview that shows when the text in the searchbar is changed
         ListView results = (ListView) main.findViewById(R.id.query_results);

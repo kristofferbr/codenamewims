@@ -50,9 +50,9 @@ public abstract class SearchRanking {
                     highest = (Double) pair.getValue();
                 }
             }
-            //If the highest value has not been set and there are more than one entry in the ranks HashMap
+            //If the highest value has not been set
             //Then that means there were no meaningful matches for the query
-            if (highest == 0 && ranks.size() > 1) {
+            if (highest == 0) {
                 break;
             }
             //When the storename with the highest similarity with query is found it is added to the list
