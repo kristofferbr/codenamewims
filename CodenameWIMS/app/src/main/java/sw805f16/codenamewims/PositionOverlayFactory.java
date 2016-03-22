@@ -1,7 +1,6 @@
 package sw805f16.codenamewims;
 
 import android.content.Context;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 /**
@@ -23,6 +22,18 @@ public class PositionOverlayFactory{
     public ImageView getPostitionOverlay(int x, int y)
     {
         return pos.generateImageView(x,y);
+    }
+
+    public ImageView getRouteBetweenTwoPoints(WimsPoints start, WimsPoints goal){
+        return pos.drawRoute(start, goal);
+    }
+
+    public ImageView getBitMapReDrawnSpot(ImageView view, int x, int y){
+        return pos.drawSpotOnSameBitmap(view, x, y);
+    }
+
+    public ImageView getBitMapReDrawnLine(ImageView view, int StartX, int StartY, int EndX, int EndY){
+        return pos.drawLineOnSameMap(view,StartX,StartY,EndX,EndY);
     }
 
 

@@ -4,5 +4,7 @@
     android:layout_height="match_parent"
     android:id="@+id/SearchSuggestion"
     android:orientation="vertical"
-    android:textIsSelectable="false">
+    android:textIsSelectable="false"
+    android:textSize="20dp"
+    android:minHeight="28dp">
 </TextView>

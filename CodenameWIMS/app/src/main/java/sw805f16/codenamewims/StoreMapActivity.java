@@ -5,12 +5,14 @@ import android.graphics.Bitmap;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
@@ -38,6 +40,8 @@ public class StoreMapActivity extends AppCompatActivity {
 
     // URL til map /api/store/ID/map
     public boolean isInFront = false;
+    public boolean createMapDataModePoints = false;
+    public boolean createMapDataModeNeighbors = false;
     public String store_id = "56e6a28a28c3e3314a6849df"; // The ID of føtex! :)
     public String base_url= "http://nielsema.ddns.net/sw8/api/store/";
     RequestQueue rqueue;
@@ -56,6 +60,16 @@ public class StoreMapActivity extends AppCompatActivity {
     final ArrayList<String> results = new ArrayList<>();
     ArrayAdapter<String> adapter;
 
+    MapData mapdata = new MapData();
+    ArrayList<WimsPoints> TESTMAPDATA = new ArrayList<>();
+
+
+    /*For drawing neighbors*/
+    int startX=0;
+    int starty=0;
+    int endX =0;
+    int endY =0;
+    boolean start = true;
 
 
     @Override
@@ -67,27 +81,108 @@ public class StoreMapActivity extends AppCompatActivity {
         // Instantiate the Volley request queue
         rqueue = Volley.newRequestQueue(this);
 
-        // Variables used for searching
+        // Adapter used for searching
          adapter = new ArrayAdapter<>(getApplicationContext(),
                                       R.layout.simple_list_view,
                                       results);
 
-
-        // Instantiate the factory for generating overlays
-        posfac = new PositionOverlayFactory(this);
-
-        //The listview in which the results from searches are submittet
+        //The listview in which the results from searches are submitted
         listResults = (ListView) findViewById(R.id.resultView);
         listResults.setAdapter(adapter);
-
         //Set onclicklisteners on the items that appears in the Listview when searching
         listResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                TextView tes = (TextView)view;
-                search.setQuery(tes.getText(),false);
+                TextView tes = (TextView) view;
+                search.setQuery(tes.getText(), false);
             }
         });
+
+
+        ImageView mImageView = (ImageView) findViewById(R.id.storemap);
+        mImageView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if (createMapDataModePoints) {
+
+                    int spotX;
+                    int spotY;
+
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        float x = event.getX() - v.getLeft();
+                        float y = event.getY() - v.getTop();
+
+                        int w = v.getMeasuredWidth();
+                        int h = v.getMeasuredHeight();
+
+                        spotX = (int) (500 / (float) w * x);
+                        spotY = (int) (750 / (float) h * y);
+                        if (fram.getChildCount() == 1) {
+                            fram.addView(posfac.getPostitionOverlay(spotX, spotY));
+                            addPointIfNew(spotX, spotY);
+
+                        } else {
+                            if (addPointIfNew(spotX, spotY)) {
+                                ImageView temp = (ImageView) fram.getChildAt(1);
+                                fram.removeViewAt(1);
+                                fram.addView(posfac.getBitMapReDrawnSpot(temp, spotX, spotY));
+                            }
+                        }
+
+                    }
+
+                } else if (createMapDataModeNeighbors) {
+
+
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        if (start) {
+                            float x = event.getX() - v.getLeft();
+                            float y = event.getY() - v.getTop();
+
+                            int w = v.getMeasuredWidth();
+                            int h = v.getMeasuredHeight();
+
+                            startX = (int) (500 / (float) w * x);
+                            starty = (int) (750 / (float) h * y);
+
+                            if(isWithin(startX, starty)) {
+                                start = !start;
+                            }
+                        } else {
+                            float x = event.getX() - v.getLeft();
+                            float y = event.getY() - v.getTop();
+
+                            int w = v.getMeasuredWidth();
+                            int h = v.getMeasuredHeight();
+
+                            endX = (int) (500 / (float) w * x);
+                            endY = (int) (750 / (float) h * y);
+
+
+                            if (isWithin(endX, endY)) {
+
+                                ImageView temp = (ImageView) fram.getChildAt(1);
+                                fram.removeViewAt(1);
+                                fram.addView(posfac.getBitMapReDrawnLine(temp, startX, starty, endX, endY));
+                                start = !start;
+                                setNeighbors(startX,starty,endX,endY);
+                            }
+
+                        }
+                    }
+
+                }
+
+                return false;
+            }
+        });
+
+
+
+
+        // Instantiate the factory for generating overlays
+        posfac = new PositionOverlayFactory(this);
 
         // Gets the items of the chosen store
         requestItemsOfStore(store_id);
@@ -102,6 +197,30 @@ public class StoreMapActivity extends AppCompatActivity {
         });
 
 
+        final Button EditButton = (Button) findViewById(R.id.testbut);
+        EditButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if(!createMapDataModePoints && !createMapDataModeNeighbors)
+                {
+                    createMapDataModeNeighbors = false;
+                    createMapDataModePoints = true;
+                    EditButton.setText("Points");
+                } else if(createMapDataModePoints && !createMapDataModeNeighbors){
+                    createMapDataModePoints = false;
+                    createMapDataModeNeighbors = true;
+                    EditButton.setText("Neighbors");
+                } else if(createMapDataModeNeighbors){
+                    createMapDataModeNeighbors = false;
+                    createMapDataModePoints = false;
+                    EditButton.setText("Normal");
+                }
+
+            }
+        });
+
+        //Listeners on the search widget
         search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -113,7 +232,8 @@ public class StoreMapActivity extends AppCompatActivity {
                 // If the query matches a product, the resulting location is marked on the map
                 if (res[0] != 0) {
 
-                    DrawLocationOnMap(res[0], res[1]);
+                    //DrawLocationOnMap(res[0], res[1]);
+                    drawRoute(res);
 
                 }
                 return true;
@@ -127,9 +247,12 @@ public class StoreMapActivity extends AppCompatActivity {
             }
         });
 
+
+        // Gets the map corresponding to the store ID
        fram =(FrameLayout) findViewById(R.id.MapFrame);
 
         getMapLayout();
+
 
     }
 
@@ -191,7 +314,7 @@ public class StoreMapActivity extends AppCompatActivity {
      * @param storeID The ID of the store to retrieve the products from
      */
     public void requestItemsOfStore(String storeID){
-        String url = base_url + store_id +"/products";
+        String url = base_url + storeID +"/products";
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
@@ -280,24 +403,23 @@ public class StoreMapActivity extends AppCompatActivity {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        Scale.onTouchEvent(event);
+        if(!createMapDataModePoints && !createMapDataModeNeighbors) {
+            Scale.onTouchEvent(event);
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                xOnStart = event.getX();
+                yOnStart = event.getY();
+                posX = fram.getX();
+                posY = fram.getY();
+            }
 
-        if(event.getAction() == MotionEvent.ACTION_DOWN)
-        {
-            xOnStart = event.getX();
-            yOnStart = event.getY();
-            posX = fram.getX();
-            posY  = fram.getY();
-        }
+            if (event.getAction() == MotionEvent.ACTION_MOVE) {
 
-        if(event.getAction() == MotionEvent.ACTION_MOVE)
-        {
+                float offsetX = xOnStart - event.getX();
+                float offsetY = yOnStart - event.getY();
+                fram.setX(posX - offsetX);
+                fram.setY(posY - offsetY);
 
-            float offsetX = xOnStart - event.getX();
-            float offsetY = yOnStart - event.getY();
-            fram.setX(posX - offsetX);
-            fram.setY(posY - offsetY);
-
+            }
         }
 
         return true;
@@ -315,7 +437,7 @@ public class StoreMapActivity extends AppCompatActivity {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
 
-            float tempscale = 1;
+            float tempscale;
 
             tempscale = detector.getScaleFactor() * (scale);
 
@@ -375,23 +497,121 @@ public class StoreMapActivity extends AppCompatActivity {
         results.clear();
         String tempName="";
 
-        if(!newtext.equals("")) {
+        if(products != null) {
 
-            for (int i = 0; i < products.length(); i++) {
+            if (!newtext.equals("")) {
 
-                try {
-                    tempName = products.getJSONObject(i).getJSONObject("product").getString("name");
+                for (int i = 0; i < products.length(); i++) {
 
+                    try {
+                        tempName = products.getJSONObject(i).getJSONObject("product").getString("name");
 
-                    if (tempName.toLowerCase().contains(newtext.toLowerCase()) || tempName.equalsIgnoreCase(newtext))
-                        results.add(tempName);
+                        if (tempName.toLowerCase().contains(newtext.toLowerCase()) || tempName.equalsIgnoreCase(newtext))
+                            results.add(tempName);
 
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
                 }
-
             }
+        } else {
+            search.setQueryHint("No items found..");
         }
         adapter.notifyDataSetChanged();
     }
+
+    /****
+     * Function used to add an item to the MapData for use of PathDrawing
+     * @param itemToAdd The point to add in the data
+     */
+    public void addItemToMapData(WimsPoints itemToAdd){
+
+        int indexOfNeighbor = 0;
+        float distance = itemToAdd.distance(TESTMAPDATA.get(0).x, TESTMAPDATA.get(0).y);
+        float tempDist;
+
+
+
+        for(int i = 1; i < TESTMAPDATA.size(); i++){
+            tempDist = itemToAdd.distance(TESTMAPDATA.get(i).x, TESTMAPDATA.get(i).y);
+
+            if(tempDist < distance){
+                indexOfNeighbor = i;
+                distance = tempDist;
+            }
+        }
+
+        itemToAdd.Neighbours.add(TESTMAPDATA.get(indexOfNeighbor));
+        TESTMAPDATA.get(indexOfNeighbor).Neighbours.add(itemToAdd);
+        TESTMAPDATA.add(itemToAdd);
+
+
+        if (fram.getChildCount() == 1) {
+            fram.addView(posfac.getRouteBetweenTwoPoints(TESTMAPDATA.get(0), itemToAdd));
+
+        } else {
+            fram.removeViewAt(1);
+            fram.addView(posfac.getRouteBetweenTwoPoints(TESTMAPDATA.get(0),itemToAdd));
+        }
+
+        itemToAdd.Neighbours.remove(TESTMAPDATA.get(indexOfNeighbor));
+        TESTMAPDATA.get(indexOfNeighbor).Neighbours.remove(itemToAdd);
+        TESTMAPDATA.remove(itemToAdd);
+    }
+
+
+    public void drawRoute(int[] location){
+
+        WimsPoints ItemToReach = new WimsPoints(location[0],location[1]);
+
+        addItemToMapData(ItemToReach);
+    }
+
+    public boolean addPointIfNew(int x, int y){
+
+        if(!isWithin(x,y)){
+            TESTMAPDATA.add(new WimsPoints(x,y));
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isWithin(int x, int y){
+
+        boolean within = false;
+        for(int i = 0; i<TESTMAPDATA.size();i++){
+
+            if(x < TESTMAPDATA.get(i).x+5 && x > TESTMAPDATA.get(i).x -5
+                    && y < TESTMAPDATA.get(i).y+15 && y > TESTMAPDATA.get(i).y - 15){
+                within = true;
+            }
+
+        }
+
+        return within;
+    }
+
+
+    private WimsPoints getWithin(int x, int y){
+
+        for(int i = 0; i<TESTMAPDATA.size();i++){
+
+            if(x < TESTMAPDATA.get(i).x+5 && x > TESTMAPDATA.get(i).x -5
+                    && y < TESTMAPDATA.get(i).y+15 && y > TESTMAPDATA.get(i).y - 15){
+                return TESTMAPDATA.get(i);
+            }
+
+        }
+
+        return TESTMAPDATA.get(0);
+    }
+
+    public void setNeighbors(int point1x, int point1y, int point2x, int point2y){
+
+        getWithin(point1x,point1y).Neighbours.add(getWithin(point2x,point2y));
+        getWithin(point2x,point2y).Neighbours.add(getWithin(point1x,point1y));
+    }
+
 }
