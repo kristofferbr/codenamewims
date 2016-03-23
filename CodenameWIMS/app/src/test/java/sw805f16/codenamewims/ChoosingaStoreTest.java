@@ -102,12 +102,15 @@ public class ChoosingaStoreTest {
 
         //Next we want to see whether, when clicking the first item, that the title text is Føtex,
         //whether the listview turns invisible again and if the searchbar is empty
-        search.setQuery("", false);
         shadowResults.performItemClick(0);
         TextView testText = (TextView) main.findViewById(R.id.title);
         assertThat(testText.getText().toString(), is("Føtex"));
         assertThat(results.getVisibility(), is(View.INVISIBLE));
         assertThat(search.getQuery().toString(), is(""));
+
+        testText.setText("");
+        search.setQuery("Føtex", true);
+        assertThat(testText.getText().toString(), is("Føtex"));
     }
 
     @Test
@@ -173,4 +176,8 @@ public class ChoosingaStoreTest {
         assertThat(intent.getStringExtra("storeId"), is("56e6a28a28c3e3314a6849df"));
     }
 
+    @Test
+    public void change_from_start_to_shopping_list() throws Exception {
+
+    }
 }

@@ -85,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
                 //If it is not the listview is populated like with onQueryTextChange()
                 if (pickedSuggestion || stores.containsKey(query.toLowerCase())) {
                     TextView titleText = (TextView) findViewById(R.id.title);
+                    //We clear the title text to set the new title
+                    titleText.setText("");
                     titleText.setText(SearchRanking.capitaliseFirstLetters(query));
                     //The search field is emptied
                     searchView.setQuery("", false);
