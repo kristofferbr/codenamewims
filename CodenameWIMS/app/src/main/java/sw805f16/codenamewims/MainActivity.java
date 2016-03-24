@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
         while (it.hasNext()) {
             pair = (Map.Entry) it.next();
             key = (String) pair.getKey();
-            
+
             resultList.add(key);
 
         }
