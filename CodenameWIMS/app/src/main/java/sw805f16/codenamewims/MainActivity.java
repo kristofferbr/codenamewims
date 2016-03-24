@@ -134,11 +134,9 @@ public class MainActivity extends AppCompatActivity {
         while (it.hasNext()) {
             pair = (Map.Entry) it.next();
             key = (String) pair.getKey();
-            //If the key of the pair contains the query it is added to the result list
-            //We remove any potential special characters
-            if (key.contains(SearchRanking.removeSpecialCharacters(query).toLowerCase())) {
-                resultList.add(key);
-            }
+            
+            resultList.add(key);
+
         }
 
         //After the immediate matches are added to the list it is sorted by rank
