@@ -29,9 +29,11 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/startScreenButton"/>
+        android:id="@+id/startScreenButton"
+        android:visibility="invisible"/>
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/shopStoreButton"/>
+        android:id="@+id/shopStoreButton"
+        android:visibility="invisible"/>
 </FrameLayout>

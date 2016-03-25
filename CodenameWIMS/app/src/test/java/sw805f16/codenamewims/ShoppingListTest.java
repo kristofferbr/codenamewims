@@ -2,6 +2,8 @@ package sw805f16.codenamewims;
 
 import android.content.Intent;
 import android.gesture.Gesture;
+import android.inputmethodservice.Keyboard;
+import android.inputmethodservice.KeyboardView;
 import android.os.SystemClock;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -103,6 +105,7 @@ public class ShoppingListTest {
 
         try {
             dummyJson = new JSONObject(jsonString);
+            testFragment.extractInformationFromJson(dummyJson);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -139,24 +142,25 @@ public class ShoppingListTest {
         testDialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog());
         testDialog.clickOnItem(0);
         assertNull(shadowTestList.findItemContainingText("Milk"));
-
     }
 
     @Test
     public void change_from_shopping_list_to_start_screen() {
         Button testButton = (Button) testFragment.getView().findViewById(R.id.startScreenButton);
-        Intent shadowIntent = shadowOf(shoppingListActivity).peekNextStartedActivity();
 
+        testFragment.setJson(dummyJson);
         testButton.performClick();
+        Intent shadowIntent = shadowOf(shoppingListActivity).peekNextStartedActivity();
         assertThat(MainActivity.class.getCanonicalName(), is(shadowIntent.getComponent().getClassName()));
     }
 
     @Test
     public void change_from_shopping_list_to_storemap() {
         Button testButton = (Button) testFragment.getView().findViewById(R.id.shopStoreButton);
-        Intent shadowIntent = shadowOf(shoppingListActivity).peekNextStartedActivity();
 
+        testFragment.setJson(dummyJson);
         testButton.performClick();
+        Intent shadowIntent = shadowOf(shoppingListActivity).peekNextStartedActivity();
         assertThat(StoreMapActivity.class.getCanonicalName(), is(shadowIntent.getComponent().getClassName()));
     }
 
@@ -166,6 +170,17 @@ public class ShoppingListTest {
         suggestionList.populateItems();
         suggestionList.performItemClick(0);
         shadowTestList.populateItems();
+
+        try {
+            String newJsonString = "{\n" +
+                    "  \"_id\": \"56e6a28a28c3e3314a6849e0\",\n" +
+                    "  \"products\": []\n" +
+                    "}";
+            JSONObject newJson = new JSONObject(newJsonString);
+            testFragment.extractInformationFromJson(newJson);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         testFragment.setStoreId("56e6a28a28c3e3314a6849e0");
 

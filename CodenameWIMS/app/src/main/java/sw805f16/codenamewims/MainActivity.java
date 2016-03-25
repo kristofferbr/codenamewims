@@ -158,7 +158,6 @@ public class MainActivity extends AppCompatActivity {
     /**
      * A method that extracts information from a json array and puts it in a hashmap
      * @param jsonArray The json array from the server
-     * @throws JSONException Every JSONObject and JSONArray method throws this, therefore This throws it as well
      */
     public void extractInformationFromJson(JSONArray jsonArray) {
         try {
