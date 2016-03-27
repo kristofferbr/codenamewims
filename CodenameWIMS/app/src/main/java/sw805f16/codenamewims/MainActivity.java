@@ -49,10 +49,9 @@ public class MainActivity extends AppCompatActivity {
 
         //We make a request to the server and receives the list of stores
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://nielsema.ddns.net/sw8/api/store";
+        String url = "http://nielsema.ddns.net/sw8/api/store/";
 
         request(queue, url);
-        //extractInformationFromJson(json);
 
 
         searchView = (SearchView) findViewById(R.id.search);
@@ -108,11 +107,20 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Button storemapButton = (Button) findViewById(R.id.storemapbutton);
+        Button shoppingListButton = (Button) findViewById(R.id.shoppingListButton);
 
         storemapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), StoreMapActivity.class);
+                intent.putExtra("storeId", storeId);
+                startActivity(intent);
+            }
+        });
+        shoppingListButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), ShoppingListActivity.class);
                 intent.putExtra("storeId", storeId);
                 startActivity(intent);
             }
@@ -191,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
         JsonArrayRequest jsonRequest = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                json = response;
+                extractInformationFromJson(response);
             }
         }, new Response.ErrorListener() {
             @Override

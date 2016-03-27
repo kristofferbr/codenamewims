@@ -5,8 +5,8 @@
     tools:context="sw805f16.codenamewims.ShoppingListFragment">
 
     <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
         <SearchView
             android:layout_width="500px"
             android:layout_height="wrap_content"
@@ -30,10 +30,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/startScreenButton"
-        android:visibility="invisible"/>
+        android:visibility="gone"/>
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/shopStoreButton"
-        android:visibility="invisible"/>
+        android:visibility="gone"/>
 </FrameLayout>

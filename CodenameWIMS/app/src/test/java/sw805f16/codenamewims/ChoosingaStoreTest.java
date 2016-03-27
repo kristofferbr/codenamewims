@@ -178,6 +178,17 @@ public class ChoosingaStoreTest {
 
     @Test
     public void change_from_start_to_shopping_list() throws Exception {
+        main.extractInformationFromJson(dummyJson);
+        Button testButton = (Button) main.findViewById(R.id.shoppingListButton);
 
+        //We search for føtex and submit the search
+        search.setQuery("føtex", true);
+        //We click the button and assert whether it starts the right activity
+        testButton.performClick();
+        //We peek at the next activity that starts from main
+        Intent intent = shadowOf(main).peekNextStartedActivity();
+        assertThat(ShoppingListActivity.class.getCanonicalName(), is(intent.getComponent().getClassName()));
+        //We also check whether the extra with the store id is the right id
+        assertThat(intent.getStringExtra("storeId"), is("56e6a28a28c3e3314a6849df"));
     }
 }

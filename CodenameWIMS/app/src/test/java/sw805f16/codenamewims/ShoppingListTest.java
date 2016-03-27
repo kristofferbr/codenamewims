@@ -8,6 +8,7 @@ import android.os.SystemClock;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -125,23 +126,12 @@ public class ShoppingListTest {
         suggestionList.performItemClick(0);
         shadowTestList.populateItems();
 
-        TextView actual = (TextView) testList.getItemAtPosition(0);
+        LinearLayout tmpLayout = (LinearLayout) testList.getItemAtPosition(0);
+        TextView actual = (TextView) tmpLayout.getChildAt(0);
         assertThat(actual.getText().toString(), is("Milk"));
 
         // And then I want to be able to delete items from my list.
-        swipeItem(shadowTestList);
 
-        ShadowAlertDialog testDialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog());
-        assertNotNull(testDialog);
-
-        testDialog.clickOnItem(1);
-        assertNotNull(shadowTestList.findItemContainingText("Milk"));
-
-        swipeItem(shadowTestList);
-
-        testDialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog());
-        testDialog.clickOnItem(0);
-        assertNull(shadowTestList.findItemContainingText("Milk"));
     }
 
     @Test
@@ -184,18 +174,8 @@ public class ShoppingListTest {
 
         testFragment.setStoreId("56e6a28a28c3e3314a6849e0");
 
-        TextView actual = (TextView) testList.getItemAtPosition(0);
+        LinearLayout actual = (LinearLayout) testList.getItemAtPosition(0);
         assertThat(actual.getBackground(), is(shoppingListActivity.getResources().getDrawable(R.drawable.grayout)));
-    }
-
-
-    private void swipeItem(ShadowListView shadowList) {
-        MotionEvent testEvent = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 500, 200, 0);
-        shadowList.onTouchEvent(testEvent);
-//        testEvent = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_MOVE, 400, 200, 0);
-//        shadowTestList.onTouchEvent(testEvent);
-        testEvent = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 300, 200, 0);
-        shadowList.onTouchEvent(testEvent);
     }
 
 }
