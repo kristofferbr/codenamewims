@@ -50,14 +50,17 @@ public class ShoppingListTest {
     @Before
     public void setup() {
 
+        //We set up the activity and the fragment
         shoppingListActivity = Robolectric.setupActivity(ShoppingListActivity.class);
         testFragment = (ShoppingListFragment) shoppingListActivity.getFragmentManager().findFragmentByTag("shoppingFragment");
 
+        //We then pull all the necessary views
         search = (SearchView) testFragment.getView().findViewById(R.id.shopSearch);
         suggestionList = (ShadowListView) shadowOf(testFragment.getView().findViewById(R.id.suggestions));
         testList = (ListView) testFragment.getView().findViewById(R.id.itemList);
         shadowTestList = (ShadowListView) shadowOf(testFragment.getView().findViewById(R.id.itemList));
 
+        //This is the test json object from the server
         String jsonString = "{\n" +
                 "  \"_id\": \"56e6a28a28c3e3314a6849df\",\n" +
                 "  \"products\": [\n" +
@@ -106,6 +109,7 @@ public class ShoppingListTest {
 
         try {
             dummyJson = new JSONObject(jsonString);
+            //We extract the information from the JSONObject to fill the products HashMap
             testFragment.extractInformationFromJson(dummyJson);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -121,26 +125,32 @@ public class ShoppingListTest {
 
         // Then I want to be able to add items to my list
 
+        //We set the query, pick the first item, and populate the item list
         search.setQuery("Milk", true);
         suggestionList.populateItems();
         suggestionList.performItemClick(0);
         shadowTestList.populateItems();
 
+        //We assert whether the first item in the list is "Milk"
         LinearLayout tmpLayout = (LinearLayout) testList.getItemAtPosition(0);
         TextView actual = (TextView) tmpLayout.getChildAt(0);
         assertThat(actual.getText().toString(), is("Milk"));
 
         // And then I want to be able to delete items from my list.
 
+        //Because the delete method is a fling gesture it is difficult to test, therefor we test that on the phone
     }
 
     @Test
     public void change_from_shopping_list_to_start_screen() {
         Button testButton = (Button) testFragment.getView().findViewById(R.id.startScreenButton);
 
+        //We have to set the JSONObject, because this is done in the request method, which we do not call in this test
+        //If the JSONObject was not set it would return a null pointer
         testFragment.setJson(dummyJson);
         testButton.performClick();
         Intent shadowIntent = shadowOf(shoppingListActivity).peekNextStartedActivity();
+        //We assert that the MainActivity is started
         assertThat(MainActivity.class.getCanonicalName(), is(shadowIntent.getComponent().getClassName()));
     }
 
@@ -156,12 +166,14 @@ public class ShoppingListTest {
 
     @Test
     public void items_change_color() {
+        //We place the item "Milk" in the item list
         search.setQuery("Milk", true);
         suggestionList.populateItems();
         suggestionList.performItemClick(0);
         shadowTestList.populateItems();
 
         try {
+            //Here we have taken a new JSONObject, where there are no products
             String newJsonString = "{\n" +
                     "  \"_id\": \"56e6a28a28c3e3314a6849e0\",\n" +
                     "  \"products\": []\n" +
@@ -172,9 +184,11 @@ public class ShoppingListTest {
             e.printStackTrace();
         }
 
+        //Then we set the store id to the new id
         testFragment.setStoreId("56e6a28a28c3e3314a6849e0");
 
         LinearLayout actual = (LinearLayout) testList.getItemAtPosition(0);
+        //Lastly we assert whether the background of the items have been grayed out
         assertThat(actual.getBackground(), is(shoppingListActivity.getResources().getDrawable(R.drawable.grayout)));
     }
 
