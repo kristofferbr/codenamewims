@@ -41,11 +41,16 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter adapter;
     String storeId;
     boolean pickedSuggestion = false;
+    Bundle fragmentState = new Bundle();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (getIntent().getBundleExtra("state") != null) {
+            fragmentState = getIntent().getBundleExtra("state");
+        }
 
         //We make a request to the server and receives the list of stores
         RequestQueue queue = Volley.newRequestQueue(this);
@@ -113,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), StoreMapActivity.class);
+                intent.putExtra("state", fragmentState);
                 intent.putExtra("storeId", storeId);
                 startActivity(intent);
             }
@@ -121,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), ShoppingListActivity.class);
+                intent.putExtra("state", fragmentState);
                 intent.putExtra("storeId", storeId);
                 startActivity(intent);
             }
