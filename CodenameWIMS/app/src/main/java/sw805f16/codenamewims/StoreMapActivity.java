@@ -1,5 +1,8 @@
 package sw805f16.codenamewims;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.graphics.Bitmap;
 
 import android.support.v7.app.AppCompatActivity;
@@ -71,18 +74,34 @@ public class StoreMapActivity extends AppCompatActivity {
     int endY =0;
     boolean start = true;
 
+    ShoppingListFragment fragment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_store_map);
+
+
+        this.store_id = getIntent().getStringExtra("storeId");
+        fragment = ShoppingListFragment.newInstance(store_id);
+
+        FragmentManager manager = getFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        if (getIntent().getParcelableExtra("state") != null) {
+            Fragment.SavedState state = getIntent().getParcelableExtra("state");
+            fragment.setInitialSavedState(state);
+        }
+        transaction.add(R.id.storeShoppingList, fragment, "shoppingFragment");
+        transaction.commit();
+
         // Set variables for gestures
         Scale = new ScaleGestureDetector(this,new ScaleDetector());
         // Instantiate the Volley request queue
         rqueue = Volley.newRequestQueue(this);
 
         // Adapter used for searching
-         adapter = new ArrayAdapter<>(getApplicationContext(),
+        adapter = new ArrayAdapter<>(getApplicationContext(),
                                       R.layout.simple_list_view,
                                       results);
 

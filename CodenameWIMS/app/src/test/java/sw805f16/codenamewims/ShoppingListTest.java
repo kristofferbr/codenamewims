@@ -1,12 +1,6 @@
 package sw805f16.codenamewims;
 
 import android.content.Intent;
-import android.gesture.Gesture;
-import android.inputmethodservice.Keyboard;
-import android.inputmethodservice.KeyboardView;
-import android.os.SystemClock;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -21,10 +15,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowAlertDialog;
-import org.robolectric.shadows.ShadowGestureDetector;
 import org.robolectric.shadows.ShadowListView;
-import org.robolectric.shadows.ShadowMotionEvent;
 import static org.robolectric.Shadows.*;
 
 import static org.junit.Assert.*;
@@ -61,51 +52,7 @@ public class ShoppingListTest {
         shadowTestList = (ShadowListView) shadowOf(testFragment.getView().findViewById(R.id.itemList));
 
         //This is the test json object from the server
-        String jsonString = "{\n" +
-                "  \"_id\": \"56e6a28a28c3e3314a6849df\",\n" +
-                "  \"products\": [\n" +
-                "    {\n" +
-                "      \"_id\": \"56e6a9f028c3e3314a6849ea\",\n" +
-                "      \"product\": {\n" +
-                "        \"_id\": \"56e6a29528c3e3314a6849e2\",\n" +
-                "        \"name\": \"Milk\",\n" +
-                "        \"description\": \"Put it on cereal, drink it, or take a bath. Do whatever you want with it, you baught it!\"\n" +
-                "      },\n" +
-                "      \"__v\": 0,\n" +
-                "      \"location\": {\n" +
-                "        \"x\": 250,\n" +
-                "        \"y\": 18\n" +
-                "      }\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"_id\": \"56e6aa1b28c3e3314a6849eb\",\n" +
-                "      \"product\": {\n" +
-                "        \"_id\": \"56e6a29528c3e3314a6849e1\",\n" +
-                "        \"name\": \"Minced Beef\",\n" +
-                "        \"description\": \"Slaughtered cow cut into tiny pieces\"\n" +
-                "      },\n" +
-                "      \"__v\": 0,\n" +
-                "      \"location\": {\n" +
-                "        \"x\": 125,\n" +
-                "        \"y\": 90\n" +
-                "      }\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"_id\": \"56efb5d1aa6ece882b08b437\",\n" +
-                "      \"product\": {\n" +
-                "        \"_id\": \"56efb40344a68c0606122a3c\",\n" +
-                "        \"name\": \"Ost\",\n" +
-                "        \"description\": \"Det lugter\",\n" +
-                "        \"__v\": 0\n" +
-                "      },\n" +
-                "      \"__v\": 0,\n" +
-                "      \"location\": {\n" +
-                "        \"x\": 400,\n" +
-                "        \"y\": 300\n" +
-                "      }\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
+        String jsonString = shoppingListActivity.getResources().getString(R.string.shop_json);
 
         try {
             dummyJson = new JSONObject(jsonString);
@@ -145,9 +92,6 @@ public class ShoppingListTest {
     public void change_from_shopping_list_to_start_screen() {
         Button testButton = (Button) testFragment.getView().findViewById(R.id.startScreenButton);
 
-        //We have to set the JSONObject, because this is done in the request method, which we do not call in this test
-        //If the JSONObject was not set it would return a null pointer
-        testFragment.setJson(dummyJson);
         testButton.performClick();
         Intent shadowIntent = shadowOf(shoppingListActivity).peekNextStartedActivity();
         //We assert that the MainActivity is started
@@ -158,7 +102,6 @@ public class ShoppingListTest {
     public void change_from_shopping_list_to_storemap() {
         Button testButton = (Button) testFragment.getView().findViewById(R.id.shopStoreButton);
 
-        testFragment.setJson(dummyJson);
         testButton.performClick();
         Intent shadowIntent = shadowOf(shoppingListActivity).peekNextStartedActivity();
         assertThat(StoreMapActivity.class.getCanonicalName(), is(shadowIntent.getComponent().getClassName()));

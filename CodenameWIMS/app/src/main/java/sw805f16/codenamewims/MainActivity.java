@@ -1,6 +1,9 @@
 package sw805f16.codenamewims;
 
+import android.app.Fragment;
 import android.content.Intent;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -41,15 +44,15 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter adapter;
     String storeId;
     boolean pickedSuggestion = false;
-    Bundle fragmentState = new Bundle();
+    Parcelable fragmentState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (getIntent().getBundleExtra("state") != null) {
-            fragmentState = getIntent().getBundleExtra("state");
+        if (getIntent().getParcelableExtra("state") != null) {
+            fragmentState = getIntent().getParcelableExtra("state");
         }
 
         //We make a request to the server and receives the list of stores
@@ -118,7 +121,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), StoreMapActivity.class);
-                intent.putExtra("state", fragmentState);
+                if (fragmentState != null) {
+                    intent.putExtra("state", fragmentState);
+                }
                 intent.putExtra("storeId", storeId);
                 startActivity(intent);
             }
@@ -127,7 +132,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), ShoppingListActivity.class);
-                intent.putExtra("state", fragmentState);
+                if (fragmentState != null) {
+                    intent.putExtra("state", fragmentState);
+                }
                 intent.putExtra("storeId", storeId);
                 startActivity(intent);
             }

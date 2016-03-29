@@ -6,4 +6,70 @@
     <string name="alert_message">Are you sure you want to delete this item?</string>
     <string name="alert_pos_button">Yes</string>
     <string name="alert_neg_button">No</string>
+
+
+    <string name="store_json">[
+        {\"_id\": \"56e6a28a28c3e3314a6849df\",
+        \"name\": \"Føtex\",
+        \"description\": \"Føtex er sej vi gør mere for dig\",
+        \"map\": \"56e6a32e28c3e3314a6849e3\",
+        \"__v\": 1,
+        \"products\": [
+        \"56e6a9f028c3e3314a6849ea\",
+        \"56e6aa1b28c3e3314a6849eb\"
+        ]},
+        {
+        \"_id\": \"56e6a28a28c3e3314a6849e0\",
+        \"name\": \"Netto\",
+        \"description\": \"Netto – Derfor\",
+        \"products\": []
+        }]</string>
+    
+    <string name="shop_json">
+       { 
+                 \"_id\": \"56e6a28a28c3e3314a6849df\", 
+                 \"products\": [ 
+                   { 
+                     \"_id\": \"56e6a9f028c3e3314a6849ea\", 
+                     \"product\": { 
+                       \"_id\": \"56e6a29528c3e3314a6849e2\", 
+                       \"name\": \"Milk\", 
+                       \"description\": \"Put it on cereal, drink it, or take a bath. Do whatever you want with it, you baught it!\" 
+                     }, 
+                     \"__v\": 0, 
+                     \"location\": { 
+                       \"x\": 250, 
+                       \"y\": 18 
+                     } 
+                   }, 
+                   { 
+                     \"_id\": \"56e6aa1b28c3e3314a6849eb\", 
+                     \"product\": { 
+                       \"_id\": \"56e6a29528c3e3314a6849e1\", 
+                       \"name\": \"Minced Beef\", 
+                       \"description\": \"Slaughtered cow cut into tiny pieces\" 
+                     }, 
+                     \"__v\": 0, 
+                     \"location\": { 
+                       \"x\": 125, 
+                       \"y\": 90 
+                     } 
+                   }, 
+                   { 
+                     \"_id\": \"56efb5d1aa6ece882b08b437\", 
+                     \"product\": { 
+                       \"_id\": \"56efb40344a68c0606122a3c\", 
+                       \"name\": \"Ost\", 
+                       \"description\": \"Det lugter\", 
+                       \"__v\": 0 
+                     }, 
+                     \"__v\": 0, 
+                     \"location\": { 
+                       \"x\": 400, 
+                       \"y\": 300 
+                     } 
+                   } 
+                 ] 
+               }
+    </string>
 </resources>

@@ -51,12 +51,10 @@ import java.util.Map;
  */
 public class ShoppingListFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "state";
     private static final String ARG_PARAM2 = "storeId";
 
     private String storeId = "";
-    private HashMap<String, Integer[]> products = new HashMap<>();
-    private JSONObject json;
+    private HashMap<String, WimsPoints> products = new HashMap<>();
 
     //These variables are for the suggestion list in the searchview
     private ArrayAdapter suggestionAdapter;
@@ -88,14 +86,12 @@ public class ShoppingListFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param state The state of the fragment from another activity.
+     * @param id The id of the store.
      * @return A new instance of fragment ShoppingListFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static ShoppingListFragment newInstance(Bundle state, String id) {
+    public static ShoppingListFragment newInstance(String id) {
         ShoppingListFragment fragment = new ShoppingListFragment();
         Bundle args = new Bundle();
-        args.putBundle(ARG_PARAM1, state);
         args.putString(ARG_PARAM2, id);
         fragment.setArguments(args);
         return fragment;
@@ -104,21 +100,10 @@ public class ShoppingListFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //If this instance is from a saved instance we call the onCreateView manually and pass the argument to it
-        if (getArguments().getBundle(ARG_PARAM1) != null) {
-            LayoutInflater inflater = LayoutInflater.from(getActivity().getApplicationContext());
-            ViewGroup layout = null;
-            //The ViewGroup varies depending on the activity the fragment is embedded in
-            if (getActivity() instanceof StoreMapActivity) {
-                // TODO: Rename to the drawer layout
-                layout = (RelativeLayout) getActivity().findViewById(R.id.storeParent);
-            } else if (getActivity() instanceof ShoppingListActivity) {
-                layout = (RelativeLayout) getActivity().findViewById(R.id.shoppingParent);
-            }
-            this.onCreateView(inflater, layout, getArguments().getBundle(ARG_PARAM1));
-        }
 
-        storeId = getArguments().getString(ARG_PARAM2);
+        if (getArguments() != null) {
+            storeId = getArguments().getString(ARG_PARAM2);
+        }
         //We then initialize a GestureDetector
         detector = new GestureDetectorCompat(getActivity().getApplicationContext(), new GestureListener());
     }
@@ -139,54 +124,53 @@ public class ShoppingListFragment extends Fragment {
 
         suggestionList = new ArrayList<>();
         suggestionListView = (ListView) mView.findViewById(R.id.suggestions);
+        suggestionAdapter = new ArrayAdapter(getActivity().getApplicationContext(),
+                R.layout.simple_list_view,
+                suggestionList);
+        suggestionListView.setAdapter(suggestionAdapter);
 
         itemList = new ArrayList<>();
         itemListView = (ListView) mView.findViewById(R.id.itemList);
+        itemAdapter = new ArrayAdapter(getActivity().getApplicationContext(),
+                R.layout.simple_list_view,
+                itemList);
+        itemListView.setAdapter(itemAdapter);
 
         searchView = (SearchView) mView.findViewById(R.id.shopSearch);
 
         //If this method was called with the arguments from before we re-assign the views
         if (savedInstanceState != null) {
-            storeId = savedInstanceState.getString("storeId");
-            startScreenButton.onRestoreInstanceState(savedInstanceState.getParcelable("startScreenButton"));
-            storeMapButton.onRestoreInstanceState(savedInstanceState.getParcelable("storeMapButton"));
-            suggestionListView.onRestoreInstanceState(savedInstanceState.getParcelable("suggestionListView"));
-            itemListView.onRestoreInstanceState(savedInstanceState.getParcelable("itemListView"));
-            try {
-                json = new JSONObject(savedInstanceState.getString("json"));
-                //We extract the information from the JSONObject again
-                extractInformationFromJson(json);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            setStoreId(savedInstanceState.getString("storeId"));
+
             //We have saved the marked items and which mark they had in two arrays
-            int[] tmpInt = savedInstanceState.getIntArray("markedPositions");
-            boolean[] tmpBoolean = savedInstanceState.getBooleanArray("marks");
+            int[] markedPositions = savedInstanceState.getIntArray("markedPositions");
+            boolean[] marks = savedInstanceState.getBooleanArray("marks");
             //Then we fill the markedItems HashMap with the arrays
-            for (int i = 0; i < tmpInt.length; i++) {
+            for (int i = 0; i < markedPositions.length; i++) {
                 markedItems.clear();
-                markedItems.put(tmpInt[i], tmpBoolean[i]);
+                markedItems.put(markedPositions[i], marks[i]);
             }
-            ArrayList<Parcelable> tmpList = savedInstanceState.getParcelableArrayList("itemList");
-            TextView tmpText = new TextView(getActivity().getApplicationContext());
+            ArrayList<String> stringItemList = savedInstanceState.getStringArrayList("itemList");
+            TextView savedTextView = new TextView(getActivity().getApplicationContext());
             int i = 0;
             //Here we pull the the list of items and refill the item list
-            for (Parcelable view : tmpList) {
+            for (String text : stringItemList) {
                 itemList.clear();
-                //We restore the text views
-                tmpText.onRestoreInstanceState(view);
+                savedTextView.setText(text);
 
                 //Here we inflate a LinearLayout with a custom layout
-                LinearLayout tmpLayout = (LinearLayout) LinearLayout.inflate(getActivity().getApplicationContext(), R.layout.item_layout, new LinearLayout(getActivity().getApplicationContext()));
-                tmpLayout.addView(tmpText, 0);
-                //Then we check whether the item has been marked, and if it is we place a check mark beside it
-                if (markedItems.get(i)) {
-                    ImageView tmpImage = (ImageView) tmpLayout.getChildAt(1);
-                    tmpImage.setImageDrawable(getResources().getDrawable(R.drawable.checkmark));
-                    //If it was marked as "skipped" we place a red X next to it
-                } else if (!markedItems.get(i)) {
-                    ImageView tmpImage = (ImageView) tmpLayout.getChildAt(1);
-                    tmpImage.setImageDrawable(getResources().getDrawable(R.drawable.skip));
+                LinearLayout tmpLayout = (LinearLayout) LinearLayout.inflate(getActivity().getApplicationContext(), R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
+                tmpLayout.addView(savedTextView, 0);
+                if (markedItems.get(i) != null) {
+                    //Then we check whether the item has been marked, and if it is we place a check mark beside it
+                    if (markedItems.get(i)) {
+                        ImageView tmpImage = (ImageView) tmpLayout.getChildAt(1);
+                        tmpImage.setImageDrawable(getResources().getDrawable(R.drawable.checkmark));
+                        //If it was marked as "skipped" we place a red X next to it
+                    } else if (!markedItems.get(i)) {
+                        ImageView tmpImage = (ImageView) tmpLayout.getChildAt(1);
+                        tmpImage.setImageDrawable(getResources().getDrawable(R.drawable.skip));
+                    }
                 }
 
                 //Then we add the newly made layout to the item list
@@ -194,6 +178,12 @@ public class ShoppingListFragment extends Fragment {
                 i++;
             }
 
+            ArrayList<String> productNames = savedInstanceState.getStringArrayList("products");
+            ArrayList<WimsPoints> productPoints = savedInstanceState.getParcelableArrayList("locations");
+            products.clear();
+            for (int n = 0; n < productNames.size(); n++) {
+                products.put(productNames.get(i), productPoints.get(i));
+            }
             //If the method was not called with a saved instance we set all the listeners
         } else {
             //The buttons are for transitioning to the MainActivity and StoreMapActivity, respectively
@@ -223,7 +213,7 @@ public class ShoppingListFragment extends Fragment {
                     TextView tmpText = suggestionList.get(position);
                     tmpText.setWidth(R.dimen.list_item_width);
                     tmpText.setHeight(R.dimen.list_item_height);
-                    LinearLayout tmpLayout = (LinearLayout) LinearLayout.inflate(getActivity().getApplicationContext(), R.layout.item_layout, new LinearLayout(getActivity().getApplicationContext()));
+                    LinearLayout tmpLayout = (LinearLayout) LinearLayout.inflate(getActivity().getApplicationContext(), R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
                     tmpLayout.addView(tmpText, 0);
 
                     //Then we add the layout to the item list, notify the adapter and remove the suggestion list
@@ -239,7 +229,7 @@ public class ShoppingListFragment extends Fragment {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     if (getActivity() instanceof StoreMapActivity) {
                         //If the item is already marked we unmark it by removing the check mark
-                        if (markedItems.get(position)) {
+                        if (markedItems.get(position) != null && markedItems.get(position)) {
                             ImageView tmpImage = (ImageView) itemList.get(position).getChildAt(1);
                             tmpImage.setImageDrawable(null);
 
@@ -264,7 +254,7 @@ public class ShoppingListFragment extends Fragment {
                 public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                     if (getActivity() instanceof StoreMapActivity) {
                         //If the item has already been skipped we remove the X
-                        if (!markedItems.get(position)) {
+                        if (markedItems.get(position) != null && !markedItems.get(position)) {
                             ImageView tmpImage = (ImageView) itemList.get(position).getChildAt(1);
                             tmpImage.setImageDrawable(null);
 
@@ -314,16 +304,6 @@ public class ShoppingListFragment extends Fragment {
             }
         });
 
-        itemAdapter = new ArrayAdapter(getActivity().getApplicationContext(),
-                R.layout.simple_list_view,
-                itemList);
-        itemListView.setAdapter(itemAdapter);
-
-        suggestionAdapter = new ArrayAdapter(getActivity().getApplicationContext(),
-                R.layout.simple_list_view,
-                suggestionList);
-        suggestionListView.setAdapter(suggestionAdapter);
-
         //Then we return the view
         return mView;
     }
@@ -340,7 +320,7 @@ public class ShoppingListFragment extends Fragment {
     }
 
     /**
-     * A mthod for setting the store id. If it is different from the id already defined
+     * A method for setting the store id. If it is different from the id already defined
      * it checks whether the items in the list is the new store, if not they are grayed out
      * @param id The newe store id
      */
@@ -418,16 +398,18 @@ public class ShoppingListFragment extends Fragment {
             //Because this method is only called when we have a new JSON object we clear products
             products.clear();
             String key = "";
-            Integer[] location = new Integer[2];
+            WimsPoints wimsPoints;
+            int locX, locY;
 
             tmpArray = jsonObject.getJSONArray("products");
             for (int i = 0; i < tmpArray.length(); i++) {
                 //We pull the product name and the location from the JSONObject
                 key = tmpArray.getJSONObject(i).getJSONObject("product").getString("name");
-                location[0] = tmpArray.getJSONObject(i).getJSONObject("location").getInt("x");
-                location[1] = tmpArray.getJSONObject(i).getJSONObject("location").getInt("y");
+                locX = tmpArray.getJSONObject(i).getJSONObject("location").getInt("x");
+                locY = tmpArray.getJSONObject(i).getJSONObject("location").getInt("y");
+                wimsPoints = new WimsPoints(locX, locY);
 
-                products.put(key, location);
+                products.put(key, wimsPoints);
             }
 
         } catch (JSONException e) {
@@ -459,31 +441,26 @@ public class ShoppingListFragment extends Fragment {
         req.add(jsonRequest);
     }
 
-    /**
-     * A mthod for saving the state. As opposed to {@link Fragment#onSaveInstanceState(Bundle)} we return the
-     * bundle and we call it manually
-     * @return The bundle containing the state of this fragment
-     */
-    public Bundle saveState() {
-        //We create a new bundle to contain the state
-        Bundle outState = new Bundle();
+    public String getStoreId() {
+        return storeId;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
         outState.putString("storeId", storeId);
-        //Because most of the views implement onSaveInstanceState, which return a Parcelable, we use it
-        //to store the view states
-        outState.putParcelable("startScreenButton", startScreenButton.onSaveInstanceState());
-        outState.putParcelable("storeMapButton", storeMapButton.onSaveInstanceState());
-        outState.putParcelable("suggestionListView", suggestionListView.onSaveInstanceState());
-        outState.putParcelable("itemListView", itemListView.onSaveInstanceState());
-        //Instead of pulling the individual products in to separate lists we save the JSONObject
-        outState.putString("json", json.toString());
-        ArrayList<Parcelable> tmpList = new ArrayList<>();
-        TextView tmpText;
+
+        ArrayList<String> stringItemList = new ArrayList<>();
+        TextView textView;
+        String text;
         //We save the text in the item list by calling onSaveInstanceState on the TextViews
         for (int i = 0; i < itemList.size(); i++) {
-            tmpText = (TextView) itemList.get(i).getChildAt(0);
-            tmpList.add(tmpText.onSaveInstanceState());
+            textView = (TextView) itemList.get(i).getChildAt(0);
+            text = textView.getText().toString();
+            stringItemList.add(text);
         }
-        outState.putParcelableArrayList("itemList", tmpList);
+        outState.putStringArrayList("itemList", stringItemList);
         int[] markedPositions = new int[0];
         boolean[] marks = new boolean[0];
         Iterator it = markedItems.entrySet().iterator();
@@ -497,14 +474,16 @@ public class ShoppingListFragment extends Fragment {
         }
         outState.putIntArray("markedPositions", markedPositions);
         outState.putBooleanArray("marks", marks);
-
-        //We then return this bundle
-        return outState;
-    }
-
-    // TODO: Remove this method
-    public void setJson(JSONObject tmpJsonObject) {
-        json = tmpJsonObject;
+        ArrayList<Parcelable> parcelablePoints = new ArrayList<>();
+        ArrayList<String> productKeys = new ArrayList<>();
+        it = products.entrySet().iterator();
+        while (it.hasNext()) {
+            pair = (Map.Entry) it.next();
+            productKeys.add((String) pair.getKey());
+            parcelablePoints.add((WimsPoints) pair.getValue());
+        }
+        outState.putParcelableArrayList("locations", parcelablePoints);
+        outState.putStringArrayList("products", productKeys);
     }
 
     //Here we make a custom gesture detector for the fling event
