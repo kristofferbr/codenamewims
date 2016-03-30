@@ -352,6 +352,9 @@ public class StoreMapActivity extends AppCompatActivity {
         rqueue.add(jsObjRequest);
     }
 
+
+
+
     /****
      * Function for setting up product along with its coordiantes
      * @param product JSONObject of the product
