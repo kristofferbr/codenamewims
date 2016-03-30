@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import android.view.DragEvent;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
@@ -120,10 +120,10 @@ public class StoreMapActivity extends AppCompatActivity {
                         spotY = (int) (750 / (float) h * y);
                         if (fram.getChildCount() == 1) {
                             fram.addView(posfac.getPostitionOverlay(spotX, spotY));
-                            addPointIfNew(spotX, spotY);
+                            addPointIfNew(spotX, spotY,TESTMAPDATA);
 
                         } else {
-                            if (addPointIfNew(spotX, spotY)) {
+                            if (addPointIfNew(spotX, spotY, TESTMAPDATA)) {
                                 ImageView temp = (ImageView) fram.getChildAt(1);
                                 fram.removeViewAt(1);
                                 fram.addView(posfac.getBitMapReDrawnSpot(temp, spotX, spotY));
@@ -146,7 +146,7 @@ public class StoreMapActivity extends AppCompatActivity {
                             startX = (int) (500 / (float) w * x);
                             starty = (int) (750 / (float) h * y);
 
-                            if(isWithin(startX, starty)) {
+                            if(isWithin(startX, starty,TESTMAPDATA)) {
                                 start = !start;
                             }
                         } else {
@@ -160,13 +160,15 @@ public class StoreMapActivity extends AppCompatActivity {
                             endY = (int) (750 / (float) h * y);
 
 
-                            if (isWithin(endX, endY)) {
+                            if (isWithin(endX, endY,TESTMAPDATA)) {
+                                WimsPoints startpoint = getWithin(startX,starty,TESTMAPDATA);
+                                WimsPoints endpoint = getWithin(endX,endY,TESTMAPDATA);
 
                                 ImageView temp = (ImageView) fram.getChildAt(1);
                                 fram.removeViewAt(1);
-                                fram.addView(posfac.getBitMapReDrawnLine(temp, startX, starty, endX, endY));
+                                fram.addView(posfac.getBitMapReDrawnLine(temp,(int) startpoint.x, (int) startpoint.y, (int)endpoint.x, (int) endpoint.y));
                                 start = !start;
-                                setNeighbors(startX,starty,endX,endY);
+                                setNeighbors(startX,starty,endX,endY,TESTMAPDATA);
                             }
 
                         }
@@ -201,6 +203,17 @@ public class StoreMapActivity extends AppCompatActivity {
         EditButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                JSONArray res = constructJson(mapdata.Data);
+                Log.w("WIMS",res.toString());
+                JSONArray withneighbor = constructJSONaddNeighbors(res,mapdata.Data);
+                Log.w("WIMS",withneighbor.toString());
+
+                ArrayList<WimsPoints> mapdata = deConstructJSON(withneighbor);
+
+
+                Log.w("WIMS",mapdata.toString()
+                );
 
                 if(!createMapDataModePoints && !createMapDataModeNeighbors)
                 {
@@ -525,7 +538,7 @@ public class StoreMapActivity extends AppCompatActivity {
      * Function used to add an item to the MapData for use of PathDrawing
      * @param itemToAdd The point to add in the data
      */
-    public void addItemToMapData(WimsPoints itemToAdd){
+    public void addItemToMapDataAndDrawRoute(WimsPoints itemToAdd){
 
         int indexOfNeighbor = 0;
         float distance = itemToAdd.distance(TESTMAPDATA.get(0).x, TESTMAPDATA.get(0).y);
@@ -552,7 +565,7 @@ public class StoreMapActivity extends AppCompatActivity {
 
         } else {
             fram.removeViewAt(1);
-            fram.addView(posfac.getRouteBetweenTwoPoints(TESTMAPDATA.get(0),itemToAdd));
+            fram.addView(posfac.getRouteBetweenTwoPoints(TESTMAPDATA.get(0), itemToAdd));
         }
 
         itemToAdd.Neighbours.remove(TESTMAPDATA.get(indexOfNeighbor));
@@ -561,30 +574,50 @@ public class StoreMapActivity extends AppCompatActivity {
     }
 
 
+    /***
+     * The main function used when drawing a route
+     * As of now the route is drawn from the entrance of the store
+     * i.e. the first point in the dataset
+     * @param location int[0] = x, int[1] ) y
+     */
     public void drawRoute(int[] location){
 
         WimsPoints ItemToReach = new WimsPoints(location[0],location[1]);
 
-        addItemToMapData(ItemToReach);
+        addItemToMapDataAndDrawRoute(ItemToReach);
     }
 
-    public boolean addPointIfNew(int x, int y){
+    /****
+     * Function used when drawing the map data. This function adds the new point to the mapdata
+     * @param x X coordinate of the point
+     * @param y Y coordinate of the point
+     * @param pointarray The array to add the point to
+     * @return
+     */
+    public boolean addPointIfNew(int x, int y, ArrayList<WimsPoints> pointarray){
 
-        if(!isWithin(x,y)){
-            TESTMAPDATA.add(new WimsPoints(x,y));
+        if(!isWithin(x,y,pointarray)){
+            TESTMAPDATA.add(new WimsPoints(x, y));
             return true;
         }
 
         return false;
     }
 
-    private boolean isWithin(int x, int y){
+    /****
+     * Function that checks whether or not two coordinates belong to a point already
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param pointArray The arrary of points to check against
+     * @return true if point is within, false if not.
+     */
+    private boolean isWithin(int x, int y,ArrayList<WimsPoints> pointArray){
 
         boolean within = false;
-        for(int i = 0; i<TESTMAPDATA.size();i++){
+        for(int i = 0; i<pointArray.size();i++){
 
-            if(x < TESTMAPDATA.get(i).x+5 && x > TESTMAPDATA.get(i).x -5
-                    && y < TESTMAPDATA.get(i).y+15 && y > TESTMAPDATA.get(i).y - 15){
+            if(x < pointArray.get(i).x+25 && x > pointArray.get(i).x -25
+                    && y < pointArray.get(i).y+25 && y > pointArray.get(i).y - 25){
                 within = true;
             }
 
@@ -593,25 +626,215 @@ public class StoreMapActivity extends AppCompatActivity {
         return within;
     }
 
+    /***
+     * returns the point that is within the two coordinates
+     * @param x coordinate
+     * @param y coordinate
+     * @param pointArray The array to retreive the point from
+     * @return
+     */
+    private WimsPoints getWithin(int x, int y, ArrayList<WimsPoints> pointArray){
 
-    private WimsPoints getWithin(int x, int y){
+        for(int i = 0; i<pointArray.size();i++){
 
-        for(int i = 0; i<TESTMAPDATA.size();i++){
-
-            if(x < TESTMAPDATA.get(i).x+5 && x > TESTMAPDATA.get(i).x -5
-                    && y < TESTMAPDATA.get(i).y+15 && y > TESTMAPDATA.get(i).y - 15){
-                return TESTMAPDATA.get(i);
+            if(x < pointArray.get(i).x+25 && x > pointArray.get(i).x -25
+                    && y < pointArray.get(i).y+25 && y > pointArray.get(i).y - 25){
+                return pointArray.get(i);
             }
 
         }
 
-        return TESTMAPDATA.get(0);
+        return pointArray.get(0);
     }
 
-    public void setNeighbors(int point1x, int point1y, int point2x, int point2y){
 
-        getWithin(point1x,point1y).Neighbours.add(getWithin(point2x,point2y));
-        getWithin(point2x,point2y).Neighbours.add(getWithin(point1x,point1y));
+    /***
+     * Function used to set the neighbor relationsship between two points
+     * @param point1x x Coordinate of point1
+     * @param point1y y coordinate of point1
+     * @param point2x x coordinate of point2
+     * @param point2y y coordinate of point2
+     * @param pointlist The array of points
+     * @return true if neighborhood is set, false if not
+     */
+    public boolean setNeighbors(int point1x, int point1y, int point2x, int point2y, ArrayList<WimsPoints> pointlist){
+
+        if(getWithin(point1x,point1y,pointlist) != getWithin(point2x,point2y,pointlist)) {
+            getWithin(point1x, point1y,pointlist).Neighbours.add(getWithin(point2x, point2y,pointlist));
+            getWithin(point2x, point2y,pointlist).Neighbours.add(getWithin(point1x, point1y,pointlist));
+            return true;
+        } else
+            return false;
     }
 
+
+    /***
+     * Function that constructs a JSON array of points to insert into the server database
+     * @param point The array of points representing the map data.
+     * @return The JSON Array
+     */
+    public JSONArray constructJson(ArrayList<WimsPoints> point){
+
+       JSONArray pointArray = new JSONArray();
+        JSONObject Jsonpointdata;
+        JSONArray neighbors;
+        JSONArray fingerprint;
+
+
+        try {
+            for(int i = 0; i < point.size(); i++)
+            {
+
+                Jsonpointdata = new JSONObject();
+                neighbors = new JSONArray();
+                fingerprint = new JSONArray();
+                Jsonpointdata.put("_id",i);
+                Jsonpointdata.put("x",point.get(i).x);
+                Jsonpointdata.put("y",point.get(i).y);
+                Jsonpointdata.put("neighbors",neighbors);
+                Jsonpointdata.put("fingerprint",fingerprint);
+                pointArray.put(Jsonpointdata);
+
+
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        return pointArray;
+
+    }
+
+
+    /***
+     * Function that adds neighbor relations to the JSON object after ID's have been added to each
+     * point
+     * @param points the Array that contains the point data with ID's and no neighbor relations
+     * @param mapData The mapdata represented in Arraylist that has neighbors represented
+     * @return the modified JSON array containing neighbors
+     */
+    public JSONArray constructJSONaddNeighbors(JSONArray points, ArrayList<WimsPoints> mapData){
+
+        JSONArray res = new JSONArray();
+
+        JSONArray neighbors;
+        JSONObject workingPoint;
+        WimsPoints WIMSpoint;
+
+        try {
+
+            for (int i = 0; points.length() > i; i++) {
+                workingPoint = points.getJSONObject(i);
+                WIMSpoint = getWithin(workingPoint.getInt("x"), workingPoint.getInt("y"),mapData);
+                neighbors = new JSONArray();
+
+                    for(int y = 0; y < WIMSpoint.Neighbours.size(); y++) {
+                        String res_id = getIDfromJSON(points, WIMSpoint.Neighbours.get(y));
+                        neighbors.put(res_id);
+                    }
+                    workingPoint.put("neighbors",neighbors);
+                    res.put(workingPoint);
+                }
+
+
+
+        } catch (JSONException e){
+            e.printStackTrace();
+        }
+
+        return res;
+
+    }
+
+    /***
+     * Function that gets the ID of the point represented in the JSON array
+     * @param pointarray The JSONArrayof points
+     * @param point The Point that the ID should be returned from
+     * @return The ID
+     */
+    public String getIDfromJSON(JSONArray pointarray, WimsPoints point){
+
+        try {
+            for (int i = 0; i < pointarray.length(); i++) {
+
+                if (point.x == pointarray.getJSONObject(i).getInt("x") && point.y == pointarray.getJSONObject(i).getInt("y")){
+                    return pointarray.getJSONObject(i).getString("_id");
+                }
+
+
+            }
+        } catch (JSONException e){
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+
+    /***
+     * Function the takes the JSON object and deconstructs into a WimsPoints Array that are used
+     * For pathfinding
+     * @param array The array retrieved from the server
+     * @return The arraylist of data
+     */
+    public ArrayList<WimsPoints> deConstructJSON(JSONArray array){
+
+        ArrayList<WimsPoints> mapdata = new ArrayList<>();
+        try {
+            for (int i = 0; i < array.length(); i++) {
+                mapdata.add(new WimsPoints(array.getJSONObject(i).getInt("x"), array.getJSONObject(i).getInt("y")));
+            }
+            for(int i = 0;i<array.length();i++ ){
+                // Get Neighbor data
+                JSONArray neighbors;
+                neighbors = array.getJSONObject(i).getJSONArray("neighbors");
+
+                for(int x = 0; x<neighbors.length();x++){
+                    mapdata.get(i).Neighbours.add(mapdata.get(indexOfNeighbor(mapdata,array,neighbors.getString(x))));
+                }
+
+            }
+
+
+        }
+        catch (JSONException e){
+            e.printStackTrace();
+        }
+        return mapdata;
+    }
+
+
+    /***
+     * returns the index of the neighbor used for deconstructing the
+     * @param mapdata The mapdata without Neighbor data
+     * @param jsonArray The Array
+     * @param id The ID of the point in the JSON array
+     * @return the index of the neighbor in the arraylist
+     */
+    public int indexOfNeighbor(ArrayList<WimsPoints> mapdata,JSONArray jsonArray, String id ){
+
+        try {
+            for (int i = 0; i < jsonArray.length(); i++) {
+
+                if (id.equals(jsonArray.getJSONObject(i).getString("_id"))) {
+
+                    for(int x = 0; x<mapdata.size(); x++){
+
+                        if(jsonArray.getJSONObject(i).getInt("x") == mapdata.get(x).x
+                                && jsonArray.getJSONObject(i).getInt("y") == mapdata.get(x).y ){
+                            return x;
+                        }
+
+                    }
+
+
+                }
+
+            }
+        } catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }
