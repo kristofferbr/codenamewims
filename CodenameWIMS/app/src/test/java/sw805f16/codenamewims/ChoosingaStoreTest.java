@@ -46,25 +46,7 @@ public class ChoosingaStoreTest {
         search = (SearchView) main.findViewById(R.id.search);
 
         //This is a JSON array, in string format, we want to extract information from
-        String jsonString = "[\n" +
-                "  {\n" +
-                "    \"_id\": \"56e6a28a28c3e3314a6849df\",\n" +
-                "    \"name\": \"Føtex\",\n" +
-                "    \"description\": \"Føtex er sej vi gør mere for dig\",\n" +
-                "    \"map\": \"56e6a32e28c3e3314a6849e3\",\n" +
-                "    \"__v\": 1,\n" +
-                "    \"products\": [\n" +
-                "      \"56e6a9f028c3e3314a6849ea\",\n" +
-                "      \"56e6aa1b28c3e3314a6849eb\"\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"_id\": \"56e6a28a28c3e3314a6849e0\",\n" +
-                "    \"name\": \"Netto\",\n" +
-                "    \"description\": \"Netto – Derfor\",\n" +
-                "    \"products\": []\n" +
-                "  }\n" +
-                "]";
+        String jsonString = main.getResources().getString(R.string.store_json);
         try {
             dummyJson = new JSONArray(jsonString);
         } catch (JSONException e) {
@@ -102,12 +84,15 @@ public class ChoosingaStoreTest {
 
         //Next we want to see whether, when clicking the first item, that the title text is Føtex,
         //whether the listview turns invisible again and if the searchbar is empty
-        search.setQuery("", false);
         shadowResults.performItemClick(0);
         TextView testText = (TextView) main.findViewById(R.id.title);
         assertThat(testText.getText().toString(), is("Føtex"));
         assertThat(results.getVisibility(), is(View.INVISIBLE));
         assertThat(search.getQuery().toString(), is(""));
+
+        testText.setText("");
+        search.setQuery("Føtex", true);
+        assertThat(testText.getText().toString(), is("Føtex"));
     }
 
     @Test
@@ -173,4 +158,19 @@ public class ChoosingaStoreTest {
         assertThat(intent.getStringExtra("storeId"), is("56e6a28a28c3e3314a6849df"));
     }
 
+    @Test
+    public void change_from_start_to_shopping_list() throws Exception {
+        main.extractInformationFromJson(dummyJson);
+        Button testButton = (Button) main.findViewById(R.id.shoppingListButton);
+
+        //We search for føtex and submit the search
+        search.setQuery("føtex", true);
+        //We click the button and assert whether it starts the right activity
+        testButton.performClick();
+        //We peek at the next activity that starts from main
+        Intent intent = shadowOf(main).peekNextStartedActivity();
+        assertThat(ShoppingListActivity.class.getCanonicalName(), is(intent.getComponent().getClassName()));
+        //We also check whether the extra with the store id is the right id
+        assertThat(intent.getStringExtra("storeId"), is("56e6a28a28c3e3314a6849df"));
+    }
 }

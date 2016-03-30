@@ -1,6 +1,9 @@
 package sw805f16.codenamewims;
 
+import android.app.Fragment;
 import android.content.Intent;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -41,18 +44,22 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter adapter;
     String storeId;
     boolean pickedSuggestion = false;
+    Parcelable fragmentState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (getIntent().getParcelableExtra("state") != null) {
+            fragmentState = getIntent().getParcelableExtra("state");
+        }
+
         //We make a request to the server and receives the list of stores
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://nielsema.ddns.net/sw8/api/store";
+        String url = "http://nielsema.ddns.net/sw8/api/store/";
 
         request(queue, url);
-        //extractInformationFromJson(json);
 
 
         searchView = (SearchView) findViewById(R.id.search);
@@ -85,6 +92,8 @@ public class MainActivity extends AppCompatActivity {
                 //If it is not the listview is populated like with onQueryTextChange()
                 if (pickedSuggestion || stores.containsKey(query.toLowerCase())) {
                     TextView titleText = (TextView) findViewById(R.id.title);
+                    //We clear the title text to set the new title
+                    titleText.setText("");
                     titleText.setText(SearchRanking.capitaliseFirstLetters(query));
                     //The search field is emptied
                     searchView.setQuery("", false);
@@ -106,11 +115,26 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Button storemapButton = (Button) findViewById(R.id.storemapbutton);
+        Button shoppingListButton = (Button) findViewById(R.id.shoppingListButton);
 
         storemapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), StoreMapActivity.class);
+                if (fragmentState != null) {
+                    intent.putExtra("state", fragmentState);
+                }
+                intent.putExtra("storeId", storeId);
+                startActivity(intent);
+            }
+        });
+        shoppingListButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), ShoppingListActivity.class);
+                if (fragmentState != null) {
+                    intent.putExtra("state", fragmentState);
+                }
                 intent.putExtra("storeId", storeId);
                 startActivity(intent);
             }
@@ -132,11 +156,9 @@ public class MainActivity extends AppCompatActivity {
         while (it.hasNext()) {
             pair = (Map.Entry) it.next();
             key = (String) pair.getKey();
-            //If the key of the pair contains the query it is added to the result list
-            //We remove any potential special characters
-            if (key.contains(SearchRanking.removeSpecialCharacters(query).toLowerCase())) {
-                resultList.add(key);
-            }
+
+            resultList.add(key);
+
         }
 
         //After the immediate matches are added to the list it is sorted by rank
@@ -158,7 +180,6 @@ public class MainActivity extends AppCompatActivity {
     /**
      * A method that extracts information from a json array and puts it in a hashmap
      * @param jsonArray The json array from the server
-     * @throws JSONException Every JSONObject and JSONArray method throws this, therefore This throws it as well
      */
     public void extractInformationFromJson(JSONArray jsonArray) {
         try {
@@ -192,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
         JsonArrayRequest jsonRequest = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                json = response;
+                extractInformationFromJson(response);
             }
         }, new Response.ErrorListener() {
             @Override

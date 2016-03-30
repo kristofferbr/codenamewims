@@ -25,6 +25,13 @@
         android:layout_centerHorizontal="true"
         android:text="Store Map"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/shoppingListButton"
+        android:text="Shopping List"
+        android:layout_centerInParent="true"/>
+
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -1,0 +1,39 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="sw805f16.codenamewims.ShoppingListFragment">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <SearchView
+            android:layout_width="500px"
+            android:layout_height="wrap_content"
+            android:id="@+id/shopSearch"
+            android:layout_gravity="center_horizontal"/>
+
+        <ListView
+            android:layout_width="500px"
+            android:layout_height="600px"
+            android:id="@+id/suggestions"
+            android:visibility="invisible"
+            android:layout_gravity="center"/>
+    </RelativeLayout>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/itemList"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/startScreenButton"
+        android:visibility="gone"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/shopStoreButton"
+        android:visibility="gone"/>
+</FrameLayout>
