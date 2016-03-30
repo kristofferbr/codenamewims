@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Parcelable;
@@ -20,16 +19,13 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -38,7 +34,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -72,8 +67,8 @@ public class ShoppingListFragment extends Fragment {
     private Button storeMapButton;
 
     //These variables are for controlling which items should be deleted and which are marked
-    private int itemToDelete;
-    private HashMap<Integer, Boolean> markedItems = new HashMap<>();
+    private int itemToDelete = 0;
+    private int positionOfFirstMarkedItem;
 
     //A gesture detector we use to detect fling gestures
     protected GestureDetectorCompat detector;
@@ -135,6 +130,7 @@ public class ShoppingListFragment extends Fragment {
                 R.layout.simple_list_view,
                 itemList);
         itemListView.setAdapter(itemAdapter);
+        positionOfFirstMarkedItem = itemList.size();
 
         searchView = (SearchView) mView.findViewById(R.id.shopSearch);
 
@@ -142,17 +138,9 @@ public class ShoppingListFragment extends Fragment {
         if (savedInstanceState != null) {
             setStoreId(savedInstanceState.getString("storeId"));
 
-            //We have saved the marked items and which mark they had in two arrays
-            int[] markedPositions = savedInstanceState.getIntArray("markedPositions");
-            boolean[] marks = savedInstanceState.getBooleanArray("marks");
-            //Then we fill the markedItems HashMap with the arrays
-            for (int i = 0; i < markedPositions.length; i++) {
-                markedItems.clear();
-                markedItems.put(markedPositions[i], marks[i]);
-            }
+
             ArrayList<String> stringItemList = savedInstanceState.getStringArrayList("itemList");
             TextView savedTextView = new TextView(getActivity().getApplicationContext());
-            int i = 0;
             //Here we pull the the list of items and refill the item list
             for (String text : stringItemList) {
                 itemList.clear();
@@ -161,28 +149,27 @@ public class ShoppingListFragment extends Fragment {
                 //Here we inflate a LinearLayout with a custom layout
                 LinearLayout tmpLayout = (LinearLayout) LinearLayout.inflate(getActivity().getApplicationContext(), R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
                 tmpLayout.addView(savedTextView, 0);
-                if (markedItems.get(i) != null) {
-                    //Then we check whether the item has been marked, and if it is we place a check mark beside it
-                    if (markedItems.get(i)) {
-                        ImageView tmpImage = (ImageView) tmpLayout.getChildAt(1);
-                        tmpImage.setImageDrawable(getResources().getDrawable(R.drawable.checkmark));
-                        //If it was marked as "skipped" we place a red X next to it
-                    } else if (!markedItems.get(i)) {
-                        ImageView tmpImage = (ImageView) tmpLayout.getChildAt(1);
-                        tmpImage.setImageDrawable(getResources().getDrawable(R.drawable.skip));
-                    }
-                }
-
                 //Then we add the newly made layout to the item list
                 itemList.add(tmpLayout);
-                i++;
+            }
+            ArrayList<Integer> markImages = savedInstanceState.getIntegerArrayList("markImages");
+            ImageView tmpImage;
+            int n = 0;
+            for (int i = itemList.size() - 1; i > 0; i--) {
+                if (markImages.size() < n) {
+                    break;
+                }
+                tmpImage = (ImageView) itemList.get(i).getChildAt(1);
+                tmpImage.setImageDrawable(getActivity().getResources().getDrawable(markImages.get(n)));
+                n++;
+                positionOfFirstMarkedItem--;
             }
 
             ArrayList<String> productNames = savedInstanceState.getStringArrayList("products");
             ArrayList<WimsPoints> productPoints = savedInstanceState.getParcelableArrayList("locations");
             products.clear();
-            for (int n = 0; n < productNames.size(); n++) {
-                products.put(productNames.get(i), productPoints.get(i));
+            for (int k = 0; k < productNames.size(); k++) {
+                products.put(productNames.get(k), productPoints.get(k));
             }
             //If the method was not called with a saved instance we set all the listeners
         } else {
@@ -228,23 +215,7 @@ public class ShoppingListFragment extends Fragment {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     if (getActivity() instanceof StoreMapActivity) {
-                        //If the item is already marked we unmark it by removing the check mark
-                        if (markedItems.get(position) != null && markedItems.get(position)) {
-                            ImageView tmpImage = (ImageView) itemList.get(position).getChildAt(1);
-                            tmpImage.setImageDrawable(null);
-
-                            //We then remove the item from the map and notify the adapter
-                            markedItems.remove(position);
-                            itemAdapter.notifyDataSetChanged();
-                            //If the item has not been marked we place a check mark next to it
-                        } else {
-                            ImageView tmpImage = (ImageView) itemList.get(position).getChildAt(1);
-                            tmpImage.setImageDrawable(getResources().getDrawable(R.drawable.checkmark));
-
-                            //We place the item in the marked items map, with a true value and notify the adapter
-                            markedItems.put(position, true);
-                            itemAdapter.notifyDataSetChanged();
-                        }
+                        markUnmarkItemAsVisited(position);
                     }
                 }
             });
@@ -253,20 +224,7 @@ public class ShoppingListFragment extends Fragment {
                 @Override
                 public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                     if (getActivity() instanceof StoreMapActivity) {
-                        //If the item has already been skipped we remove the X
-                        if (markedItems.get(position) != null && !markedItems.get(position)) {
-                            ImageView tmpImage = (ImageView) itemList.get(position).getChildAt(1);
-                            tmpImage.setImageDrawable(null);
-
-                            markedItems.remove(position);
-                            itemAdapter.notifyDataSetChanged();
-                        } else {
-                            ImageView tmpImage = (ImageView) itemList.get(position).getChildAt(1);
-                            tmpImage.setImageDrawable(getResources().getDrawable(R.drawable.skip));
-
-                            markedItems.put(position, false);
-                            itemAdapter.notifyDataSetChanged();
-                        }
+                        markItemAsSkipped(position);
                     }
                     return true;
                 }
@@ -306,6 +264,28 @@ public class ShoppingListFragment extends Fragment {
 
         //Then we return the view
         return mView;
+    }
+
+    public void markUnmarkItemAsVisited(int position) {
+        LinearLayout item = itemList.get(position);
+        ImageView mark = (ImageView) item.getChildAt(1);
+        if (!mark.getDrawable().equals(getActivity().getResources().getDrawable(R.drawable.checkmark))) {
+            mark.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.checkmark));
+            itemList.remove(position);
+            itemList.add(itemList.size() - 1, item);
+        } else {
+            mark.setImageDrawable(null);
+        }
+
+        itemAdapter.notifyDataSetChanged();
+    }
+
+    public void markItemAsVisited() {
+
+    }
+
+    public void markItemAsSkipped(int position) {
+
     }
 
     @Override
@@ -461,22 +441,25 @@ public class ShoppingListFragment extends Fragment {
             stringItemList.add(text);
         }
         outState.putStringArrayList("itemList", stringItemList);
-        int[] markedPositions = new int[0];
-        boolean[] marks = new boolean[0];
-        Iterator it = markedItems.entrySet().iterator();
-        Map.Entry pair;
-        int i = 0;
-        //We iterate through the marked items map to pull the positions and the marks and save them as arrays
-        while (it.hasNext()) {
-            pair = (Map.Entry) it.next();
-            markedPositions[i] = (Integer) pair.getKey();
-            marks[i] = (Boolean) pair.getValue();
+
+        int i = itemList.size() - 1;
+        ArrayList<Integer> markImages = new ArrayList<>();
+        ImageView mark = (ImageView) itemList.get(i).getChildAt(1);
+        while (mark.getDrawable() != null) {
+            if (mark.getDrawable().equals(getActivity().getResources().getDrawable(R.drawable.checkmark))) {
+                markImages.add(R.drawable.checkmark);
+            } else if (mark.getDrawable().equals(getActivity().getResources().getDrawable(R.drawable.skip))) {
+                markImages.add(R.drawable.skip);
+            }
+            i--;
+            mark = (ImageView) itemList.get(i).getChildAt(1);
         }
-        outState.putIntArray("markedPositions", markedPositions);
-        outState.putBooleanArray("marks", marks);
+        outState.putIntegerArrayList("markImages", markImages);
+
         ArrayList<Parcelable> parcelablePoints = new ArrayList<>();
         ArrayList<String> productKeys = new ArrayList<>();
-        it = products.entrySet().iterator();
+        Iterator it = products.entrySet().iterator();
+        Map.Entry pair;
         while (it.hasNext()) {
             pair = (Map.Entry) it.next();
             productKeys.add((String) pair.getKey());
