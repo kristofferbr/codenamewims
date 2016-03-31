@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // When refactoring, change to start_screen layoutet.
+        setContentView(R.layout.activity_main); // When refactoring, change to activity_start_screen layoutet.
 
         if (getIntent().getParcelableExtra("state") != null) {
             fragmentState = getIntent().getParcelableExtra("state");
