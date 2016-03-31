@@ -56,7 +56,7 @@ public class TrackingShoppingListTest {
         suggestionList.performItemClick(0);
         shadowItemList.populateItems();
 
-        search.setQuery("Cheese", false);
+        search.setQuery("Ost", false);
         suggestionList.populateItems();
         suggestionList.performItemClick(0);
         shadowItemList.populateItems();
@@ -72,18 +72,26 @@ public class TrackingShoppingListTest {
         // When I am shopping
 
         // Then I want to indicate that I have put an item in my basket
-        /*FrameLayout currentItem = (FrameLayout) fragment.getView().findViewById(R.id.currentItem);
-        fragment.markItemAsVisited();
+        FrameLayout currentItem = (FrameLayout) fragment.getView().findViewById(R.id.currentItem);
         LinearLayout item = (LinearLayout) currentItem.getChildAt(0);
         ImageView actual = (ImageView) item.getChildAt(1);
+        fragment.markCurrentItem(false);
         assertThat(actual.getDrawable(), is(activity.getResources().getDrawable(R.drawable.checkmark)));
-        assertThat(item, is(itemList.getItemAtPosition(1)));*/
         // And then I want to indicate that i am skipping an Item because I do not want to buy it
-
+        item = (LinearLayout) currentItem.getChildAt(0);
+        actual = (ImageView) item.getChildAt(1);
+        fragment.markCurrentItem(true);
+        assertThat(actual.getDrawable(), is(activity.getResources().getDrawable(R.drawable.skip)));
         // Then I want to regret that I have skipped an item an unmark it
-
+        item = (LinearLayout) itemList.getItemAtPosition(1);
+        actual = (ImageView) item.getChildAt(1);
+        fragment.markUnmarkItem(1, true);
+        assertNull(actual.getDrawable());
         // When I accidentally mark an item as "put in basket"
-
         // Then I want to undo the action
+        item = (LinearLayout) itemList.getItemAtPosition(0);
+        actual = (ImageView) item.getChildAt(1);
+        fragment.markUnmarkItem(0, false);
+        assertNull(actual.getDrawable());
     }
 }

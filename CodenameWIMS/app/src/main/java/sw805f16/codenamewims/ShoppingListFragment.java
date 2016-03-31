@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -59,7 +60,10 @@ public class ShoppingListFragment extends Fragment {
     //These variables are for the items in the shopping list
     private ArrayAdapter itemAdapter;
     private ListView itemListView;
-    private ArrayList<LinearLayout> itemList;
+    private ArrayList<LinearLayout> completeItemList;
+    private ArrayList<LinearLayout> unmarkedItemList;
+    private ArrayList<LinearLayout> markedItemList;
+    private FrameLayout currentItem;
 
     private SearchView searchView;
 
@@ -124,13 +128,16 @@ public class ShoppingListFragment extends Fragment {
                 suggestionList);
         suggestionListView.setAdapter(suggestionAdapter);
 
-        itemList = new ArrayList<>();
+        completeItemList = new ArrayList<>();
+        markedItemList = new ArrayList<>();
+        unmarkedItemList = new ArrayList<>();
         itemListView = (ListView) mView.findViewById(R.id.itemList);
         itemAdapter = new ArrayAdapter(getActivity().getApplicationContext(),
                 R.layout.simple_list_view,
-                itemList);
+                completeItemList);
         itemListView.setAdapter(itemAdapter);
-        positionOfFirstMarkedItem = itemList.size();
+        positionOfFirstMarkedItem = completeItemList.size();
+        currentItem = (FrameLayout) mView.findViewById(R.id.currentItem);
 
         searchView = (SearchView) mView.findViewById(R.id.shopSearch);
 
@@ -139,30 +146,36 @@ public class ShoppingListFragment extends Fragment {
             setStoreId(savedInstanceState.getString("storeId"));
 
 
-            ArrayList<String> stringItemList = savedInstanceState.getStringArrayList("itemList");
+            ArrayList<String> stringItemList = savedInstanceState.getStringArrayList("unmarkedItemList");
             TextView savedTextView = new TextView(getActivity().getApplicationContext());
             //Here we pull the the list of items and refill the item list
             for (String text : stringItemList) {
-                itemList.clear();
+                unmarkedItemList.clear();
                 savedTextView.setText(text);
 
                 //Here we inflate a LinearLayout with a custom layout
                 LinearLayout tmpLayout = (LinearLayout) LinearLayout.inflate(getActivity().getApplicationContext(), R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
                 tmpLayout.addView(savedTextView, 0);
                 //Then we add the newly made layout to the item list
-                itemList.add(tmpLayout);
+                unmarkedItemList.add(tmpLayout);
             }
+            stringItemList = savedInstanceState.getStringArrayList("markedItemList");
+            for (String text : stringItemList) {
+                markedItemList.clear();
+                savedTextView.setText(text);
+
+                //Here we inflate a LinearLayout with a custom layout
+                LinearLayout tmpLayout = (LinearLayout) LinearLayout.inflate(getActivity().getApplicationContext(), R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
+                tmpLayout.addView(savedTextView, 0);
+                //Then we add the newly made layout to the item list
+                markedItemList.add(tmpLayout);
+            }
+
             ArrayList<Integer> markImages = savedInstanceState.getIntegerArrayList("markImages");
             ImageView tmpImage;
-            int n = 0;
-            for (int i = itemList.size() - 1; i > 0; i--) {
-                if (markImages.size() < n) {
-                    break;
-                }
-                tmpImage = (ImageView) itemList.get(i).getChildAt(1);
-                tmpImage.setImageDrawable(getActivity().getResources().getDrawable(markImages.get(n)));
-                n++;
-                positionOfFirstMarkedItem--;
+            for (int i = 0; i < markImages.size(); i++) {
+                tmpImage = (ImageView) markedItemList.get(i).getChildAt(1);
+                tmpImage.setImageDrawable(getActivity().getResources().getDrawable(markImages.get(i)));
             }
 
             ArrayList<String> productNames = savedInstanceState.getStringArrayList("products");
@@ -204,8 +217,15 @@ public class ShoppingListFragment extends Fragment {
                     tmpLayout.addView(tmpText, 0);
 
                     //Then we add the layout to the item list, notify the adapter and remove the suggestion list
-                    itemList.add(tmpLayout);
-                    itemAdapter.notifyDataSetChanged();
+                    if (unmarkedItemList.isEmpty() && currentItem.getChildAt(0) == null) {
+                        currentItem.addView(tmpLayout);
+                    } else {
+                        unmarkedItemList.add(tmpLayout);
+                        completeItemList.clear();
+                        completeItemList.addAll(unmarkedItemList);
+                        completeItemList.addAll(markedItemList);
+                        itemAdapter.notifyDataSetChanged();
+                    }
                     suggestionListView.setVisibility(View.GONE);
                 }
             });
@@ -215,7 +235,7 @@ public class ShoppingListFragment extends Fragment {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     if (getActivity() instanceof StoreMapActivity) {
-                        markUnmarkItemAsVisited(position);
+                        markUnmarkItem(position, false);
                     }
                 }
             });
@@ -224,21 +244,42 @@ public class ShoppingListFragment extends Fragment {
                 @Override
                 public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                     if (getActivity() instanceof StoreMapActivity) {
-                        markItemAsSkipped(position);
+                        markUnmarkItem(position, true);
                     }
-                    return true;
+                    return false;
                 }
             });
             //Here we set the onTouchListener for the fling event. This is for removing items
             itemListView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
-                    itemToDelete = itemList.indexOf(v);
+                    itemToDelete = completeItemList.indexOf(v);
                     detector.onTouchEvent(event);
-                    return true;
+                    return false;
                 }
             });
         }
+        if (!unmarkedItemList.isEmpty()) {
+            currentItem.addView(unmarkedItemList.get(0));
+            unmarkedItemList.remove(0);
+        }
+
+        completeItemList.addAll(unmarkedItemList);
+        completeItemList.addAll(markedItemList);
+
+        currentItem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                markCurrentItem(false);
+            }
+        });
+        currentItem.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                markCurrentItem(true);
+                return false;
+            }
+        });
 
         //If we are in the ShoppingListActivity we set the buttons to visible, otherwise they are gone
         if (getActivity() instanceof ShoppingListActivity) {
@@ -266,26 +307,77 @@ public class ShoppingListFragment extends Fragment {
         return mView;
     }
 
-    public void markUnmarkItemAsVisited(int position) {
-        LinearLayout item = itemList.get(position);
-        ImageView mark = (ImageView) item.getChildAt(1);
-        if (!mark.getDrawable().equals(getActivity().getResources().getDrawable(R.drawable.checkmark))) {
-            mark.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.checkmark));
-            itemList.remove(position);
-            itemList.add(itemList.size() - 1, item);
+    public void markUnmarkItem(int position, boolean skip) {
+        LinearLayout item;
+        ImageView mark;
+        if (position <= unmarkedItemList.size() - 1) {
+            item = unmarkedItemList.get(position);
+            mark = (ImageView) item.getChildAt(1);
+            if (skip) {
+                mark.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.skip));
+            } else {
+                mark.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.checkmark));
+            }
+            unmarkedItemList.remove(item);
+            markedItemList.add(item);
+            completeItemList.clear();
+            completeItemList.addAll(unmarkedItemList);
+            completeItemList.addAll(markedItemList);
+            itemAdapter.notifyDataSetChanged();
         } else {
-            mark.setImageDrawable(null);
+            if (unmarkedItemList.size() != 0) {
+                position = position - unmarkedItemList.size();
+            }
+            item = markedItemList.get(position);
+            mark = (ImageView) item.getChildAt(1);
+            if (!skip) {
+                if (mark.getDrawable().equals(getActivity().getResources().getDrawable(R.drawable.checkmark))) {
+                    mark.setImageDrawable(null);
+                    markedItemList.remove(item);
+                    unmarkedItemList.add(item);
+                } else if (mark.getDrawable().equals(getActivity().getResources().getDrawable(R.drawable.skip))) {
+                    mark.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.checkmark));
+                }
+                completeItemList.clear();
+                completeItemList.addAll(unmarkedItemList);
+                completeItemList.addAll(markedItemList);
+                itemAdapter.notifyDataSetChanged();
+            } else if (skip) {
+                if (mark.getDrawable().getConstantState().equals(
+                        getActivity().getResources().getDrawable(R.drawable.checkmark).getConstantState())) {
+                    mark.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.skip));
+                } else if (mark.getDrawable().getConstantState().equals(
+                        getActivity().getResources().getDrawable(R.drawable.skip).getConstantState())) {
+                    mark.setImageDrawable(null);
+                    markedItemList.remove(item);
+                    unmarkedItemList.add(item);
+                }
+                completeItemList.clear();
+                completeItemList.addAll(unmarkedItemList);
+                completeItemList.addAll(markedItemList);
+                itemAdapter.notifyDataSetChanged();
+            }
         }
+    }
 
+    public void markCurrentItem(boolean skip) {
+        LinearLayout item = (LinearLayout) currentItem.getChildAt(0);
+        ImageView mark = (ImageView) item.getChildAt(1);
+        if (!skip) {
+            mark.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.checkmark));
+        } else if (skip) {
+            mark.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.skip));
+        }
+        markedItemList.add(item);
+        currentItem.removeAllViewsInLayout();
+        if (!unmarkedItemList.isEmpty()) {
+            currentItem.addView(unmarkedItemList.get(0));
+            unmarkedItemList.remove(0);
+        }
+        completeItemList.clear();
+        completeItemList.addAll(unmarkedItemList);
+        completeItemList.addAll(markedItemList);
         itemAdapter.notifyDataSetChanged();
-    }
-
-    public void markItemAsVisited() {
-
-    }
-
-    public void markItemAsSkipped(int position) {
-
     }
 
     @Override
@@ -314,11 +406,11 @@ public class ShoppingListFragment extends Fragment {
 
             TextView tmpText;
             //We iterate over the item list and check if the products list contains the item
-            for (int i = 0; i < itemList.size(); i++) {
-                tmpText = (TextView) itemList.get(i).getChildAt(0);
+            for (int i = 0; i < completeItemList.size(); i++) {
+                tmpText = (TextView) completeItemList.get(i).getChildAt(0);
                 //If it does not contain the item we set the background to a gray color and the text to gray
                 if (!products.containsKey(tmpText.toString())) {
-                    itemList.get(i).setBackgroundDrawable(getActivity().getResources().getDrawable(R.drawable.grayout));
+                    completeItemList.get(i).setBackgroundDrawable(getActivity().getResources().getDrawable(R.drawable.grayout));
                     tmpText.setTextColor(Color.DKGRAY);
                 }
             }
@@ -434,25 +526,32 @@ public class ShoppingListFragment extends Fragment {
         ArrayList<String> stringItemList = new ArrayList<>();
         TextView textView;
         String text;
-        //We save the text in the item list by calling onSaveInstanceState on the TextViews
-        for (int i = 0; i < itemList.size(); i++) {
-            textView = (TextView) itemList.get(i).getChildAt(0);
+        //We save the text in the unmarked item list
+        for (int i = 0; i < unmarkedItemList.size(); i++) {
+            textView = (TextView) unmarkedItemList.get(i).getChildAt(0);
             text = textView.getText().toString();
             stringItemList.add(text);
         }
-        outState.putStringArrayList("itemList", stringItemList);
+        outState.putStringArrayList("unmarkedItemList", stringItemList);
 
-        int i = itemList.size() - 1;
+        stringItemList = new ArrayList<>();
+        //We save the text in the marked item list
+        for (int i = 0; i < markedItemList.size(); i++) {
+            textView = (TextView) markedItemList.get(i).getChildAt(0);
+            text = textView.getText().toString();
+            stringItemList.add(text);
+        }
+        outState.putStringArrayList("markedItemList", stringItemList);
+
         ArrayList<Integer> markImages = new ArrayList<>();
-        ImageView mark = (ImageView) itemList.get(i).getChildAt(1);
-        while (mark.getDrawable() != null) {
+        ImageView mark;
+        for (int i = 0; i < markedItemList.size(); i++) {
+            mark = (ImageView) markedItemList.get(i).getChildAt(1);
             if (mark.getDrawable().equals(getActivity().getResources().getDrawable(R.drawable.checkmark))) {
                 markImages.add(R.drawable.checkmark);
             } else if (mark.getDrawable().equals(getActivity().getResources().getDrawable(R.drawable.skip))) {
                 markImages.add(R.drawable.skip);
             }
-            i--;
-            mark = (ImageView) itemList.get(i).getChildAt(1);
         }
         outState.putIntegerArrayList("markImages", markImages);
 
@@ -481,7 +580,7 @@ public class ShoppingListFragment extends Fragment {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             //If they click Yes we delete the item and notify the adapter
-                            itemList.remove(itemToDelete);
+                            completeItemList.remove(itemToDelete);
                             itemAdapter.notifyDataSetChanged();
                         }
                     })
@@ -492,7 +591,7 @@ public class ShoppingListFragment extends Fragment {
                         }
                     })
                     .create().show();
-            return true;
+            return false;
         }
 
         @Override
