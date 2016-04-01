@@ -2,16 +2,25 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/rounded_edittext">
+    android:background="@drawable/rounded_edittext"
+    android:padding="10dp">
 
     <TextView
         android:id="@+id/shopping_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
+    <View
+        android:id="@+id/shopping_blackline"
+        android:layout_width="fill_parent"
+        android:layout_height="1dip"
+        android:background="#000000"
+        android:layout_below="@+id/shopping_title"/>
+
     <TextView
         android:id="@+id/shopping_items"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/shopping_blackline"/>
 
 </RelativeLayout>
