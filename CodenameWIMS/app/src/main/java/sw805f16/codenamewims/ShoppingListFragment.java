@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.os.Parcelable;
 import android.support.v4.view.GestureDetectorCompat;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -35,9 +34,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 
 /**
@@ -50,7 +46,7 @@ public class ShoppingListFragment extends Fragment {
     private static final String ARG_PARAM2 = "storeId";
 
     private String storeId = "";
-    private HashMap<String, WimsPoints> products = new HashMap<>();
+    private ArrayList<WimsPoints> products = new ArrayList<>();
 
     //These variables are for the suggestion list in the searchview
     private ArrayAdapter suggestionAdapter;
@@ -63,6 +59,7 @@ public class ShoppingListFragment extends Fragment {
     private ArrayList<LinearLayout> completeItemList;
     private ArrayList<LinearLayout> unmarkedItemList;
     private ArrayList<LinearLayout> markedItemList;
+    private ArrayList<Integer> marks;
     private FrameLayout currentItem;
 
     private SearchView searchView;
@@ -72,7 +69,6 @@ public class ShoppingListFragment extends Fragment {
 
     //These variables are for controlling which items should be deleted and which are marked
     private int itemToDelete = 0;
-    private int positionOfFirstMarkedItem;
 
     //A gesture detector we use to detect fling gestures
     protected GestureDetectorCompat detector;
@@ -131,12 +127,12 @@ public class ShoppingListFragment extends Fragment {
         completeItemList = new ArrayList<>();
         markedItemList = new ArrayList<>();
         unmarkedItemList = new ArrayList<>();
+        marks = new ArrayList<>();
         itemListView = (ListView) mView.findViewById(R.id.itemList);
         itemAdapter = new ArrayAdapter(getActivity().getApplicationContext(),
                 R.layout.simple_list_view,
                 completeItemList);
         itemListView.setAdapter(itemAdapter);
-        positionOfFirstMarkedItem = completeItemList.size();
         currentItem = (FrameLayout) mView.findViewById(R.id.currentItem);
 
         searchView = (SearchView) mView.findViewById(R.id.shopSearch);
@@ -171,19 +167,10 @@ public class ShoppingListFragment extends Fragment {
                 markedItemList.add(tmpLayout);
             }
 
-            ArrayList<Integer> markImages = savedInstanceState.getIntegerArrayList("markImages");
-            ImageView tmpImage;
-            for (int i = 0; i < markImages.size(); i++) {
-                tmpImage = (ImageView) markedItemList.get(i).getChildAt(1);
-                tmpImage.setImageDrawable(getActivity().getResources().getDrawable(markImages.get(i)));
-            }
+            marks = savedInstanceState.getIntegerArrayList("markImages");
 
-            ArrayList<String> productNames = savedInstanceState.getStringArrayList("products");
-            ArrayList<WimsPoints> productPoints = savedInstanceState.getParcelableArrayList("locations");
-            products.clear();
-            for (int k = 0; k < productNames.size(); k++) {
-                products.put(productNames.get(k), productPoints.get(k));
-            }
+            ArrayList<WimsPoints> productPoints = savedInstanceState.getParcelableArrayList("products");
+            products = productPoints;
             //If the method was not called with a saved instance we set all the listeners
         } else {
             //The buttons are for transitioning to the MainActivity and StoreMapActivity, respectively
@@ -217,15 +204,13 @@ public class ShoppingListFragment extends Fragment {
                     tmpLayout.addView(tmpText, 0);
 
                     //Then we add the layout to the item list, notify the adapter and remove the suggestion list
-                    if (unmarkedItemList.isEmpty() && currentItem.getChildAt(0) == null) {
-                        currentItem.addView(tmpLayout);
-                    } else {
-                        unmarkedItemList.add(tmpLayout);
-                        completeItemList.clear();
-                        completeItemList.addAll(unmarkedItemList);
-                        completeItemList.addAll(markedItemList);
-                        itemAdapter.notifyDataSetChanged();
-                    }
+                    unmarkedItemList.add(tmpLayout);
+                    // TODO: When we have positions, change this to that
+                    sortItemList(new WimsPoints(0, 0));
+                    completeItemList.clear();
+                    completeItemList.addAll(unmarkedItemList);
+                    completeItemList.addAll(markedItemList);
+                    itemAdapter.notifyDataSetChanged();
                     suggestionListView.setVisibility(View.GONE);
                 }
             });
@@ -261,7 +246,7 @@ public class ShoppingListFragment extends Fragment {
         }
         if (!unmarkedItemList.isEmpty()) {
             currentItem.addView(unmarkedItemList.get(0));
-            unmarkedItemList.remove(0);
+            unmarkedItemList.get(0).setVisibility(View.GONE);
         }
 
         completeItemList.addAll(unmarkedItemList);
@@ -315,8 +300,10 @@ public class ShoppingListFragment extends Fragment {
             mark = (ImageView) item.getChildAt(1);
             if (skip) {
                 mark.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.skip));
+                marks.add(R.drawable.skip);
             } else {
                 mark.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.checkmark));
+                marks.add(R.drawable.checkmark);
             }
             unmarkedItemList.remove(item);
             markedItemList.add(item);
@@ -331,26 +318,32 @@ public class ShoppingListFragment extends Fragment {
             item = markedItemList.get(position);
             mark = (ImageView) item.getChildAt(1);
             if (!skip) {
-                if (mark.getDrawable().equals(getActivity().getResources().getDrawable(R.drawable.checkmark))) {
+                if (marks.get(position) == R.drawable.checkmark) {
                     mark.setImageDrawable(null);
                     markedItemList.remove(item);
+                    marks.remove(position);
                     unmarkedItemList.add(item);
-                } else if (mark.getDrawable().equals(getActivity().getResources().getDrawable(R.drawable.skip))) {
+                    // TODO: When we have positions, change this to that
+                    sortItemList(new WimsPoints(0, 0));
+                } else if (marks.get(position) == R.drawable.skip) {
                     mark.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.checkmark));
+                    marks.set(position, R.drawable.checkmark);
                 }
                 completeItemList.clear();
                 completeItemList.addAll(unmarkedItemList);
                 completeItemList.addAll(markedItemList);
                 itemAdapter.notifyDataSetChanged();
             } else if (skip) {
-                if (mark.getDrawable().getConstantState().equals(
-                        getActivity().getResources().getDrawable(R.drawable.checkmark).getConstantState())) {
+                if (marks.get(position) == R.drawable.checkmark) {
                     mark.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.skip));
-                } else if (mark.getDrawable().getConstantState().equals(
-                        getActivity().getResources().getDrawable(R.drawable.skip).getConstantState())) {
+                    marks.set(position, R.drawable.skip);
+                } else if (marks.get(position) == R.drawable.skip) {
                     mark.setImageDrawable(null);
                     markedItemList.remove(item);
+                    marks.remove(position);
                     unmarkedItemList.add(item);
+                    // TODO: When we have positions, change this to that
+                    sortItemList(new WimsPoints(0, 0));
                 }
                 completeItemList.clear();
                 completeItemList.addAll(unmarkedItemList);
@@ -365,19 +358,67 @@ public class ShoppingListFragment extends Fragment {
         ImageView mark = (ImageView) item.getChildAt(1);
         if (!skip) {
             mark.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.checkmark));
+            marks.add(R.drawable.checkmark);
         } else if (skip) {
             mark.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.skip));
+            marks.add(R.drawable.skip);
         }
         markedItemList.add(item);
+        unmarkedItemList.remove(0);
         currentItem.removeAllViewsInLayout();
         if (!unmarkedItemList.isEmpty()) {
             currentItem.addView(unmarkedItemList.get(0));
-            unmarkedItemList.remove(0);
+            unmarkedItemList.get(0).setVisibility(View.GONE);
         }
         completeItemList.clear();
         completeItemList.addAll(unmarkedItemList);
         completeItemList.addAll(markedItemList);
         itemAdapter.notifyDataSetChanged();
+    }
+
+    public void sortItemList(WimsPoints start) {
+        completeItemList.removeAll(unmarkedItemList);
+        currentItem.removeAllViewsInLayout();
+        unmarkedItemList.get(0).setVisibility(View.VISIBLE);
+        ArrayList<WimsPoints> tmpSet = new ArrayList<>();
+        String text;
+        int index;
+        for (int i = 0; i < unmarkedItemList.size(); i++) {
+            text = ((TextView) unmarkedItemList.get(i).getChildAt(0)).getText().toString();
+            index = indexOfProductWithName(text);
+            tmpSet.add(products.get(index));
+        }
+        WimsPoints point;
+        LinearLayout tmpLayout;
+        for (int i = 0; i < unmarkedItemList.size(); i++) {
+            point = nearestNeightbor(start, tmpSet);
+            start = point;
+            tmpSet.remove(point);
+            for (int n = 0; n < unmarkedItemList.size(); n++) {
+                text = ((TextView) unmarkedItemList.get(n).getChildAt(0)).getText().toString();
+                if (text.equalsIgnoreCase(point.getProductName())) {
+                    tmpLayout = unmarkedItemList.get(n);
+                    unmarkedItemList.remove(n);
+                    unmarkedItemList.add(i, tmpLayout);
+                }
+            }
+        }
+        unmarkedItemList.get(0).setVisibility(View.GONE);
+        currentItem.addView(unmarkedItemList.get(0));
+        completeItemList.addAll(0, unmarkedItemList);
+        itemAdapter.notifyDataSetChanged();
+    }
+
+    public WimsPoints nearestNeightbor(WimsPoints start, ArrayList<WimsPoints> set) {
+        WimsPoints closestPoint = null;
+        float closestDistance = Float.MAX_VALUE;
+        for (int i = 0; i < set.size(); i++) {
+            if (start.distance(set.get(i).x, set.get(i).y) < closestDistance) {
+                closestPoint = set.get(i);
+                closestDistance = start.distance(set.get(i).x, set.get(i).y);
+            }
+        }
+        return closestPoint;
     }
 
     @Override
@@ -409,7 +450,7 @@ public class ShoppingListFragment extends Fragment {
             for (int i = 0; i < completeItemList.size(); i++) {
                 tmpText = (TextView) completeItemList.get(i).getChildAt(0);
                 //If it does not contain the item we set the background to a gray color and the text to gray
-                if (!products.containsKey(tmpText.toString())) {
+                if (!productsContainString(tmpText.toString())) {
                     completeItemList.get(i).setBackgroundDrawable(getActivity().getResources().getDrawable(R.drawable.grayout));
                     tmpText.setTextColor(Color.DKGRAY);
                 }
@@ -422,6 +463,24 @@ public class ShoppingListFragment extends Fragment {
         storeId = id;
     }
 
+    public boolean productsContainString(String str) {
+        for (int i = 0; i < products.size(); i++) {
+            if (products.get(i).getProductName().equalsIgnoreCase(str)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Integer indexOfProductWithName(String str) {
+        for (int i = 0; i < products.size(); i++) {
+            if (products.get(i).getProductName().equalsIgnoreCase(str)) {
+                return i;
+            }
+        }
+        return null;
+    }
+
     /**
      * This method populates the listview with suggestions
      * @param query The query from which to populate after
@@ -429,20 +488,13 @@ public class ShoppingListFragment extends Fragment {
     private void populateSuggestionList(String query) {
         String key = "";
         //We need to clear the list, otherwise the suggestion list explodes
-        suggestionAdapter.clear();
-        //We make an iterator and iterate over the products hashmap
-        Iterator it = products.entrySet().iterator();
-        Map.Entry pair;
+        suggestionList.clear();
         //We create a text view to add to the suggestion list
         TextView tmpView = new TextView(getActivity().getApplicationContext());
         ArrayList<String> tmpList = new ArrayList<>();
 
-        while (it.hasNext()) {
-            pair = (Map.Entry) it.next();
-            key = (String) pair.getKey();
-
-            //We add the string keys to the temporary list
-            tmpList.add(key);
+        for (int i = 0; i < products.size(); i++) {
+            tmpList.add(products.get(i).getProductName());
         }
 
         //We sort the tmpList
@@ -480,8 +532,9 @@ public class ShoppingListFragment extends Fragment {
                 locX = tmpArray.getJSONObject(i).getJSONObject("location").getInt("x");
                 locY = tmpArray.getJSONObject(i).getJSONObject("location").getInt("y");
                 wimsPoints = new WimsPoints(locX, locY);
+                wimsPoints.setProductName(key);
 
-                products.put(key, wimsPoints);
+                products.add(wimsPoints);
             }
 
         } catch (JSONException e) {
@@ -543,29 +596,9 @@ public class ShoppingListFragment extends Fragment {
         }
         outState.putStringArrayList("markedItemList", stringItemList);
 
-        ArrayList<Integer> markImages = new ArrayList<>();
-        ImageView mark;
-        for (int i = 0; i < markedItemList.size(); i++) {
-            mark = (ImageView) markedItemList.get(i).getChildAt(1);
-            if (mark.getDrawable().equals(getActivity().getResources().getDrawable(R.drawable.checkmark))) {
-                markImages.add(R.drawable.checkmark);
-            } else if (mark.getDrawable().equals(getActivity().getResources().getDrawable(R.drawable.skip))) {
-                markImages.add(R.drawable.skip);
-            }
-        }
-        outState.putIntegerArrayList("markImages", markImages);
+        outState.putIntegerArrayList("markImages", marks);
 
-        ArrayList<Parcelable> parcelablePoints = new ArrayList<>();
-        ArrayList<String> productKeys = new ArrayList<>();
-        Iterator it = products.entrySet().iterator();
-        Map.Entry pair;
-        while (it.hasNext()) {
-            pair = (Map.Entry) it.next();
-            productKeys.add((String) pair.getKey());
-            parcelablePoints.add((WimsPoints) pair.getValue());
-        }
-        outState.putParcelableArrayList("locations", parcelablePoints);
-        outState.putStringArrayList("products", productKeys);
+        outState.putParcelableArrayList("products", products);
     }
 
     //Here we make a custom gesture detector for the fling event

@@ -17,6 +17,7 @@ public class WimsPoints extends PointF implements Parcelable{
     public float gscore;
     public float fscore;
     public WimsPoints Parent;
+    private String productName;
 
     public WimsPoints(){
 
@@ -50,5 +51,10 @@ public class WimsPoints extends PointF implements Parcelable{
         return (float)Math.sqrt(tempX*tempX+tempY*tempY);
     }
 
-
+    public String getProductName() {
+        return productName;
+    }
+    public void setProductName(String value) {
+        this.productName = value;
+    }
 }

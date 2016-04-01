@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.support.v4.widget.DrawerLayout;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SearchView;
@@ -75,8 +76,8 @@ public class ViewShoppingListTest {
         Intent intent = shadowOf(shoppingActivity).getNextStartedActivity();
         StoreMapActivity activity = Robolectric.buildActivity(StoreMapActivity.class).withIntent(intent).create().get();
         fragment = (ShoppingListFragment) activity.getFragmentManager().findFragmentByTag("shoppingFragment");
-        ListView itemList = (ListView) fragment.getView().findViewById(R.id.itemList);
-        LinearLayout item = (LinearLayout) itemList.getItemAtPosition(0);
+        FrameLayout currentItem = (FrameLayout) fragment.getView().findViewById(R.id.currentItem);
+        LinearLayout item = (LinearLayout) currentItem.getChildAt(0);
         TextView actual = (TextView) item.getChildAt(0);
 
         // Then I want to see my shopping list without going away from the map
