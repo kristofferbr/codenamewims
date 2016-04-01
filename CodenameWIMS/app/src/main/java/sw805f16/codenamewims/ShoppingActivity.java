@@ -30,6 +30,9 @@ public class ShoppingActivity extends AppCompatActivity {
 
 
         addShoppingList("Harold");
+        addShoppingList("Michael");
+        addShoppingList("John");
+        addShoppingList("Elliot");
 
     }
 
@@ -50,8 +53,9 @@ public class ShoppingActivity extends AppCompatActivity {
         TextView titems = (TextView)layout.findViewById(R.id.shopping_items);
         titems.setText("Butter");
 
-
         LinearLayout linear = (LinearLayout)findViewById(R.id.shopping_lists);
         linear.addView(layout);
+
+
     }
 }
