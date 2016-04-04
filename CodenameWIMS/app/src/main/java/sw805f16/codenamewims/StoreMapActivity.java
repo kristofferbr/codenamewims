@@ -5,10 +5,14 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.graphics.Bitmap;
 
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
@@ -73,6 +77,8 @@ public class StoreMapActivity extends AppCompatActivity {
     int endX =0;
     int endY =0;
     boolean start = true;
+    private Toolbar toolbar;
+
 
     ShoppingListFragment fragment;
 
@@ -82,6 +88,15 @@ public class StoreMapActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_store_map);
 
+        // my_child_toolbar is defined in the layout file
+        toolbar = (Toolbar)findViewById(R.id.app_bar);
+        setSupportActionBar(toolbar);
+
+        // Get a support ActionBar corresponding to this toolbar
+        ActionBar ab = getSupportActionBar();
+
+        // Enable the Up button
+        ab.setDisplayHomeAsUpEnabled(true);
 
         this.store_id = getIntent().getStringExtra("storeId");
         fragment = ShoppingListFragment.newInstance(store_id);
@@ -116,6 +131,7 @@ public class StoreMapActivity extends AppCompatActivity {
                 search.setQuery(tes.getText(), false);
             }
         });
+
 
 
         ImageView mImageView = (ImageView) findViewById(R.id.storemap);
@@ -286,6 +302,24 @@ public class StoreMapActivity extends AppCompatActivity {
         getMapLayout();
 
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu (Menu menu) {
+        //inflate the menu: this adds items to the action bar if it is present
+        getMenuInflater().inflate(R.menu.menu_store_map, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //Handle
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
