@@ -55,7 +55,7 @@ public class ShoppingListActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu (Menu menu) {
         //inflate the menu: this adds items to the action bar if it is present
-        getMenuInflater().inflate(R.menu.menu_shopping_list, menu);
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 

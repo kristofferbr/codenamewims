@@ -18,26 +18,44 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ShoppingActivity"></activity>
-        <activity android:name=".ShoppingItemActivity"></activity>
         <activity
-            android:name=".StoreMapActivity"
-            android:label="@string/title_store_map_activity"
-            android:parentActivityName=".MainActivity">
+            android:name=".ShoppingActivity"
+            android:label="Shoping List"
+            android:parentActivityName=".StartActivity">
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity"/>
+                android:value=".StartActivity"/>
+
+        </activity>
+        <activity
+            android:name=".ShoppingItemActivity"
+            android:label="Individual Shopping List"
+            android:parentActivityName=".ShoppingActivity">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ShoppingActivity"/>
+
+        </activity>
+        <activity
+            android:name=".StoreMapActivity"
+            android:label="@string/title_store_map_activity"
+            android:parentActivityName=".StartActivity">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".StartActivity"/>
         </activity>
 
         <activity
             android:name=".ShoppingListActivity"
             android:label="@string/shopping_list_activity"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".StartActivity">
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity"/>
+                android:value=".StartActivity"/>
 
         </activity>
     </application>

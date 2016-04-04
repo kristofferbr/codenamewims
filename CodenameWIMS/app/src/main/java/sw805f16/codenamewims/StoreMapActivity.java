@@ -307,7 +307,7 @@ public class StoreMapActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu (Menu menu) {
         //inflate the menu: this adds items to the action bar if it is present
-        getMenuInflater().inflate(R.menu.menu_store_map, menu);
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
