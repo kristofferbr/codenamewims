@@ -5,10 +5,16 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Parcelable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 
 public class ShoppingListActivity extends AppCompatActivity {
+
+    private Toolbar toolbar;
 
     ShoppingListFragment fragment = new ShoppingListFragment();
 
@@ -16,6 +22,17 @@ public class ShoppingListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shopping_list);
+
+        // my_child_toolbar is defined in the layout file
+        Toolbar myChildToolbar =
+                (Toolbar) findViewById(R.id.app_bar);
+        setSupportActionBar(myChildToolbar);
+
+        // Get a support ActionBar corresponding to this toolbar
+      //  ActionBar ab = getSupportActionBar();
+
+        // Enable the Up button
+        //ab.setDisplayHomeAsUpEnabled(true);
 
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -28,6 +45,29 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         fragmentTransaction.add(R.id.shoppingParent, fragment, "shoppingFragment");
         fragmentTransaction.commit();
+    }
+
+    /**
+     * Inflate the menu
+     * @param menu main_menu
+     * @return true if successful
+     */
+    @Override
+    public boolean onCreateOptionsMenu (Menu menu) {
+        //inflate the menu: this adds items to the action bar if it is present
+        getMenuInflater().inflate(R.menu.menu_shopping_list, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //Handle
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     /**

@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -23,16 +24,19 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class ShoppingActivity extends AppCompatActivity {
 
     public String[] mTitles = {"Bill", "Mary", "Harold", "John", "Deadpool"};
     public String[] mItems = {"Chicken, Beer, Pasta, Butter", "Milk", "Bread", "", "Lemonade"};
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shopping_list);
+
+        toolbar = (Toolbar)findViewById(R.id.app_bar);
+        setSupportActionBar(toolbar);
 
 
         addShoppingList("Harold");
