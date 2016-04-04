@@ -22,6 +22,7 @@
         <activity android:name=".StoreMapActivity" />
         <activity android:name=".ShoppingListActivity"></activity>
         <activity android:name=".ShoppingActivity"></activity>
+        <activity android:name=".ShoppingItemActivity"></activity>
     </application>
 
 </manifest>

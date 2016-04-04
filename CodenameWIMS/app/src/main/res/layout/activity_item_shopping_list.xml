@@ -1,6 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/Indigo300"
+    android:padding="10dp">
+
+    <EditText
+        android:id="@+id/item_textfield"
+        android:layout_width="292dp"
+        android:layout_height="48dp"
+        android:background="@drawable/rounded_edittext"
+        android:layout_marginRight="10dp"/>
+
+    <Button
+        android:id="@+id/item_add_btn"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:text="+"
+        android:textColor="@color/White"
+        android:textSize="25dp"
+        android:layout_toRightOf="@+id/item_textfield"
+        android:background="@drawable/rounded_button"/>
+
+    <ScrollView
+        android:layout_below="@+id/item_textfield"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="5dp">
+
+    <GridLayout
+        android:id="@+id/itemListGrid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/rounded_edittext"
+        android:layout_marginTop="5dp"
+        android:columnCount="1">
+
+
+    </GridLayout>
+    </ScrollView>
 
 </RelativeLayout>

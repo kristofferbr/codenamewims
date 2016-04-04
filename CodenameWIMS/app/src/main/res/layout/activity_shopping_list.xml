@@ -9,10 +9,11 @@
     <!--> Need to improve this <-->
     <EditText
         android:id="@+id/shopping_textfield"
-        android:layout_width="302dp"
+        android:layout_width="292dp"
         android:layout_height="48dp"
         android:background="@drawable/rounded_edittext"
-        android:layout_marginRight="10dp"/>
+        android:layout_marginRight="10dp"
+        android:windowSoftInputMode="stateHidden"/>
 
     <Button
         android:id="@+id/shopping_add_btn"
@@ -24,14 +25,21 @@
         android:layout_toRightOf="@+id/shopping_textfield"
         android:background="@drawable/rounded_button"/>
 
-    <LinearLayout
+    <ScrollView
+        android:layout_below="@+id/shopping_add_btn"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="5dp">
+
+    <GridLayout
         android:id="@+id/shopping_lists"
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/shopping_textfield"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="5dp"
+        android:columnCount="2">
 
-    </LinearLayout>
+    </GridLayout>
+    </ScrollView>
 
 </RelativeLayout>

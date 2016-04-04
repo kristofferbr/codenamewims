@@ -12,6 +12,10 @@ import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.GridLayout;
+import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -22,6 +26,8 @@ import java.util.List;
 
 public class ShoppingActivity extends AppCompatActivity {
 
+    public String[] mTitles = {"Bill", "Mary", "Harold", "John", "Deadpool"};
+    public String[] mItems = {"Chicken, Beer, Pasta, Butter", "Milk", "Bread", "", "Lemonade"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,11 +39,19 @@ public class ShoppingActivity extends AppCompatActivity {
         addShoppingList("Michael");
         addShoppingList("John");
         addShoppingList("Elliot");
+        addShoppingList("Harold");
+        addShoppingList("Michael");
+        addShoppingList("John");
+        addShoppingList("Elliot");
+        addShoppingList("Harold");
+        addShoppingList("Michael");
+        addShoppingList("John");
+        addShoppingList("Elliot");
 
     }
 
     public void addShoppingList(String name){
-        List<String> items = new ArrayList<String>();
+        final ArrayList<String> items = new ArrayList<>();
 
         items.add("Chicken");
         items.add("Butter");
@@ -47,15 +61,27 @@ public class ShoppingActivity extends AppCompatActivity {
         LayoutInflater inflater = LayoutInflater.from(this);
         RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.shopping_list_note, null, false);
 
+        layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), ShoppingItemActivity.class);
+                Bundle b = new Bundle();
+                b.putStringArrayList("itemsList", items);
+
+                intent.putExtras(b);
+                startActivity(intent);
+                finish();
+            }
+        });
+
         TextView title = (TextView)layout.findViewById(R.id.shopping_title);
         title.setText(name);
 
         TextView titems = (TextView)layout.findViewById(R.id.shopping_items);
-        titems.setText("Butter");
+        titems.setText("Butter\n" + "Chicken\n" + "Milk\n" + "Chips");
 
-        LinearLayout linear = (LinearLayout)findViewById(R.id.shopping_lists);
-        linear.addView(layout);
-
+        GridLayout gridLayout = (GridLayout)findViewById(R.id.shopping_lists);
+        gridLayout.addView(layout);
 
     }
 }
