@@ -5,10 +5,16 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.graphics.Bitmap;
 
-import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.ActionBar;import android.net.wifi.ScanResult;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
@@ -22,6 +28,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.android.volley.Request;
@@ -37,6 +44,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class StoreMapActivity extends AppCompatActivity {
 
@@ -45,6 +54,8 @@ public class StoreMapActivity extends AppCompatActivity {
     public boolean isInFront = false;
     public boolean createMapDataModePoints = false;
     public boolean createMapDataModeNeighbors = false;
+    public boolean fingerpriting = false;
+    public boolean isScanning = false;
     public String store_id = "56e6a28a28c3e3314a6849df"; // The ID of føtex! :)
     public String base_url= "http://nielsema.ddns.net/sw8/api/store/";
     RequestQueue rqueue;
@@ -63,8 +74,8 @@ public class StoreMapActivity extends AppCompatActivity {
     final ArrayList<String> results = new ArrayList<>();
     ArrayAdapter<String> adapter;
 
-    MapData mapdata = new MapData();
-    ArrayList<WimsPoints> TESTMAPDATA = new ArrayList<>();
+    ArrayList<WimsPoints> mapData = new ArrayList<>();
+    WimsPoints currentWimsPoint;
 
 
     /*For drawing neighbors*/
@@ -73,8 +84,17 @@ public class StoreMapActivity extends AppCompatActivity {
     int endX =0;
     int endY =0;
     boolean start = true;
+    private Toolbar toolbar;
+
 
     ShoppingListFragment fragment;
+
+    /* Used for fingerprinting*/
+    Thread fingerthread;
+    HashMap fingerPrint=new HashMap(3);
+    WifiFingerprinter fingerprinter;
+    static Handler mHandler;
+
 
 
     @Override
@@ -82,6 +102,15 @@ public class StoreMapActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_store_map);
 
+        // my_child_toolbar is defined in the layout file
+        toolbar = (Toolbar)findViewById(R.id.app_bar);
+        setSupportActionBar(toolbar);
+
+        // Get a support ActionBar corresponding to this toolbar
+        ActionBar ab = getSupportActionBar();
+
+        // Enable the Up button
+        ab.setDisplayHomeAsUpEnabled(true);
 
         this.store_id = getIntent().getStringExtra("storeId");
         fragment = ShoppingListFragment.newInstance(store_id);
@@ -94,9 +123,34 @@ public class StoreMapActivity extends AppCompatActivity {
         }
         transaction.add(R.id.storeShoppingList, fragment, "shoppingFragment");
         transaction.commit();
+        fingerprinter = new WifiFingerprinter(getApplicationContext());
+        final Button CommitButton = (Button) findViewById(R.id.commit);
+        CommitButton.setVisibility(View.INVISIBLE);
+        setupFingerPrintThread();
 
+        final Button FingerPrintPutton = (Button) findViewById(R.id.fingerprint);
+        FingerPrintPutton.setVisibility(View.INVISIBLE);
+
+        FingerPrintPutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if(fingerthread.getState() == Thread.State.NEW) {
+                    fingerthread.start();
+                }
+                isScanning = true;
+
+                /*Deletes the fingerprint view*/
+                fram.removeViewAt(2);
+                fingerpriting = false;
+                FingerPrintPutton.setVisibility(View.INVISIBLE);
+
+
+            }
+        });
         // Set variables for gestures
         Scale = new ScaleGestureDetector(this,new ScaleDetector());
+
         // Instantiate the Volley request queue
         rqueue = Volley.newRequestQueue(this);
 
@@ -104,6 +158,39 @@ public class StoreMapActivity extends AppCompatActivity {
         adapter = new ArrayAdapter<>(getApplicationContext(),
                                       R.layout.simple_list_view,
                                       results);
+
+        fram = (FrameLayout) findViewById(R.id.MapFrame);
+
+        fram.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if(!createMapDataModePoints && !createMapDataModeNeighbors) {
+                    Scale.onTouchEvent(event);
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        xOnStart = event.getRawX();
+                        yOnStart = event.getRawY();
+                        posX = fram.getX();
+                        posY = fram.getY();
+                    }
+
+                    if (event.getAction() == MotionEvent.ACTION_MOVE) {
+
+                        float offsetX = xOnStart - event.getRawX();
+                        float offsetY = yOnStart - event.getRawY();
+                        fram.setX(posX - offsetX);
+                        fram.setY(posY - offsetY);
+
+                    }
+                    return true;
+                }
+
+                return false;
+            }
+        });
+
+
+
 
         //The listview in which the results from searches are submitted
         listResults = (ListView) findViewById(R.id.resultView);
@@ -116,6 +203,7 @@ public class StoreMapActivity extends AppCompatActivity {
                 search.setQuery(tes.getText(), false);
             }
         });
+
 
 
         ImageView mImageView = (ImageView) findViewById(R.id.storemap);
@@ -139,19 +227,34 @@ public class StoreMapActivity extends AppCompatActivity {
                         spotY = (int) (750 / (float) h * y);
                         if (fram.getChildCount() == 1) {
                             fram.addView(posfac.getPostitionOverlay(spotX, spotY));
-                            addPointIfNew(spotX, spotY,TESTMAPDATA);
+                            addPointIfNew(spotX, spotY, mapData);
 
                         } else {
-                            if (addPointIfNew(spotX, spotY, TESTMAPDATA)) {
+                            if (addPointIfNew(spotX, spotY, mapData) && !fingerpriting) {
                                 ImageView temp = (ImageView) fram.getChildAt(1);
                                 fram.removeViewAt(1);
                                 fram.addView(posfac.getBitMapReDrawnSpot(temp, spotX, spotY));
+                            } else{
+                                if(fram.getChildCount() == 2){
+                                    currentWimsPoint = getWithin(spotX,spotY,mapData);
+                                    fram.addView(posfac.getPositionOfFingerPrintPoint((int)currentWimsPoint.x,(int)currentWimsPoint.y));
+                                    fingerpriting = true;
+                                    FingerPrintPutton.setVisibility(View.VISIBLE);
+                                } else
+                                {
+                                    fram.removeViewAt(2);
+                                    fingerpriting = false;
+                                    FingerPrintPutton.setVisibility(View.INVISIBLE);
+                                }
+
                             }
+
+
                         }
 
                     }
 
-                } else if (createMapDataModeNeighbors) {
+                } else if (createMapDataModeNeighbors && !fingerpriting) {
 
 
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -165,7 +268,7 @@ public class StoreMapActivity extends AppCompatActivity {
                             startX = (int) (500 / (float) w * x);
                             starty = (int) (750 / (float) h * y);
 
-                            if(isWithin(startX, starty,TESTMAPDATA)) {
+                            if(isWithin(startX, starty, mapData)) {
                                 start = !start;
                             }
                         } else {
@@ -179,15 +282,15 @@ public class StoreMapActivity extends AppCompatActivity {
                             endY = (int) (750 / (float) h * y);
 
 
-                            if (isWithin(endX, endY,TESTMAPDATA)) {
-                                WimsPoints startpoint = getWithin(startX,starty,TESTMAPDATA);
-                                WimsPoints endpoint = getWithin(endX,endY,TESTMAPDATA);
+                            if (isWithin(endX, endY, mapData)) {
+                                WimsPoints startpoint = getWithin(startX,starty, mapData);
+                                WimsPoints endpoint = getWithin(endX,endY, mapData);
 
                                 ImageView temp = (ImageView) fram.getChildAt(1);
                                 fram.removeViewAt(1);
                                 fram.addView(posfac.getBitMapReDrawnLine(temp,(int) startpoint.x, (int) startpoint.y, (int)endpoint.x, (int) endpoint.y));
                                 start = !start;
-                                setNeighbors(startX,starty,endX,endY,TESTMAPDATA);
+                                setNeighbors(startX,starty,endX,endY, mapData);
                             }
 
                         }
@@ -218,34 +321,34 @@ public class StoreMapActivity extends AppCompatActivity {
         });
 
 
+
+
+        CommitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendMapData(mapData);
+            }
+        });
+
         final Button EditButton = (Button) findViewById(R.id.testbut);
         EditButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                JSONArray res = constructJson(mapdata.Data);
-                Log.w("WIMS",res.toString());
-                JSONArray withneighbor = constructJSONaddNeighbors(res,mapdata.Data);
-                Log.w("WIMS",withneighbor.toString());
-
-                ArrayList<WimsPoints> mapdata = deConstructJSON(withneighbor);
-
-
-                Log.w("WIMS",mapdata.toString()
-                );
-
-                if(!createMapDataModePoints && !createMapDataModeNeighbors)
-                {
+                if (!createMapDataModePoints && !createMapDataModeNeighbors) {
+                    //DrawDataOnMap(mapData);
                     createMapDataModeNeighbors = false;
                     createMapDataModePoints = true;
+                    CommitButton.setVisibility(View.VISIBLE);
                     EditButton.setText("Points");
-                } else if(createMapDataModePoints && !createMapDataModeNeighbors){
+                } else if (createMapDataModePoints && !createMapDataModeNeighbors) {
                     createMapDataModePoints = false;
                     createMapDataModeNeighbors = true;
                     EditButton.setText("Neighbors");
-                } else if(createMapDataModeNeighbors){
+                } else if (createMapDataModeNeighbors) {
                     createMapDataModeNeighbors = false;
                     createMapDataModePoints = false;
+                    CommitButton.setVisibility(View.INVISIBLE);
                     EditButton.setText("Normal");
                 }
 
@@ -281,11 +384,56 @@ public class StoreMapActivity extends AppCompatActivity {
 
 
         // Gets the map corresponding to the store ID
-       fram =(FrameLayout) findViewById(R.id.MapFrame);
+        fram =(FrameLayout) findViewById(R.id.MapFrame);
 
         getMapLayout();
 
+        mHandler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(Message message) {
+                Toast.makeText(getApplicationContext(),"SCANNINGS COMPLETE",Toast.LENGTH_LONG).show();
+                fingerthread.interrupt();
 
+            }
+        };
+
+
+        Button findMe = (Button) findViewById(R.id.findme);
+        findMe.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int count = fram.getChildCount();
+                for(int i = count; i > 0; i--)
+                {
+                    fram.removeViewAt(i);
+                }
+
+                WimsPoints location;
+                location = findNearestNeighbor(mapData);
+                fram.addView(posfac.getPositionOfFingerPrintPoint((int)location.x,(int)location.y));
+
+            }
+        });
+
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu (Menu menu) {
+        //inflate the menu: this adds items to the action bar if it is present
+        getMenuInflater().inflate(R.menu.menu_store_map, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //Handle
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -310,6 +458,134 @@ public class StoreMapActivity extends AppCompatActivity {
             super.onBackPressed();
         }
 
+    }
+
+
+    public void sendMapData(ArrayList<WimsPoints> mapData)
+    {
+
+        JSONObject tosend = constructJson(mapData);
+        Log.w("WIMS", tosend.toString());
+        String url = "http://nielsema.ddns.net/sw8/api/point/bulk";
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.POST, url, tosend, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+
+                            JSONArray points = response.getJSONArray("ops");
+                            Log.w("WIMS",points.toString());
+                            sendMapDataWithNeighbors(points);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+
+                    }
+                });
+
+        rqueue.add(jsObjRequest);
+    }
+
+    public void sendMapDataWithNeighbors(JSONArray res){
+
+        JSONObject tosend;
+        tosend = constructJSONaddNeighbors(res,mapData);
+
+
+        String url = "http://nielsema.ddns.net/sw8/api/point/bulk";
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.PUT, url, tosend, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        addReferencesToStore(store_id);
+
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+
+                    }
+                });
+
+        rqueue.add(jsObjRequest);
+    }
+
+    public void addReferencesToStore(String StoreID){
+
+        String url = base_url + StoreID;
+
+        JSONObject references = new JSONObject();
+        JSONArray ids = new JSONArray();
+
+        for(int i = 0; i < mapData.size(); i++){
+            ids.put(mapData.get(i).ID);
+        }
+
+        try {
+            references.put("points", ids);
+        } catch (JSONException e){
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.PUT, url, references, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+
+                    }
+                });
+
+        rqueue.add(jsObjRequest);
+    }
+
+
+    public void requestMapData(String storeID){
+
+        String url = base_url + storeID +"/products";
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        String results = "";
+                        try {
+
+                            JSONArray points = response.getJSONArray("ops");
+                            mapData = deConstructJSON(points);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+
+                    }
+                });
+        rqueue.add(jsObjRequest);
     }
 
     /****
@@ -371,9 +647,6 @@ public class StoreMapActivity extends AppCompatActivity {
         rqueue.add(jsObjRequest);
     }
 
-
-
-
     /****
      * Function for setting up product along with its coordiantes
      * @param product JSONObject of the product
@@ -396,7 +669,6 @@ public class StoreMapActivity extends AppCompatActivity {
         return res;
 
     }
-
 
     /***
      *
@@ -433,32 +705,6 @@ public class StoreMapActivity extends AppCompatActivity {
         return res;
     }
 
-
-    // A needed override in order to be able to zooom... and drag maybe..
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-
-        if(!createMapDataModePoints && !createMapDataModeNeighbors) {
-            Scale.onTouchEvent(event);
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                xOnStart = event.getX();
-                yOnStart = event.getY();
-                posX = fram.getX();
-                posY = fram.getY();
-            }
-
-            if (event.getAction() == MotionEvent.ACTION_MOVE) {
-
-                float offsetX = xOnStart - event.getX();
-                float offsetY = yOnStart - event.getY();
-                fram.setX(posX - offsetX);
-                fram.setY(posY - offsetY);
-
-            }
-        }
-
-        return true;
-    }
 
 
     /***
@@ -556,6 +802,9 @@ public class StoreMapActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
+    /***TODO
+     * Make mapdata as a parameter
+     */
     /****
      * Function used to add an item to the MapData for use of PathDrawing
      * @param itemToAdd The point to add in the data
@@ -563,13 +812,13 @@ public class StoreMapActivity extends AppCompatActivity {
     public void addItemToMapDataAndDrawRoute(WimsPoints itemToAdd){
 
         int indexOfNeighbor = 0;
-        float distance = itemToAdd.distance(TESTMAPDATA.get(0).x, TESTMAPDATA.get(0).y);
+        float distance = itemToAdd.distance(mapData.get(0).x, mapData.get(0).y);
         float tempDist;
 
 
 
-        for(int i = 1; i < TESTMAPDATA.size(); i++){
-            tempDist = itemToAdd.distance(TESTMAPDATA.get(i).x, TESTMAPDATA.get(i).y);
+        for(int i = 1; i < mapData.size(); i++){
+            tempDist = itemToAdd.distance(mapData.get(i).x, mapData.get(i).y);
 
             if(tempDist < distance){
                 indexOfNeighbor = i;
@@ -577,22 +826,22 @@ public class StoreMapActivity extends AppCompatActivity {
             }
         }
 
-        itemToAdd.Neighbours.add(TESTMAPDATA.get(indexOfNeighbor));
-        TESTMAPDATA.get(indexOfNeighbor).Neighbours.add(itemToAdd);
-        TESTMAPDATA.add(itemToAdd);
+        itemToAdd.Neighbours.add(mapData.get(indexOfNeighbor));
+        mapData.get(indexOfNeighbor).Neighbours.add(itemToAdd);
+        mapData.add(itemToAdd);
 
 
         if (fram.getChildCount() == 1) {
-            fram.addView(posfac.getRouteBetweenTwoPoints(TESTMAPDATA.get(0), itemToAdd));
+            fram.addView(posfac.getRouteBetweenTwoPoints(mapData.get(0), itemToAdd));
 
         } else {
             fram.removeViewAt(1);
-            fram.addView(posfac.getRouteBetweenTwoPoints(TESTMAPDATA.get(0), itemToAdd));
+            fram.addView(posfac.getRouteBetweenTwoPoints(mapData.get(0), itemToAdd));
         }
 
-        itemToAdd.Neighbours.remove(TESTMAPDATA.get(indexOfNeighbor));
-        TESTMAPDATA.get(indexOfNeighbor).Neighbours.remove(itemToAdd);
-        TESTMAPDATA.remove(itemToAdd);
+        itemToAdd.Neighbours.remove(mapData.get(indexOfNeighbor));
+        mapData.get(indexOfNeighbor).Neighbours.remove(itemToAdd);
+        mapData.remove(itemToAdd);
     }
 
 
@@ -619,7 +868,7 @@ public class StoreMapActivity extends AppCompatActivity {
     public boolean addPointIfNew(int x, int y, ArrayList<WimsPoints> pointarray){
 
         if(!isWithin(x,y,pointarray)){
-            TESTMAPDATA.add(new WimsPoints(x, y));
+            mapData.add(new WimsPoints(x, y));
             return true;
         }
 
@@ -695,9 +944,10 @@ public class StoreMapActivity extends AppCompatActivity {
      * @param point The array of points representing the map data.
      * @return The JSON Array
      */
-    public JSONArray constructJson(ArrayList<WimsPoints> point){
+    public JSONObject constructJson(ArrayList<WimsPoints> point){
 
-       JSONArray pointArray = new JSONArray();
+        JSONObject tosend = new JSONObject();
+        JSONArray pointArray = new JSONArray();
         JSONObject Jsonpointdata;
         JSONArray neighbors;
         JSONArray fingerprint;
@@ -710,21 +960,36 @@ public class StoreMapActivity extends AppCompatActivity {
                 Jsonpointdata = new JSONObject();
                 neighbors = new JSONArray();
                 fingerprint = new JSONArray();
-                Jsonpointdata.put("_id",i);
+                //Jsonpointdata.put("_id",i);
                 Jsonpointdata.put("x",point.get(i).x);
                 Jsonpointdata.put("y",point.get(i).y);
+
+
+                if(point.get(i).fingerprint != null) {
+                    Iterator it = point.get(i).fingerprint.entrySet().iterator();
+                    if (it.hasNext()) {
+                        while (it.hasNext()) {
+                            HashMap.Entry pair = (HashMap.Entry) it.next();
+                            JSONObject print = new JSONObject();
+                            print.put(pair.getKey().toString(), pair.getValue());
+                            fingerprint.put(print);
+                        }
+                    }
+                }
                 Jsonpointdata.put("neighbors",neighbors);
                 Jsonpointdata.put("fingerprint",fingerprint);
                 pointArray.put(Jsonpointdata);
 
 
             }
+            tosend.put("points", pointArray);
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
 
-        return pointArray;
+        return tosend;
 
     }
 
@@ -736,8 +1001,9 @@ public class StoreMapActivity extends AppCompatActivity {
      * @param mapData The mapdata represented in Arraylist that has neighbors represented
      * @return the modified JSON array containing neighbors
      */
-    public JSONArray constructJSONaddNeighbors(JSONArray points, ArrayList<WimsPoints> mapData){
+    public JSONObject constructJSONaddNeighbors(JSONArray points, ArrayList<WimsPoints> mapData){
 
+        JSONObject tosend = new JSONObject();
         JSONArray res = new JSONArray();
 
         JSONArray neighbors;
@@ -748,7 +1014,8 @@ public class StoreMapActivity extends AppCompatActivity {
 
             for (int i = 0; points.length() > i; i++) {
                 workingPoint = points.getJSONObject(i);
-                WIMSpoint = getWithin(workingPoint.getInt("x"), workingPoint.getInt("y"),mapData);
+                WIMSpoint = getWithin(workingPoint.getInt("x"), workingPoint.getInt("y"), mapData);
+                WIMSpoint.ID = workingPoint.getString("_id");
                 neighbors = new JSONArray();
 
                     for(int y = 0; y < WIMSpoint.Neighbours.size(); y++) {
@@ -759,13 +1026,13 @@ public class StoreMapActivity extends AppCompatActivity {
                     res.put(workingPoint);
                 }
 
-
+                tosend.put("points", res);
 
         } catch (JSONException e){
             e.printStackTrace();
         }
 
-        return res;
+        return tosend;
 
     }
 
@@ -858,5 +1125,141 @@ public class StoreMapActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    public void setupFingerPrintThread(){
+
+        fingerthread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                while(true) {
+                    while (isScanning) {
+                        HashMap<String, ArrayList<Integer>> fingerPrintTemp = new HashMap<>(3);
+                        HashMap<String, Integer> finishedHashMap = new HashMap<>(3);
+                        ArrayList<Integer> temparray0 = new ArrayList<>();
+                        ArrayList<Integer> temparray1 = new ArrayList<>();
+                        ArrayList<Integer> temparray2 = new ArrayList<>();
+
+                        ScanResult[] scanres;
+                        scanres = fingerprinter.getFingerPrint();
+
+                        fingerPrintTemp.put(scanres[0].BSSID, temparray0);
+                        fingerPrintTemp.put(scanres[1].BSSID, temparray1);
+                        fingerPrintTemp.put(scanres[2].BSSID, temparray2);
+
+                        fingerPrintTemp.get(scanres[0].BSSID).add(scanres[0].level);
+                        fingerPrintTemp.get(scanres[1].BSSID).add(scanres[1].level);
+                        fingerPrintTemp.get(scanres[2].BSSID).add(scanres[2].level);
+
+                        for (int i = 0; i < 15; i++) {
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            scanres = fingerprinter.getFingerPrint();
+
+                            for (int x = 0; x < scanres.length; x++) {
+                                if (fingerPrintTemp.containsKey(scanres[x].BSSID)) {
+                                    fingerPrintTemp.get(scanres[x].BSSID).add(scanres[x].level);
+                                }
+                            }
+                        }
+
+                        Iterator it = fingerPrintTemp.entrySet().iterator();
+                        while (it.hasNext()) {
+                            int total = 0;
+                            HashMap.Entry pair = (HashMap.Entry) it.next();
+                            for (int y = 0; y < fingerPrintTemp.get(pair.getKey()).size(); y++) {
+                                total = total + fingerPrintTemp.get(pair.getKey()).get(y);
+                            }
+
+                            finishedHashMap.put(pair.getKey().toString(), total / fingerPrintTemp.get(pair.getKey()).size());
+                        }
+
+                        fingerPrint = finishedHashMap;
+                        currentWimsPoint.fingerprint = finishedHashMap;
+                        Message message = mHandler.obtainMessage();
+                        message.sendToTarget();
+                        isScanning = false;
+                    }
+                }
+            }
+        });
+
+    }
+
+
+    public ImageView DrawDataOnMap(ArrayList<WimsPoints> data){
+
+        ImageView ViewToAddDrawing = posfac.getPostitionOverlay((int) data.get(0).x, (int) data.get(0).y);
+        for(int i = 1; i < data.size();i++){
+            ImageView temp = ViewToAddDrawing;
+            ViewToAddDrawing = posfac.getBitMapReDrawnSpot(temp,(int)data.get(i).x,(int)data.get(i).y);
+
+            for(int n = 0; n < data.get(i).Neighbours.size(); n++) {
+                temp = ViewToAddDrawing;
+                ViewToAddDrawing = posfac.getBitMapReDrawnLine(temp, (int)data.get(i).x, (int)data.get(i).y,
+                        (int)data.get(i).Neighbours.get(n).x, (int)data.get(i).Neighbours.get(n).y);
+            }
+
+        }
+
+
+
+        return ViewToAddDrawing;
+
+
+
+    }
+
+
+    public WimsPoints findNearestNeighbor(ArrayList<WimsPoints> mapData){
+
+        ScanResult[] scanresult = fingerprinter.getFingerPrint();
+
+        WimsPoints nearestLocation = null;
+        double distance = 100000000;
+        double tempdistance = 0;
+
+        for(int i = 1; i < mapData.size(); i++){
+            if(mapData.get(i).fingerprint != null){
+
+                if(mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) && mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) &&mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID))
+                {
+                    tempdistance = DistanceBetweenScanAndPoint(mapData.get(i),scanresult);
+                    if(tempdistance < distance){
+                        distance = tempdistance;
+                        nearestLocation = mapData.get(i);
+                    }
+                }
+            }
+
+        }
+
+        if(nearestLocation != null)
+        {
+            return nearestLocation;
+        }
+        else return null;
+
+
+    }
+
+
+    public double DistanceBetweenScanAndPoint(WimsPoints point, ScanResult[] scanresult){
+
+        double[] vec = {0,0,0};
+        double distance = 0;
+
+
+        for(int i = 0; i <scanresult.length; i++){
+            vec[i] = Math.abs(scanresult[i].level - point.fingerprint.get(scanresult[i].BSSID));
+        }
+
+        distance = Math.sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2] * vec[2]);
+
+        return distance;
     }
 }

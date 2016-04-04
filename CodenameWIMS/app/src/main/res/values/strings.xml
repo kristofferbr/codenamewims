@@ -6,8 +6,8 @@
     <string name="alert_message">Are you sure you want to delete this item?</string>
     <string name="alert_pos_button">Yes</string>
     <string name="alert_neg_button">No</string>
-
-
+    <string name="title_store_map_activity">Store Map</string>
+    <string name="shopping_list_activity">Shopping List</string>
     <string name="store_json">[
         {\"_id\": \"56e6a28a28c3e3314a6849df\",
         \"name\": \"Føtex\",

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".StoreMapActivity">
+    <item
+        android:id="@+id/action_settings"
+        android:title="Settings"
+        android:orderInCategory="100"/>
+    <item
+        android:id="@+id/action_search"
+        android:orderInCategory="200"
+        android:title="Search"
+        android:icon="@drawable/search_icon2"
+        app:showAsAction="ifRoom">
+    </item>
+    <item
+        android:id="@+id/action_user"
+        android:orderInCategory="300"
+        android:title="User"
+        android:icon="@drawable/checkmark"
+        app:showAsAction="ifRoom">
+
+    </item>
+
+</menu>

@@ -4,6 +4,7 @@ import android.graphics.PointF;
 import android.os.Parcelable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by kbrod on 21/03/2016.
@@ -18,6 +19,8 @@ public class WimsPoints extends PointF implements Parcelable{
     public float fscore;
     public WimsPoints Parent;
     private String productName;
+    public String ID;
+    public HashMap<String,Integer> fingerprint = null;
 
     public WimsPoints(){
 
