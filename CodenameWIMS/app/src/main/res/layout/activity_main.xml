@@ -3,22 +3,27 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="sw805f16.codenamewims.MainActivity"
     android:id="@+id/topparent"
     android:gravity="center_horizontal"
     android:clickable="true">
 
+
+    <include
+        android:id="@+id/app_bar"
+        layout="@layout/app_bar"
+        />
+
+
     <TextView
+        android:layout_below="@id/app_bar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/title"
         android:layout_centerHorizontal="true"/>
 
     <Button
+        android:layout_below="@id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/storemapbutton"
@@ -26,6 +31,7 @@
         android:text="Store Map"/>
 
     <Button
+        android:layout_below="@id/storemapbutton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/shoppingListButton"
@@ -33,6 +39,7 @@
         android:layout_centerInParent="true"/>
 
     <FrameLayout
+        android:layout_below="@id/shoppingListButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/searchframe">

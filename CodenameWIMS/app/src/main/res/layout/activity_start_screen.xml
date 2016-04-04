@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimary">
+
+    <ImageView
+        android:layout_width="140dp"
+        android:layout_height="140dp"
+        android:src="@drawable/logo_trans"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"/>
+
+    <Button
+        android:id="@+id/startStoreBtn"
+        android:layout_width="125dp"
+        android:layout_height="60dp"
+        android:text="Store"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="200dp"
+        android:background="@color/Indigo300"
+        android:textColor="@color/White"/>
+
+    <Button
+        android:id="@+id/startShoppingBtn"
+        android:layout_width="125dp"
+        android:layout_height="60dp"
+        android:text="Shopping List"
+        android:layout_gravity="center"
+        android:layout_below="@+id/startStoreBtn"
+        android:layout_centerHorizontal="true"
+        android:background="@color/Indigo300"
+        android:layout_marginTop="5dp"
+        android:textColor="@color/White"/>
+
+    <RelativeLayout
+        android:id="@+id/startCombimeBtns"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/startShoppingBtn"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp">
+
+        <!--Change icon -->
+        <ImageButton
+            android:id="@+id/startSettingsBtn"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/search_icon2"
+            android:background="@color/Indigo300"/>
+
+        <Button
+            android:id="@+id/startExitBtn"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="Exit"
+            android:layout_toRightOf="@+id/startSettingsBtn"
+            android:layout_marginLeft="5dp"
+            android:background="@color/Indigo300"
+            android:textColor="@color/White"/>
+
+    </RelativeLayout>
+
+
+
+</RelativeLayout>

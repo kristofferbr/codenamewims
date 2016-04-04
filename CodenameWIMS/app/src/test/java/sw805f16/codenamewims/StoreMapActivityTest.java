@@ -5,6 +5,9 @@ import android.widget.ImageView;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONObject.*;
+import org.json.JSONArray;
+import org.json.JSONStringer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,11 +29,12 @@ public class StoreMapActivityTest {
     @Test
     public void tests(){
 
+
+        JSONArray productsJSON;
+
+
         StoreMapActivity storemap = Robolectric.setupActivity(StoreMapActivity.class);
 
-        storemap.getMapLayout();
-
-        android.os.SystemClock.sleep(5000);
         ImageView image = (ImageView)storemap.findViewById(R.id.storemap);
 
         Assert.assertNotNull(image.getDrawable());
