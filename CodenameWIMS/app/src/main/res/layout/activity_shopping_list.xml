@@ -4,8 +4,18 @@
     android:layout_height="match_parent"
     android:id="@+id/shoppingParent"
     android:background="@color/Indigo300"
-    android:padding="10dp">
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="sw805f16.codenamewims.ShoppingListActivity">
 
+
+    <include
+        android:id="@+id/app_bar"
+        layout="@layout/app_bar"
+        />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/app_bar">
     <!--> Need to improve this <-->
     <EditText
         android:id="@+id/shopping_textfield"
@@ -20,16 +30,16 @@
         android:layout_height="48dp"
         android:text="+"
         android:textColor="@color/White"
-        android:textSize="25dp"
+        android:textSize="25sp"
         android:layout_toRightOf="@+id/shopping_textfield"
         android:background="@drawable/rounded_button"/>
-
+    </RelativeLayout>
     <LinearLayout
         android:id="@+id/shopping_lists"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/shopping_textfield">
+        android:layout_below="@id/app_bar">
 
 
 
