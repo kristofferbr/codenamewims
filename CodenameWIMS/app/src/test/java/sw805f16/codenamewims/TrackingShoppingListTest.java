@@ -1,5 +1,6 @@
 package sw805f16.codenamewims;
 
+import android.content.Intent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -15,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowIntent;
 import org.robolectric.shadows.ShadowListView;
 
 import static org.robolectric.Shadows.*;
@@ -39,7 +41,9 @@ public class TrackingShoppingListTest {
 
     @Before
     public void setup() {
-        activity = Robolectric.setupActivity(StoreMapActivity.class);
+        Intent intent = new Intent();
+        intent.putExtra("storeId", "56e6a28a28c3e3314a6849df");
+        activity = Robolectric.buildActivity(StoreMapActivity.class).withIntent(intent).create().get();
         fragment = (ShoppingListFragment) activity.getFragmentManager().findFragmentByTag("shoppingFragment");
         search = (SearchView) fragment.getView().findViewById(R.id.shopSearch);
         suggestionList = shadowOf((ListView) fragment.getView().findViewById(R.id.suggestions));
