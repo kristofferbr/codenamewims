@@ -33,6 +33,7 @@ public class ShoppingItemActivity extends AppCompatActivity {
         // Enable the Up button
         ab.setDisplayHomeAsUpEnabled(true);
 
+        // Get the bundle from the intent received.
         Bundle b = getIntent().getExtras();
         ArrayList<String> items = b.getStringArrayList("itemsList");
 
@@ -40,6 +41,7 @@ public class ShoppingItemActivity extends AppCompatActivity {
 
     }
 
+    // This method will list all the items from the received shopping list.
     public void listItems(ArrayList<String> items) {
 
         for (int i = 0; i < items.size(); i++){
@@ -53,6 +55,7 @@ public class ShoppingItemActivity extends AppCompatActivity {
         }
     }
 
+    // Just a support method, it could, and probably should be put together with previously method. Was some difficulties when creating this.
     public void listItemsSupport(View v){
 
         GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
