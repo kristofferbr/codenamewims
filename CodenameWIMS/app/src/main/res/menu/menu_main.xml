@@ -10,7 +10,7 @@
         android:id="@+id/action_search"
         android:orderInCategory="200"
         android:title="Search"
-        android:icon="@drawable/search_icon2"
+        android:icon="@drawable/search_icon"
         app:showAsAction="ifRoom">
     </item>
     <item
