@@ -44,6 +44,9 @@ public class ShoppingActivity extends AppCompatActivity {
         // Enable the Up button
         ab.setDisplayHomeAsUpEnabled(true);
 
+
+        // This is testing data, it should be removed
+        // TODO: Remove this bit of code when ready to input more.
         mItems.add("Chicken");
         mItems.add("Beer");
         mItems.add("Lemonade");
@@ -52,13 +55,16 @@ public class ShoppingActivity extends AppCompatActivity {
 
         addShoppingList("Harold", mItems);
         addShoppingList("Tony", mItems);
+        // Ends here....
     }
 
+    // This method adds takes a name for a shopping list, and an ArrayList of items on that list. It will then display it.
     public void addShoppingList(String name, final ArrayList<String> items){
 
         LayoutInflater inflater = LayoutInflater.from(this);
         RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.shopping_list_note, null, false);
 
+        // OnClickListener for accessing the individual shopping lists.
         layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,21 +78,24 @@ public class ShoppingActivity extends AppCompatActivity {
             }
         });
 
+        // Setting the title/name of the shopping list.
         TextView title = (TextView)layout.findViewById(R.id.shopping_title);
         title.setText(name);
 
+        // This for loop adds a number of textviews to a gridlayout to display. This is done to ensure string length isn't an issue.
         for (int i = 0; i < items.size(); i++) {
 
             TextView textViewLayout = (TextView) inflater.inflate(R.layout.text_view, null, false);
             TextView textView = (TextView)textViewLayout.findViewById(R.id.shopping_items);
             textView.setText(items.get(i));
 
-            GridLayout gridLayout = (GridLayout)layout.findViewById(R.id.shopping_textViews_container);
-            gridLayout.addView(textViewLayout);
+            GridLayout gridLayoutTV = (GridLayout)layout.findViewById(R.id.shopping_textViews_container);
+            gridLayoutTV.addView(textViewLayout);
         }
 
-        GridLayout gridLayout2 = (GridLayout)findViewById(R.id.shopping_lists);
-        gridLayout2.addView(layout);
+        // Adding the layout we just created to the shopping list layout for complete display.
+        GridLayout gridLayout = (GridLayout)findViewById(R.id.shopping_lists);
+        gridLayout.addView(layout);
 
     }
 
