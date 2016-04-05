@@ -37,6 +37,10 @@ public class ShoppingItemActivity extends AppCompatActivity {
         Bundle b = getIntent().getExtras();
         ArrayList<String> items = b.getStringArrayList("itemsList");
 
+        // Retrieve the title & set title in actionbar.
+        String title = b.getString("title");
+        setTitle(title);
+
         listItems(items);
 
     }
