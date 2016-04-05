@@ -60,5 +60,12 @@ public class StartActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 }
