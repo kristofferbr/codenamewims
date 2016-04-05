@@ -44,7 +44,7 @@ public class PositionOverlay {
      * @param positionY is the Y offset
      * @return Imageview with a point in the specified location
      */
-    public ImageView generateImageView(int positionX, int positionY)
+    public ImageView generateImageViewWithSpot(int positionX, int positionY)
     {
 
         /*The bitmap on which the point is drawn*/
@@ -58,6 +58,39 @@ public class PositionOverlay {
 
         /*The point is drawn*/
         can.drawCircle((float) positionX, (float) positionY, 5f, paints);
+        //can.drawPoint((float) positionX, (float) positionY, paints);
+
+        /*The imageview is Instantiated*/
+        overlay = new ImageView(con);
+
+        ViewGroup.LayoutParams param = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        overlay.setLayoutParams(param);
+
+        /*The bitmap is added to the Imageview*/
+        overlay.setImageBitmap(emptyBit);
+
+        /*Returns the Imageview*/
+        return overlay;
+    }
+
+    public ImageView generateImageViewForFingerpriting(int positionX, int positionY)
+    {
+
+        Paint paintsForingerprint = new Paint();
+
+
+        paintsForingerprint.setColor(Color.RED);
+        /*The bitmap on which the point is drawn*/
+        emptyBit = Bitmap.createBitmap(500,750,Bitmap.Config.ARGB_8888);
+
+        /*Make the canvas draw on the bitmap*/
+        Canvas can = new Canvas(emptyBit);
+
+        /*Is set to transparrent so the view below is visible*/
+        can.drawColor(Color.TRANSPARENT);
+
+        /*The point is drawn*/
+        can.drawCircle((float) positionX, (float) positionY, 8f, paintsForingerprint);
         //can.drawPoint((float) positionX, (float) positionY, paints);
 
         /*The imageview is Instantiated*/
