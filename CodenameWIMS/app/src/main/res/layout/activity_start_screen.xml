@@ -5,11 +5,12 @@
     android:background="@color/colorPrimary">
 
     <ImageView
+        android:id="@+id/start_logo"
         android:layout_width="140dp"
         android:layout_height="140dp"
         android:src="@drawable/logo_trans"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="25dp"/>
+        android:layout_marginTop="55dp"/>
 
     <Button
         android:id="@+id/startStoreBtn"
@@ -17,9 +18,10 @@
         android:layout_height="60dp"
         android:text="Store"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="25dp"
         android:background="@color/Indigo300"
-        android:textColor="@color/White"/>
+        android:textColor="@color/White"
+        android:layout_below="@id/start_logo"/>
 
     <Button
         android:id="@+id/startShoppingBtn"

@@ -8,8 +8,12 @@
         android:id="@+id/app_bar"
         layout="@layout/app_bar"
         />
-    <EditText
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_below="@id/app_bar"
+        android:padding="10dp">
+    <EditText
         android:id="@+id/item_textfield"
         android:layout_width="292dp"
         android:layout_height="48dp"
@@ -17,7 +21,6 @@
         android:layout_marginRight="10dp"/>
 
     <Button
-        android:layout_below="@id/app_bar"
         android:id="@+id/item_add_btn"
         android:layout_width="48dp"
         android:layout_height="48dp"
@@ -44,5 +47,5 @@
 
     </GridLayout>
     </ScrollView>
-
+    </RelativeLayout>
 </RelativeLayout>

@@ -27,8 +27,7 @@ import java.util.List;
 
 public class ShoppingActivity extends AppCompatActivity {
 
-    public String[] mTitles = {"Bill", "Mary", "Harold", "John", "Deadpool"};
-    public String[] mItems = {"Chicken, Beer, Pasta, Butter", "Milk", "Bread", "", "Lemonade"};
+    public final ArrayList mItems = new ArrayList();
     private Toolbar toolbar;
 
     @Override
@@ -53,8 +52,6 @@ public class ShoppingActivity extends AppCompatActivity {
 
         addShoppingList("Harold", mItems);
         addShoppingList("Tony", mItems);
-
-
     }
 
     public void addShoppingList(String name, final ArrayList<String> items){
