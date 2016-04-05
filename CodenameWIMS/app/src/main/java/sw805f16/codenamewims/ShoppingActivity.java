@@ -45,7 +45,7 @@ public class ShoppingActivity extends AppCompatActivity {
         ab.setDisplayHomeAsUpEnabled(true);
 
 
-        // This is testing data, it should be removed
+        // This is testing data, it should be removed when ready.
         // TODO: Remove this bit of code when ready to input more.
         mItems.add("Chicken");
         mItems.add("Beer");
@@ -54,7 +54,7 @@ public class ShoppingActivity extends AppCompatActivity {
         mItems.add("supercalifrigeratorInthebutt");
 
         addShoppingList("Harold", mItems);
-        addShoppingList("Tony Tony Chopper", mItems);
+        addShoppingList("Tony Tony Chopper Chopper Chopper", mItems);
         // Ends here....
     }
 
