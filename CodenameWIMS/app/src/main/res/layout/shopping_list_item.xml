@@ -6,7 +6,8 @@
     <CheckBox
         android:id="@+id/itemListCheckBox"
         android:layout_width="32dp"
-        android:layout_height="32dp" />
+        android:layout_height="32dp"
+        android:buttonTint="@color/Indigo400"/>
 
     <TextView
         android:id="@+id/itemListName"
