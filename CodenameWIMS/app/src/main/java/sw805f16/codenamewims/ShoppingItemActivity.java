@@ -1,7 +1,9 @@
 package sw805f16.codenamewims;
 
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.GridLayout;
@@ -16,9 +18,20 @@ import java.util.ArrayList;
  */
 public class ShoppingItemActivity extends AppCompatActivity {
 
+    private Toolbar toolbar;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_shopping_list);
+
+        toolbar = (Toolbar)findViewById(R.id.app_bar);
+        setSupportActionBar(toolbar);
+
+        // Get a support ActionBar corresponding to this toolbar
+        ActionBar ab = getSupportActionBar();
+
+        // Enable the Up button
+        ab.setDisplayHomeAsUpEnabled(true);
 
         Bundle b = getIntent().getExtras();
         ArrayList<String> items = b.getStringArrayList("itemsList");
