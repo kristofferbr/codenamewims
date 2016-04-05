@@ -27,7 +27,8 @@ import java.util.List;
 public class ShoppingActivity extends AppCompatActivity {
 
     public String[] mTitles = {"Bill", "Mary", "Harold", "John", "Deadpool"};
-    public String[] mItems = {"Chicken, Beer, Pasta, Butter", "Milk", "Bread", "", "Lemonade"};
+    public ArrayList<String> mItems = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,28 +36,19 @@ public class ShoppingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_shopping_list);
 
 
-        addShoppingList("Harold");
-        addShoppingList("Michael");
-        addShoppingList("John");
-        addShoppingList("Elliot");
-        addShoppingList("Harold");
-        addShoppingList("Michael");
-        addShoppingList("John");
-        addShoppingList("Elliot");
-        addShoppingList("Harold");
-        addShoppingList("Michael");
-        addShoppingList("John");
-        addShoppingList("Elliot");
+        mItems.add("Chicken");
+        mItems.add("Beer");
+        mItems.add("Lemonade");
+        mItems.add("Chocolate");
+        mItems.add("supercalifrigeratorInthebutt");
+
+        addShoppingList("Harold", mItems);
+        addShoppingList("Tony", mItems);
+
 
     }
 
-    public void addShoppingList(String name){
-        final ArrayList<String> items = new ArrayList<>();
-
-        items.add("Chicken");
-        items.add("Butter");
-        items.add("Chili Cheese Chops");
-        items.add("Milk");
+    public void addShoppingList(String name, final ArrayList<String> items){
 
         LayoutInflater inflater = LayoutInflater.from(this);
         RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.shopping_list_note, null, false);
@@ -77,11 +69,19 @@ public class ShoppingActivity extends AppCompatActivity {
         TextView title = (TextView)layout.findViewById(R.id.shopping_title);
         title.setText(name);
 
-        TextView titems = (TextView)layout.findViewById(R.id.shopping_items);
-        titems.setText("Butter\n" + "Chicken\n" + "Milk\n" + "Chips");
+        for (int i = 0; i < items.size(); i++) {
 
-        GridLayout gridLayout = (GridLayout)findViewById(R.id.shopping_lists);
-        gridLayout.addView(layout);
+            TextView textViewLayout = (TextView) inflater.inflate(R.layout.text_view, null, false);
+            TextView textView = (TextView)textViewLayout.findViewById(R.id.shopping_items);
+            textView.setText(items.get(i));
+
+            GridLayout gridLayout = (GridLayout)layout.findViewById(R.id.shopping_textViews_container);
+            gridLayout.addView(textViewLayout);
+        }
+
+        GridLayout gridLayout2 = (GridLayout)findViewById(R.id.shopping_lists);
+        gridLayout2.addView(layout);
 
     }
+
 }

@@ -16,7 +16,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="25sp"
-            android:layout_centerHorizontal="true"/>
+            android:layout_centerHorizontal="true"
+            android:maxWidth="150dp"
+            android:ellipsize="end"/>
 
         <View
             android:id="@+id/shopping_blackline"
@@ -25,12 +27,17 @@
             android:background="#000000"
             android:layout_below="@+id/shopping_title"/>
 
-        <TextView
-            android:id="@+id/shopping_items"
+        <GridLayout
+            android:id="@+id/shopping_textViews_container"
+            android:layout_below="@+id/shopping_blackline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/shopping_blackline"
-            android:textSize="15sp"
-            android:maxLines="5"/>
+            android:columnCount="1">
+
+        </GridLayout>
+
+
+
+
     </RelativeLayout>
 </RelativeLayout>
