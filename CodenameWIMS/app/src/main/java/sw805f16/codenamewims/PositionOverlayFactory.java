@@ -21,7 +21,7 @@ public class PositionOverlayFactory{
 
     public ImageView getPostitionOverlay(int x, int y)
     {
-        return pos.generateImageView(x,y);
+        return pos.generateImageViewWithSpot(x, y);
     }
 
     public ImageView getRouteBetweenTwoPoints(WimsPoints start, WimsPoints goal){
@@ -36,5 +36,7 @@ public class PositionOverlayFactory{
         return pos.drawLineOnSameMap(view,StartX,StartY,EndX,EndY);
     }
 
-
+    public ImageView getPositionOfFingerPrintPoint(int x, int y){
+        return pos.generateImageViewForFingerpriting(x,y);
+    }
 }
