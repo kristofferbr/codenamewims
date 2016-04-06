@@ -8,6 +8,7 @@
     <string name="alert_neg_button">No</string>
     <string name="title_store_map_activity">Store Map</string>
     <string name="shopping_list_activity">Shopping List</string>
+    <string name="settings_activity">Settings</string>
     <string name="store_json">[
         {\"_id\": \"56e6a28a28c3e3314a6849df\",
         \"name\": \"Føtex\",
@@ -131,4 +132,5 @@
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
+    <string name="pref_title_language">Language</string>
 </resources>
