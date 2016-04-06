@@ -18,7 +18,8 @@
             android:textSize="25sp"
             android:layout_centerHorizontal="true"
             android:maxWidth="150dp"
-            android:ellipsize="end"/>
+            android:ellipsize="end"
+            android:singleLine="true"/>
 
         <View
             android:id="@+id/shopping_blackline"

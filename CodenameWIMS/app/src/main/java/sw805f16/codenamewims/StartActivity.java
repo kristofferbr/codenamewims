@@ -46,5 +46,12 @@ public class StartActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        exitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.exit(0);
+            }
+        });
     }
 }

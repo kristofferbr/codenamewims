@@ -45,7 +45,7 @@ public class ShoppingActivity extends AppCompatActivity {
         ab.setDisplayHomeAsUpEnabled(true);
 
 
-        // This is testing data, it should be removed
+        // This is testing data, it should be removed when ready.
         // TODO: Remove this bit of code when ready to input more.
         mItems.add("Chicken");
         mItems.add("Beer");
@@ -54,12 +54,12 @@ public class ShoppingActivity extends AppCompatActivity {
         mItems.add("supercalifrigeratorInthebutt");
 
         addShoppingList("Harold", mItems);
-        addShoppingList("Tony", mItems);
+        addShoppingList("Tony Tony Chopper Chopper Chopper", mItems);
         // Ends here....
     }
 
     // This method adds takes a name for a shopping list, and an ArrayList of items on that list. It will then display it.
-    public void addShoppingList(String name, final ArrayList<String> items){
+    public void addShoppingList(final String name, final ArrayList<String> items){
 
         LayoutInflater inflater = LayoutInflater.from(this);
         RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.shopping_list_note, null, false);
@@ -71,6 +71,7 @@ public class ShoppingActivity extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(), ShoppingItemActivity.class);
                 Bundle b = new Bundle();
                 b.putStringArrayList("itemsList", items);
+                b.putString("title", name);
 
                 intent.putExtras(b);
                 startActivity(intent);
