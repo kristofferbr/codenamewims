@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
  * So close no matter how far. Couldn't be much more from the heart..!
  */
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
+@Config(constants = BuildConfig.class, shadows = OutlineShadow.class)
 public class TrackingShoppingListTest {
 
     StoreMapActivity activity;

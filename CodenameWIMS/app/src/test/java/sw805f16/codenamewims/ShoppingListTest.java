@@ -27,7 +27,7 @@ import static org.hamcrest.CoreMatchers.*;
  */
 
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
+@Config(constants = BuildConfig.class, shadows = OutlineShadow.class)
 public class ShoppingListTest {
 
     JSONObject dummyJson;
@@ -128,7 +128,7 @@ public class ShoppingListTest {
         }
 
         //Then we set the store id to the new id
-        testFragment.setStoreId("56e6a28a28c3e3314a6849e0");
+        //testFragment.setStoreId("56e6a28a28c3e3314a6849e0");
 
         LinearLayout actual = (LinearLayout) testList.getItemAtPosition(0);
         //Lastly we assert whether the background of the items have been grayed out

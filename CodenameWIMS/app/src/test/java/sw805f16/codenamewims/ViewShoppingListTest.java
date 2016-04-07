@@ -34,7 +34,7 @@ import static org.hamcrest.CoreMatchers.*;
  */
 
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
+@Config(constants = BuildConfig.class, shadows = OutlineShadow.class)
 public class ViewShoppingListTest {
 
     ShoppingListFragment fragment;

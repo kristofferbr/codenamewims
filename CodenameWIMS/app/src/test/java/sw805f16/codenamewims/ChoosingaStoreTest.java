@@ -34,7 +34,7 @@ import static org.robolectric.Shadows.*;
  */
 
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
+@Config(constants = BuildConfig.class, shadows = OutlineShadow.class)
 public class ChoosingaStoreTest {
     MainActivity main;
     SearchView search;
