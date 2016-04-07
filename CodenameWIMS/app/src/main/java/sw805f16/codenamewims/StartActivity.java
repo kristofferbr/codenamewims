@@ -4,7 +4,9 @@ package sw805f16.codenamewims;
  * Created by Netray on 01/04/2016.
  */
 
+import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -51,6 +53,15 @@ public class StartActivity extends AppCompatActivity {
         Button shoppingButton = (Button) findViewById(R.id.startShoppingBtn);
         ImageButton settingsButton = (ImageButton) findViewById(R.id.startSettingsBtn);
         Button exitButton = (Button) findViewById(R.id.startExitBtn);
+
+        storemapButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), StoreActivity.class);
+                startActivity(intent);
+
+            }
+        });
 
 
         shoppingButton.setOnClickListener(new View.OnClickListener() {

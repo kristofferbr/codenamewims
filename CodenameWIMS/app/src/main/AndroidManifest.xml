@@ -67,6 +67,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="MainActivity" />
         </activity>
+        <activity android:name=".StoreActivity"
+            android:label="Store"
+            android:parentActivityName=".StartActivity"
+            android:screenOrientation="portrait">
+        <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value=".StartActivity" />
+        </activity>
     </application>
 
 </manifest>
