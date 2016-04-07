@@ -1,6 +1,5 @@
 package sw805f16.codenamewims;
 
-import android.content.ClipData;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +35,7 @@ public class ShoppingListUnitTest {
     Pair<LinearLayout, ItemEnum> secondItem;
     ListView itemListView;
     ArrayList<Pair<LinearLayout, ItemEnum>> itemList = new ArrayList<>();
-
+    ShoppingListFragment testFragment;
 
     @Before
     public void setup(){
@@ -45,12 +44,13 @@ public class ShoppingListUnitTest {
         unavailable_item = ItemEnum.UNAVAILABLE;
 
         shoppingListActivity = Robolectric.setupActivity(ShoppingListActivity.class);
+        testFragment = (ShoppingListFragment) shoppingListActivity.getFragmentManager().findFragmentByTag("shoppingFragment");
 
-        itemListView = (ListView) shoppingListActivity.findViewById(R.id.itemList);
+        itemListView = (ListView) testFragment.getView().findViewById(R.id.itemList);
 
-        firstLayout = (LinearLayout) LinearLayout.inflate(shoppingListActivity.getApplicationContext(),
+        firstLayout = (LinearLayout) LinearLayout.inflate(testFragment.getActivity().getApplicationContext(),
                 R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
-        secondLayout = (LinearLayout) LinearLayout.inflate(shoppingListActivity.getApplicationContext(),
+        secondLayout = (LinearLayout) LinearLayout.inflate(testFragment.getActivity().getApplicationContext(),
                 R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
 
         firstItem = new Pair<LinearLayout, ItemEnum>(firstLayout, ItemEnum.MARKED);
@@ -58,7 +58,7 @@ public class ShoppingListUnitTest {
         itemList.add(firstItem);
         itemList.add(secondItem);
 
-        shoppingListAdapter = new ShoppingListAdapter(shoppingListActivity.getApplicationContext(),
+        shoppingListAdapter = new ShoppingListAdapter(testFragment.getActivity().getApplicationContext(),
                 R.layout.simple_list_view, itemList);
     }
 
