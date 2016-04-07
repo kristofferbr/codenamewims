@@ -16,6 +16,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.LinearLayout;
@@ -28,6 +30,7 @@ import java.util.List;
 public class ShoppingActivity extends AppCompatActivity {
 
     public final ArrayList mItems = new ArrayList();
+    public String shoppingListName = "";
     private Toolbar toolbar;
 
     @Override
@@ -43,6 +46,29 @@ public class ShoppingActivity extends AppCompatActivity {
 
         // Enable the Up button
         ab.setDisplayHomeAsUpEnabled(true);
+
+        Button addButton = (Button)findViewById(R.id.shopping_add_btn);
+        final EditText editText = (EditText)findViewById(R.id.shopping_textfield);
+
+
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                shoppingListName = editText.getText().toString();
+                final ArrayList itemList = new ArrayList();
+                addShoppingList(shoppingListName, itemList);
+                editText.setText("");
+
+                Intent intent = new Intent(getApplicationContext(), ShoppingItemActivity.class);
+                Bundle b = new Bundle();
+                b.putStringArrayList("itemsList", itemList);
+                b.putString("title", shoppingListName);
+
+                intent.putExtras(b);
+                startActivity(intent);
+                finish();
+            }
+        });
 
 
         // This is testing data, it should be removed when ready.
