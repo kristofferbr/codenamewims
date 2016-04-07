@@ -9,6 +9,14 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 
 /**
+ *
+ * A {@link PreferenceFragment} that presents a set of application settings.
+ * <p/>
+ * See <a href="http://developer.android.com/design/patterns/settings.html">
+ * Android Design: Settings</a> for design guidelines and the <a
+ * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
+ * API Guide</a> for more information on developing a Settings UI.
+
  * Created by FlækkerMaskinen on 05/04/2016.
  */
 public class SettingsFragment extends PreferenceFragment {
@@ -18,7 +26,6 @@ public class SettingsFragment extends PreferenceFragment {
 
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences);
-
         bindPreferenceSummaryToValue(findPreference("language_list"));
     }
 
@@ -26,7 +33,8 @@ public class SettingsFragment extends PreferenceFragment {
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
      */
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
+    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener
+            = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();

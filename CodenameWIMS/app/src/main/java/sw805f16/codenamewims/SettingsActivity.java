@@ -9,6 +9,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 /**
+ *
+ * A {@link AppCompatActivity} that presents a set of application settings
+ * through a SettingsFragment
+ *
  * Created by Flækker-Maskinen on 05/04/2016.
  */
 public class SettingsActivity extends AppCompatActivity {
@@ -17,6 +21,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
+        //Load AppBar
         toolbar = (Toolbar)findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
 
@@ -48,8 +53,6 @@ public class SettingsActivity extends AppCompatActivity {
             getFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, settingsFragment)
                     .commit();
-          //  getSupportFragmentManager().beginTransaction()
-         //           .add(R.id.fragment_container, new SettingsFragment()).commit();
         }
     }
 }
