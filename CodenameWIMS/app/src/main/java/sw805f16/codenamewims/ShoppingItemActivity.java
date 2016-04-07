@@ -6,6 +6,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -35,7 +37,9 @@ public class ShoppingItemActivity extends AppCompatActivity {
 
         // Get the bundle from the intent received.
         Bundle b = getIntent().getExtras();
-        ArrayList<String> items = b.getStringArrayList("itemsList");
+        final ArrayList<String> items = b.getStringArrayList("itemsList");
+
+        visibility(items);
 
         // Retrieve the title & set title in actionbar.
         String title = b.getString("title");
@@ -43,10 +47,31 @@ public class ShoppingItemActivity extends AppCompatActivity {
 
         listItems(items);
 
+        Button addButton = (Button)findViewById(R.id.item_add_btn);
+
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String s = "";
+                EditText editText = (EditText)findViewById(R.id.item_textfield);
+                s = editText.getText().toString();
+                editText.setText("");
+
+                items.add(s);
+
+                visibility(items);
+
+                listItems(items);
+            }
+        });
+
     }
 
     // This method will list all the items from the received shopping list.
     public void listItems(ArrayList<String> items) {
+
+        GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
+        gridLayout.removeAllViews();
 
         for (int i = 0; i < items.size(); i++){
 
@@ -64,6 +89,16 @@ public class ShoppingItemActivity extends AppCompatActivity {
 
         GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
         gridLayout.addView(v);
+    }
+
+    public void visibility(ArrayList<String> items){
+        if (items.isEmpty()){
+
+        }
+        else {
+            GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
+            gridLayout.setVisibility(View.VISIBLE);
+        }
     }
 
 }

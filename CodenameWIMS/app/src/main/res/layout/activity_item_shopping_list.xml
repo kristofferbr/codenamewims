@@ -42,7 +42,8 @@
         android:layout_height="match_parent"
         android:background="@drawable/rounded_edittext"
         android:layout_marginTop="5dp"
-        android:columnCount="1">
+        android:columnCount="1"
+        android:visibility="invisible">
 
 
     </GridLayout>
