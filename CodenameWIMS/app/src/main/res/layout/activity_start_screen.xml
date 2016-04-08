@@ -19,7 +19,7 @@
         android:text="Store"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="25dp"
-        android:background="@color/Indigo300"
+        android:background="@drawable/start_button"
         android:textColor="@color/White"
         android:layout_below="@id/start_logo"/>
 
@@ -31,7 +31,7 @@
         android:layout_gravity="center"
         android:layout_below="@+id/startStoreBtn"
         android:layout_centerHorizontal="true"
-        android:background="@color/Indigo300"
+        android:background="@drawable/start_button"
         android:layout_marginTop="5dp"
         android:textColor="@color/White"/>
 
@@ -49,7 +49,7 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:src="@drawable/settings_icon"
-            android:background="@color/Indigo300"/>
+            android:background="@drawable/start_button"/>
 
         <Button
             android:id="@+id/startExitBtn"
@@ -58,7 +58,7 @@
             android:text="Exit"
             android:layout_toRightOf="@+id/startSettingsBtn"
             android:layout_marginLeft="5dp"
-            android:background="@color/Indigo300"
+            android:background="@drawable/start_button"
             android:textColor="@color/White"/>
 
     </RelativeLayout>
