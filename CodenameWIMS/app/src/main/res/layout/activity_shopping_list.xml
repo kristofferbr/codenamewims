@@ -21,7 +21,7 @@
     <!--> Need to improve this <-->
     <EditText
         android:id="@+id/shopping_textfield"
-        android:layout_width="292dp"
+        android:layout_width="282dp"
         android:layout_height="48dp"
         android:background="@drawable/rounded_edittext"
         android:layout_marginRight="10dp"
