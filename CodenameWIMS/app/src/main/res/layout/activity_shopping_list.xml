@@ -3,9 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/shoppingParent"
-    android:background="@color/Indigo300"
+    android:background="@color/Indigo400"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="sw805f16.codenamewims.ShoppingListActivity">
+    tools:context="sw805f16.codenamewims.ShoppingListActivity"
+    android:focusableInTouchMode="true">
 
 
     <include
@@ -24,7 +25,10 @@
         android:layout_height="48dp"
         android:background="@drawable/rounded_edittext"
         android:layout_marginRight="10dp"
-        android:windowSoftInputMode="stateHidden"/>
+        android:windowSoftInputMode="stateHidden"
+        android:hint="Create shopping list..."
+        android:textColorHint="@drawable/edittext_hint"
+        />
 
     <Button
         android:id="@+id/shopping_add_btn"
@@ -34,7 +38,7 @@
         android:textColor="@color/White"
         android:textSize="25sp"
         android:layout_toRightOf="@+id/shopping_textfield"
-        android:background="@drawable/rounded_button"/>
+        android:background="@drawable/start_button"/>
 
     <ScrollView
         android:layout_below="@+id/shopping_add_btn"

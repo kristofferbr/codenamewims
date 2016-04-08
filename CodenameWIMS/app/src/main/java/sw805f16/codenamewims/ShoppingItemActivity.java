@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -55,13 +56,20 @@ public class ShoppingItemActivity extends AppCompatActivity {
                 String s = "";
                 EditText editText = (EditText)findViewById(R.id.item_textfield);
                 s = editText.getText().toString();
-                editText.setText("");
 
-                items.add(s);
+                if (s.equalsIgnoreCase("")) {
+                    Toast.makeText(ShoppingItemActivity.this, "Please enter an item name.", Toast.LENGTH_SHORT).show();
+                }
+                else {
 
-                visibility(items);
+                    editText.setText("");
 
-                listItems(items);
+                    items.add(s);
+
+                    visibility(items);
+
+                    listItems(items);
+                }
             }
         });
 

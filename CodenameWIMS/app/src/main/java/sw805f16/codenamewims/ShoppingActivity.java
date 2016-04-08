@@ -23,6 +23,7 @@ import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,19 +55,26 @@ public class ShoppingActivity extends AppCompatActivity {
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+
                 shoppingListName = editText.getText().toString();
                 final ArrayList itemList = new ArrayList();
-                addShoppingList(shoppingListName, itemList);
-                editText.setText("");
+                if (shoppingListName.equalsIgnoreCase("")) {
+                    Toast.makeText(ShoppingActivity.this, "Please enter a name.", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    addShoppingList(shoppingListName, itemList);
+                    editText.setText("");
 
-                Intent intent = new Intent(getApplicationContext(), ShoppingItemActivity.class);
-                Bundle b = new Bundle();
-                b.putStringArrayList("itemsList", itemList);
-                b.putString("title", shoppingListName);
+                    Intent intent = new Intent(getApplicationContext(), ShoppingItemActivity.class);
+                    Bundle b = new Bundle();
+                    b.putStringArrayList("itemsList", itemList);
+                    b.putString("title", shoppingListName);
 
-                intent.putExtras(b);
-                startActivity(intent);
-                finish();
+                    intent.putExtras(b);
+                    startActivity(intent);
+                    finish();
+                }
             }
         });
 

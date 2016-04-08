@@ -3,7 +3,8 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/Indigo300">
+    android:background="@color/Indigo400"
+    android:focusableInTouchMode="true">
 <include
         android:id="@+id/app_bar"
         layout="@layout/app_bar"
@@ -18,7 +19,9 @@
         android:layout_width="292dp"
         android:layout_height="48dp"
         android:background="@drawable/rounded_edittext"
-        android:layout_marginRight="10dp"/>
+        android:layout_marginRight="10dp"
+        android:hint="Add items..."
+        android:textColorHint="@drawable/edittext_hint"/>
 
     <Button
         android:id="@+id/item_add_btn"
@@ -28,7 +31,7 @@
         android:textColor="@color/White"
         android:textSize="25dp"
         android:layout_toRightOf="@+id/item_textfield"
-        android:background="@drawable/rounded_button"/>
+        android:background="@drawable/start_button"/>
 
     <ScrollView
         android:layout_below="@+id/item_textfield"
