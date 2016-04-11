@@ -8,8 +8,12 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,24 +38,20 @@ public class ShoppingActivity extends WimsActivity {
     public final ArrayList mItems = new ArrayList();
     public String shoppingListName = "";
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shopping_list);
 
-
         Button addButton = (Button)findViewById(R.id.shopping_add_btn);
         final EditText editText = (EditText)findViewById(R.id.shopping_textfield);
 
         //WimsButton test = new WimsButton(this, this.getResources().getDrawable(R.drawable.no_icon));
-
         //addWimsButtonToActionBar(test, RIGHT);
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
 
                 shoppingListName = editText.getText().toString();
                 final ArrayList itemList = new ArrayList();
@@ -73,7 +73,7 @@ public class ShoppingActivity extends WimsActivity {
             }
         });
 
-
+        loadArray(this);
         // This is testing data, it should be removed when ready.
         // TODO: Remove this bit of code when ready to input more.
         mItems.add("Chicken");
@@ -84,9 +84,37 @@ public class ShoppingActivity extends WimsActivity {
 
         addShoppingList("Harold", mItems);
         addShoppingList("Tony Tony Chopper Chopper Chopper", mItems);
-        // Ends here....
+        saveArray();
     }
 
+    public boolean saveArray()
+    {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor mEdit1 = sp.edit();
+    /* mItems is an array */
+        mEdit1.putInt("Status_size", mItems.size());
+
+        for(int i=0;i<mItems.size();i++)
+        {
+            mEdit1.remove("Status_" + i);
+            mEdit1.putString("Status_" + i, mItems.get(i).toString());
+        }
+
+        return mEdit1.commit();
+    }
+
+    public void loadArray(Context mContext)
+    {
+        SharedPreferences mSharedPreference1 =   PreferenceManager.getDefaultSharedPreferences(mContext);
+        mItems.clear();
+        int size = mSharedPreference1.getInt("Status_size", 0);
+
+        for(int i=0;i<size;i++)
+        {
+            mItems.add(mSharedPreference1.getString("Status_" + i, null));
+        }
+
+    }
     // This method adds takes a name for a shopping list, and an ArrayList of items on that list. It will then display it.
     public void addShoppingList(final String name, final ArrayList<String> items){
 
@@ -111,7 +139,8 @@ public class ShoppingActivity extends WimsActivity {
         TextView title = (TextView)layout.findViewById(R.id.shopping_title);
         title.setText(name);
 
-        // This for loop adds a number of textviews to a gridlayout to display. This is done to ensure string length isn't an issue.
+        // This for loop adds a number of textviews to a gridlayout to display.
+        // This is done to ensure string length isn't an issue.
         for (int i = 0; i < items.size(); i++) {
 
             TextView textViewLayout = (TextView) inflater.inflate(R.layout.text_view, null, false);
@@ -125,7 +154,5 @@ public class ShoppingActivity extends WimsActivity {
         // Adding the layout we just created to the shopping list layout for complete display.
         GridLayout gridLayout = (GridLayout)findViewById(R.id.shopping_lists);
         gridLayout.addView(layout);
-
     }
-
 }
