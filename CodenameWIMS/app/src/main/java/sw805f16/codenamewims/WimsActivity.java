@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -18,7 +19,7 @@ import android.widget.TextView;
  */
 public class WimsActivity extends FragmentActivity {
 
-    private final float ACTION_BAR_SPACING_LEFT_RIGHT = 15;
+    private final float ACTION_BAR_SPACING_LEFT_RIGHT = 5;
     private final float ACTION_BAR_SPACING_TOP_BOTTOM = 6;
     private final float ACTION_BAR_TEXT_PADDING = 4 * ACTION_BAR_SPACING_TOP_BOTTOM;
     private ActionBar actionBar;
@@ -123,11 +124,12 @@ public class WimsActivity extends FragmentActivity {
         final int paddingLeftRight = (int) WimsScalingUtilities.convertDpToPixel(this, ACTION_BAR_SPACING_LEFT_RIGHT);
         final int paddingTopBottom = (int) WimsScalingUtilities.convertDpToPixel(this, ACTION_BAR_SPACING_TOP_BOTTOM);
 
-        actionBarCustomView.setPadding(paddingLeftRight, paddingTopBottom, paddingLeftRight, paddingTopBottom);
+        // Added double padding to the left.
+        actionBarCustomView.setPadding(paddingLeftRight + paddingLeftRight, paddingTopBottom, paddingLeftRight, paddingTopBottom);
 
         actionBarCustomView.setBackgroundResource(R.color.colorPrimary);
+        actionBarCustomView.setId(R.id.wims_action_bar_primary_view);
 
-        // TODO Change icon, and there's a deprecated resource.
         final WimsButton backButton = new WimsButton(this, this.getResources().getDrawable(R.drawable.back_icon));
 
         backButton.setId(R.id.wims_action_bar_back_button);
@@ -162,6 +164,9 @@ public class WimsActivity extends FragmentActivity {
         actionBarTitleView.setTextSize(TypedValue.COMPLEX_UNIT_PX, calculateActionBarTextSize());
         actionBarTitleView.setGravity(Gravity.CENTER);
         actionBarTitleView.setTextColor(getResources().getColor(R.color.White));
+        actionBarTitleView.setSingleLine(true);
+        actionBarTitleView.setEllipsize(TextUtils.TruncateAt.END);
+
 
         actionBarTitleView.setIncludeFontPadding(false);
 

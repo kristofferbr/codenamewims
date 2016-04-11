@@ -27,7 +27,7 @@ public class WimsButton extends LinearLayout {
     private final int ICON_MAX_HEIGHT = (int) WimsScalingUtilities.convertDpToPixel(this.getContext(), 45);
 
     private final int SUBVIEW_SPACING = (int) WimsScalingUtilities.convertDpToPixel(this.getContext(), 10);
-    private final int BUTTON_PADDING = (int) WimsScalingUtilities.convertDpToPixel(this.getContext(), 10);
+    private final int BUTTON_PADDING = (int) WimsScalingUtilities.convertDpToPixel(this.getContext(), 10); // This one makes the icon in a button smaller and larger
 
     public WimsButton(Context context, Drawable icon) {
         this(context, icon, null);
@@ -140,7 +140,8 @@ public class WimsButton extends LinearLayout {
 
         textViewParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
-        this.setBackgroundResource(R.color.Indigo300);
+        // This is custom buttom style
+        this.setBackgroundResource(R.drawable.start_button);
 
 
         if (!this.isEnabled()) {
