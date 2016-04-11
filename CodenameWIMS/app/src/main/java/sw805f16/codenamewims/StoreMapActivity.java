@@ -5,7 +5,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.graphics.Bitmap;
 
-import android.support.v7.app.ActionBar;import android.net.wifi.ScanResult;
+import android.net.wifi.ScanResult;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;import android.support.v7.app.AppCompatActivity;
@@ -51,6 +51,8 @@ public class StoreMapActivity extends AppCompatActivity {
 
     //The threshold value for determining probabilities
     private static final int threshold = 80;
+    //TODO: Change this to better represent distance
+    private static final int maxDist = 25;
 
     // URL til map /api/store/ID/map
     public boolean isInFront = false;
@@ -412,7 +414,8 @@ public class StoreMapActivity extends AppCompatActivity {
                 }
 
                 WimsPoints location = new WimsPoints();
-                location = findNearestNeighbor(mapData);
+                ScanResult[] scanResults = fingerprinter.getFingerPrint();
+                location = positioningUser(scanResults, mapData);
 
                 if(location != null)
                 fram.addView(posfac.getPositionOfFingerPrintPoint((int)location.x,(int)location.y));
@@ -1237,70 +1240,26 @@ public class StoreMapActivity extends AppCompatActivity {
     /***
      * A simple nearest neighbor algorithm for positioning
      * @param mapData The data of the map
-     * @return The point that the scan indicates is the nearest.
+     * @param k The number of neighbors we want to return
+     * @param scanResult The scan from where we want the nearest fingerprints
+     * @return The points that the scan indicates is the nearest.
      */
-    public WimsPoints findNearestNeighbor(ArrayList<WimsPoints> mapData){
+    public WimsPoints[] kNearestNeighbor(ArrayList<WimsPoints> mapData, int k, ScanResult[] scanResult){
 
-        ScanResult[] scanresult = fingerprinter.getFingerPrint();
+        WimsPoints[] nearestNeighbors = new WimsPoints[k];
 
-        WimsPoints three_hit_nearestLocation = null;
-        WimsPoints two_hit_nearestLocation = null;
-        WimsPoints one_hit_nearestLocation = null;
-        double three_hit_distance = Double.POSITIVE_INFINITY;
-        double two_hit_distance = Double.POSITIVE_INFINITY;;
-        double one_hit_distnace = Double.POSITIVE_INFINITY;;
-        double three_hit_tempdistance = 0;
-        double two_hit_tempdistance = 0;
-        double one_hit_tempdistance = 0;
-
-        for(int i = 0; i < mapData.size(); i++){
-            if(mapData.get(i).fingerprint != null){
-
-                if(mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) && mapData.get(i).fingerprint.containsKey(scanresult[1].BSSID) &&mapData.get(i).fingerprint.containsKey(scanresult[2].BSSID))
-                {
-                    three_hit_tempdistance = DistanceBetweenScanAndPoint(mapData.get(i),scanresult);
-                    if(three_hit_tempdistance < three_hit_distance){
-                        three_hit_distance = three_hit_tempdistance;
-                        three_hit_nearestLocation = mapData.get(i);
-                    }
-                } else if(mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) && mapData.get(i).fingerprint.containsKey(scanresult[1].BSSID) ||
-                        mapData.get(i).fingerprint.containsKey(scanresult[1].BSSID) && mapData.get(i).fingerprint.containsKey(scanresult[2].BSSID) ||
-                        mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) && mapData.get(i).fingerprint.containsKey(scanresult[2].BSSID))
-                {
-                    two_hit_tempdistance = DistanceBetweenScanAndPoint(mapData.get(i),scanresult);
-                    if(two_hit_tempdistance < two_hit_distance)
-                    {
-                        two_hit_distance = two_hit_tempdistance;
-                        two_hit_nearestLocation = mapData.get(i);
-                    }
-                } else if (mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) || mapData.get(i).fingerprint.containsKey(scanresult[1].BSSID) || mapData.get(i).fingerprint.containsKey(scanresult[2].BSSID)){
-
-                    one_hit_tempdistance = DistanceBetweenScanAndPoint(mapData.get(i),scanresult);
-
-                    if(one_hit_tempdistance < one_hit_distnace){
-                        one_hit_distnace = one_hit_tempdistance;
-                        one_hit_nearestLocation = mapData.get(i);
-                    }
-                }
+        int i = 0;
+        for (WimsPoints point : mapData) {
+            if (DistanceBetweenScanAndPoint(point, scanResult) <= maxDist) {
+                nearestNeighbors[i] = point;
+                i++;
             }
-
+            if (i > k) {
+                break;
+            }
         }
 
-        if(three_hit_nearestLocation != null)
-        {
-            return three_hit_nearestLocation;
-        }
-        else if(two_hit_nearestLocation != null)
-        {
-            return two_hit_nearestLocation;
-        }
-        else if( one_hit_nearestLocation != null)
-        {
-            return one_hit_nearestLocation;
-        }
-        else return null;
-
-
+        return nearestNeighbors;
     }
 
 
@@ -1322,8 +1281,44 @@ public class StoreMapActivity extends AppCompatActivity {
             else vec[i] = 0;
         }
 
-        distance = Math.sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2] * vec[2]);
+        distance = Math.sqrt(Math.pow(vec[0], 2) + Math.pow(vec[1], 2) + Math.pow(vec[2], 2));
 
         return distance;
+    }
+
+
+    /**
+     * This algorithm returns the WimsPoint that the user is most likely closest to
+     * @param scanResults The last scan result
+     * @param mapData The list of WimsPoints in the map
+     * @return The point the user is most likely closest to
+     */
+    public WimsPoints positioningUser(ScanResult[] scanResults, ArrayList<WimsPoints> mapData) {
+        WimsPoints[] candidates = kNearestNeighbor(mapData, 10, scanResults);
+
+        double[] candidatePriori = new double[candidates.length - 1];
+        double totalPriori = 0;
+
+        for (int i = 0; i < candidates.length; i++) {
+            for (int n = 0; n < scanResults.length; n++) {
+                candidatePriori[i] = candidatePriori[i] * candidates[i].getProbabilityDistribution().get(scanResults[n].BSSID);
+            }
+        }
+        for (double prob : candidatePriori) {
+            totalPriori = totalPriori + prob;
+        }
+
+        double posterior;
+        double highestPosterior = 0;
+        WimsPoints returnPoint = new WimsPoints();
+
+        for (int i = 0; i < candidates.length; i++) {
+            posterior = (candidatePriori[i]/totalPriori);
+            if (posterior > highestPosterior) {
+                returnPoint = candidates[i];
+            }
+        }
+
+        return returnPoint;
     }
 }
