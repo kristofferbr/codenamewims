@@ -83,7 +83,7 @@ public class ShoppingActivity extends WimsActivity {
         mItems.add("supercalifrigeratorInthebutt");
 
         addShoppingList("Harold", mItems);
-        addShoppingList("Tony Tony Chopper Chopper Chopper", mItems);
+        addShoppingList("Tony Tony Chop", mItems);
         // Ends here....
     }
 

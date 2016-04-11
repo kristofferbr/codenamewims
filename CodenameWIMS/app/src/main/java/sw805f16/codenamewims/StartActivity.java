@@ -21,17 +21,11 @@ import android.widget.ImageButton;
 
 public class StartActivity extends Activity {
 
-    Parcelable fragmentState;
-
 
     protected void onCreate(Bundle savedInstanceState) {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE); // Removes action bar for start screen.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_screen); // When refactoring, change to activity_start_screen layoutet.
-
-        if (getIntent().getParcelableExtra("state") != null) {
-            fragmentState = getIntent().getParcelableExtra("state");
-        }
 
 
         Button storemapButton = (Button) findViewById(R.id.startStoreBtn);

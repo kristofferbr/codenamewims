@@ -8,6 +8,8 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.RelativeLayout;
@@ -26,15 +28,23 @@ public class ShoppingItemActivity extends WimsActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_shopping_list);
 
+
+        WimsButton delete = new WimsButton(this, this.getResources().getDrawable(R.drawable.delete_icon));
+
+        addWimsButtonToActionBar(delete, RIGHT);
+
+
         // Get the bundle from the intent received.
         Bundle b = getIntent().getExtras();
         final ArrayList<String> items = b.getStringArrayList("itemsList");
+
 
         visibility(items);
 
         // Retrieve the title & set title in actionbar.
         String title = b.getString("title");
-        setTitle(title);
+        setActionBarTitle(title);
+        //setTitle(title);
 
         listItems(items);
 
@@ -62,6 +72,22 @@ public class ShoppingItemActivity extends WimsActivity {
                 }
             }
         });
+
+        //CheckBox checkBox = (CheckBox)findViewById(R.id.itemListCheckBox);
+        final RelativeLayout relativeLayout = (RelativeLayout)findViewById(R.id.wims_action_bar_primary_view);
+
+        /*checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
+                if (isChecked){
+
+                    relativeLayout.setBackgroundResource(R.color.Indigo200);
+                }
+                else {
+                    relativeLayout.setBackgroundResource(R.color.colorPrimary);
+                }
+            }
+        });*/
 
     }
 
