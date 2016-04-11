@@ -49,6 +49,8 @@ import java.util.Iterator;
 
 public class StoreMapActivity extends AppCompatActivity {
 
+    //The threshold value for determining probabilities
+    private static final int threshold = 80;
 
     // URL til map /api/store/ID/map
     public boolean isInFront = false;
@@ -1177,12 +1179,17 @@ public class StoreMapActivity extends AppCompatActivity {
                         Iterator it = fingerPrintTemp.entrySet().iterator();
                         while (it.hasNext()) {
                             int total = 0;
+                            int observation = 0;
                             HashMap.Entry pair = (HashMap.Entry) it.next();
                             for (int y = 0; y < fingerPrintTemp.get(pair.getKey()).size(); y++) {
+                                if (fingerPrintTemp.get(pair.getKey()).get(y) > threshold) {
+                                    observation++;
+                                }
                                 total = total + fingerPrintTemp.get(pair.getKey()).get(y);
                             }
 
                             finishedHashMap.put(pair.getKey().toString(), total / fingerPrintTemp.get(pair.getKey()).size());
+                            currentWimsPoint.setProbabilityDistributions((String) pair.getKey(), observation / fingerPrintTemp.get(pair.getKey()).size());
                         }
 
                         fingerPrint = finishedHashMap;

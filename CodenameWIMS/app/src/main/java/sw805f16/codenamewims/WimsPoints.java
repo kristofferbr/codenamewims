@@ -21,6 +21,7 @@ public class WimsPoints extends PointF implements Parcelable{
     private String productName;
     public String ID;
     public HashMap<String,Integer> fingerprint = null;
+    private HashMap<String, Float> probDist = new HashMap<>();
 
     public WimsPoints(){
 
@@ -52,6 +53,14 @@ public class WimsPoints extends PointF implements Parcelable{
         float tempY = Math.abs(y - thisy);
 
         return (float)Math.sqrt(tempX*tempX+tempY*tempY);
+    }
+
+    public void setProbabilityDistributions(String bssid, float probability) {
+        this.probDist.put(bssid, probability);
+    }
+
+    public HashMap<String, Float> getProbabilityDistribution() {
+        return probDist;
     }
 
     public String getProductName() {
