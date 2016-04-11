@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="WimsButton">
+        <attr name="button_icon" format="integer"/>
+        <attr name="button_text" format="string" />
+    </declare-styleable>
+</resources>

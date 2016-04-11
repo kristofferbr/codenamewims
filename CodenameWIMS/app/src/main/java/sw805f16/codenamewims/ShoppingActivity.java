@@ -4,6 +4,7 @@ package sw805f16.codenamewims;
  * Created by Netray on 01/04/2016.
  */
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -28,29 +29,24 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShoppingActivity extends AppCompatActivity {
+public class ShoppingActivity extends WimsActivity {
 
     public final ArrayList mItems = new ArrayList();
     public String shoppingListName = "";
-    private Toolbar toolbar;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shopping_list);
 
-        toolbar = (Toolbar)findViewById(R.id.app_bar);
-        setSupportActionBar(toolbar);
-
-        // Get a support ActionBar corresponding to this toolbar
-        ActionBar ab = getSupportActionBar();
-
-        // Enable the Up button
-        ab.setDisplayHomeAsUpEnabled(true);
 
         Button addButton = (Button)findViewById(R.id.shopping_add_btn);
         final EditText editText = (EditText)findViewById(R.id.shopping_textfield);
 
+        //WimsButton test = new WimsButton(this, this.getResources().getDrawable(R.drawable.no_icon));
+
+        //addWimsButtonToActionBar(test, RIGHT);
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,7 +69,6 @@ public class ShoppingActivity extends AppCompatActivity {
 
                     intent.putExtras(b);
                     startActivity(intent);
-                    finish();
                 }
             }
         });
@@ -109,7 +104,6 @@ public class ShoppingActivity extends AppCompatActivity {
 
                 intent.putExtras(b);
                 startActivity(intent);
-                finish();
             }
         });
 

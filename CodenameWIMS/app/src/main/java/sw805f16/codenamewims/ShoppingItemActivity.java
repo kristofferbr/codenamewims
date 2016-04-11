@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -19,22 +20,11 @@ import java.util.ArrayList;
 /**
  * Created by Netray on 04/04/2016.
  */
-public class ShoppingItemActivity extends AppCompatActivity {
-
-    private Toolbar toolbar;
+public class ShoppingItemActivity extends WimsActivity {
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_shopping_list);
-
-        toolbar = (Toolbar)findViewById(R.id.app_bar);
-        setSupportActionBar(toolbar);
-
-        // Get a support ActionBar corresponding to this toolbar
-        ActionBar ab = getSupportActionBar();
-
-        // Enable the Up button
-        ab.setDisplayHomeAsUpEnabled(true);
 
         // Get the bundle from the intent received.
         Bundle b = getIntent().getExtras();
@@ -87,6 +77,9 @@ public class ShoppingItemActivity extends AppCompatActivity {
             RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.shopping_list_item, null, false);
             TextView itemsText = (TextView)layout.findViewById(R.id.itemListName);
             itemsText.setText(items.get(i));
+
+            TextView amountText = (TextView)layout.findViewById(R.id.itemListAmount);
+            amountText.setText("x" + 100);
 
             listItemsSupport(layout);
         }

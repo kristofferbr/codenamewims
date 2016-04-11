@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="WimsTheme" parent="android:Theme.Holo.Light">
+        <item name="android:windowBackground">@color/colorPrimary</item>
+    </style>
+
+    <style name="GirafTheme.NoTitleBar" parent="WimsTheme">
+        <item name="android:windowNoTitle">true</item>
+    </style>
+</resources>

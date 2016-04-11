@@ -11,16 +11,11 @@
         android:layout_height="match_parent"
         android:focusable="true">
 
-        <include
-            android:id="@+id/app_bar"
-            layout="@layout/app_bar"
-            />
 
         <RelativeLayout
             android:id="@+id/store_search_bar"
             android:layout_width="match_parent"
             android:layout_height="42dp"
-            android:layout_below="@+id/app_bar"
             android:background="@color/Indigo400">
 
             <RelativeLayout

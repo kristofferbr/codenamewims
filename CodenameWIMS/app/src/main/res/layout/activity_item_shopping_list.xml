@@ -5,14 +5,10 @@
     android:layout_height="match_parent"
     android:background="@color/Indigo400"
     android:focusableInTouchMode="true">
-<include
-        android:id="@+id/app_bar"
-        layout="@layout/app_bar"
-        />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/app_bar"
         android:padding="10dp">
     <EditText
         android:id="@+id/item_textfield"
