@@ -48,21 +48,16 @@ public class ShoppingItemActivity extends WimsActivity {
                 s = editText.getText().toString();
 
                 if (s.equalsIgnoreCase("")) {
-                    Toast.makeText(ShoppingItemActivity.this, "Please enter an item name.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ShoppingItemActivity.this, R.string.Please_enter_an_item_name, Toast.LENGTH_SHORT).show();
                 }
                 else {
-
                     editText.setText("");
-
                     items.add(s);
-
                     visibility(items);
-
                     listItems(items);
                 }
             }
         });
-
     }
 
     // This method will list all the items from the received shopping list.
@@ -75,7 +70,7 @@ public class ShoppingItemActivity extends WimsActivity {
 
             LayoutInflater inflater = LayoutInflater.from(this);
             RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.shopping_list_item, null, false);
-            TextView itemsText = (TextView)layout.findViewById(R.id.itemListName);
+            TextView itemsText = (TextView) layout.findViewById(R.id.itemListName);
             itemsText.setText(items.get(i));
 
             TextView amountText = (TextView)layout.findViewById(R.id.itemListAmount);
@@ -87,19 +82,14 @@ public class ShoppingItemActivity extends WimsActivity {
 
     // Just a support method, it could, and probably should be put together with previously method. Was some difficulties when creating this.
     public void listItemsSupport(View v){
-
         GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
         gridLayout.addView(v);
     }
 
     public void visibility(ArrayList<String> items){
-        if (items.isEmpty()){
-
-        }
-        else {
+        if (!items.isEmpty()){
             GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
             gridLayout.setVisibility(View.VISIBLE);
         }
     }
-
 }
