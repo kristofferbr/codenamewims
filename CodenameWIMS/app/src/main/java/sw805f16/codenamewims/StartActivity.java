@@ -25,9 +25,9 @@ public class StartActivity extends Activity {
 
 
     protected void onCreate(Bundle savedInstanceState) {
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE); // Removes action bar for start screen.
         super.onCreate(savedInstanceState);
-        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.activity_start_screen);
+        setContentView(R.layout.activity_start_screen); // When refactoring, change to activity_start_screen layoutet.
 
         if (getIntent().getParcelableExtra("state") != null) {
             fragmentState = getIntent().getParcelableExtra("state");
