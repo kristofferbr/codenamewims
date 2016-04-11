@@ -150,6 +150,7 @@ public class WimsActivity extends FragmentActivity {
         actionBarCustomView.addView(backButton, backButtonParams);
 
         actionBarTitleView = new TextView(this);
+        actionBarTitleView.setId(R.id.wims_action_bar_title);
 
         String title;
         if (this.getTitle() != null) {

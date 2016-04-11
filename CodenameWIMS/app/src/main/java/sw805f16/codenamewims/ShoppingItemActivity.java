@@ -24,6 +24,8 @@ import java.util.ArrayList;
  */
 public class ShoppingItemActivity extends WimsActivity {
 
+    int checks = 0;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_shopping_list);
@@ -42,11 +44,11 @@ public class ShoppingItemActivity extends WimsActivity {
         visibility(items);
 
         // Retrieve the title & set title in actionbar.
-        String title = b.getString("title");
+        final String title = b.getString("title");
         setActionBarTitle(title);
         //setTitle(title);
 
-        listItems(items);
+        listItems(items, title);
 
         Button addButton = (Button)findViewById(R.id.item_add_btn);
 
@@ -64,13 +66,13 @@ public class ShoppingItemActivity extends WimsActivity {
                     editText.setText("");
                     items.add(s);
                     visibility(items);
-                    listItems(items);
+                    listItems(items, title);
                 }
             }
         });
 
         //CheckBox checkBox = (CheckBox)findViewById(R.id.itemListCheckBox);
-        final RelativeLayout relativeLayout = (RelativeLayout)findViewById(R.id.wims_action_bar_primary_view);
+
 
         /*checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -88,7 +90,7 @@ public class ShoppingItemActivity extends WimsActivity {
     }
 
     // This method will list all the items from the received shopping list.
-    public void listItems(ArrayList<String> items) {
+    public void listItems(ArrayList<String> items, final String title) {
 
         GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
         gridLayout.removeAllViews();
@@ -97,11 +99,29 @@ public class ShoppingItemActivity extends WimsActivity {
 
             LayoutInflater inflater = LayoutInflater.from(this);
             RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.shopping_list_item, null, false);
+            CheckBox checkBox = (CheckBox) layout.findViewById(R.id.itemListCheckBox);
             TextView itemsText = (TextView) layout.findViewById(R.id.itemListName);
             itemsText.setText(items.get(i));
 
             TextView amountText = (TextView)layout.findViewById(R.id.itemListAmount);
             amountText.setText("x" + 100);
+
+            checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
+                    if (isChecked){
+                        checks++;
+                        changeTitle(checks, title);
+                        changeColour(checks);
+                    }
+                    else {
+                        checks--;
+                        changeTitle(checks, title);
+                        changeColour(checks);
+                    }
+                }
+            });
+
 
             listItemsSupport(layout);
         }
@@ -117,6 +137,42 @@ public class ShoppingItemActivity extends WimsActivity {
         if (!items.isEmpty()){
             GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
             gridLayout.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void changeTitle(int checks, String title) {
+        TextView textView = (TextView)findViewById(R.id.wims_action_bar_title);
+
+        if (checks != 0) {
+            if (checks == 1){
+                textView.setText(checks + " Valgt");
+            } else {
+                textView.setText(checks + " Valgte");
+            }
+        } else {
+            textView.setText(title);
+        }
+    }
+
+    public void changeColour(int checks){
+        final RelativeLayout relativeLayout = (RelativeLayout)findViewById(R.id.wims_action_bar_primary_view);
+
+        if (checks != 0){
+            relativeLayout.setBackgroundResource(R.color.RoyalBlue);
+        }
+        else {
+            relativeLayout.setBackgroundResource(R.color.colorPrimary);
+        }
+    }
+
+    public void changeButtons(int checks) {
+
+
+        if (checks != 0) {
+
+
+        } else {
+
         }
     }
 }
