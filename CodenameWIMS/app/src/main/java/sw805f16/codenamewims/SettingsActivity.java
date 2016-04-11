@@ -15,21 +15,11 @@ import android.support.v7.widget.Toolbar;
  *
  * Created by Flækker-Maskinen on 05/04/2016.
  */
-public class SettingsActivity extends AppCompatActivity {
-    Toolbar toolbar;
+public class SettingsActivity extends WimsActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
-        //Load AppBar
-        toolbar = (Toolbar)findViewById(R.id.app_bar);
-        setSupportActionBar(toolbar);
-
-        // Get a support ActionBar corresponding to this toolbar
-        ActionBar ab = getSupportActionBar();
-
-        // Enable the Up button
-        ab.setDisplayHomeAsUpEnabled(true);
 
         // Check that the activity is using the layout version with
         // the fragment_container FrameLayout
