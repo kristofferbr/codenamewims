@@ -21,7 +21,8 @@
             android:layout_marginRight="10dp"
             android:windowSoftInputMode="stateHidden"
             android:hint="@string/create_shopping_list"
-            android:textColorHint="@drawable/edittext_hint"/>
+            android:textColorHint="@drawable/edittext_hint"
+            android:singleLine="true"/>
 
         <Button
             android:id="@+id/shopping_add_btn"
