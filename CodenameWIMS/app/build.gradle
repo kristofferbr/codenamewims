@@ -28,4 +28,5 @@ dependencies {
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
     compile 'info.debatty:java-string-similarity:0.13'
     compile 'com.android.support:support-v4:23.1.1'
+    compile files('libs/commons-math3-3.6.1.jar')
 }
