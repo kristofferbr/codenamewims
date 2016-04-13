@@ -16,7 +16,8 @@
             android:layout_height="48dp"
             android:background="@drawable/rounded_edittext"
             android:hint="@string/add_item_dotdotdot"
-            android:textColorHint="@drawable/edittext_hint"/>
+            android:textColorHint="@drawable/edittext_hint"
+            android:singleLine="true"/>
 
         <Button
             android:id="@+id/item_add_btn"

@@ -1,10 +1,6 @@
 package sw805f16.codenamewims;
 
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -16,7 +12,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -24,29 +19,26 @@ import java.util.ArrayList;
  */
 public class ShoppingItemActivity extends WimsActivity {
 
-    int checks = 0;
+    int checks = 0; // This variable is used to keep track of how many items have been checked off.
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_shopping_list);
 
-
-        WimsButton delete = new WimsButton(this, this.getResources().getDrawable(R.drawable.delete_icon));
-
-        addWimsButtonToActionBar(delete, RIGHT);
-
-
         // Get the bundle from the intent received.
         Bundle b = getIntent().getExtras();
         final ArrayList<String> items = b.getStringArrayList("itemsList");
 
+        WimsButton deleteButton = new WimsButton(getApplicationContext(), getResources().getDrawable(R.drawable.delete_icon));
+        deleteButton.setVisibility(View.INVISIBLE);
+        deleteButton.setId(R.id.wims_action_bar_shopping_delete);
+        addWimsButtonToActionBar(deleteButton, RIGHT);
 
         visibility(items);
 
         // Retrieve the title & set title in actionbar.
         final String title = b.getString("title");
         setActionBarTitle(title);
-        //setTitle(title);
 
         listItems(items, title);
 
@@ -59,6 +51,7 @@ public class ShoppingItemActivity extends WimsActivity {
                 EditText editText = (EditText)findViewById(R.id.item_textfield);
                 s = editText.getText().toString();
 
+                // Just a check so it's not possible to add an empty string.
                 if (s.equalsIgnoreCase("")) {
                     Toast.makeText(ShoppingItemActivity.this, R.string.Please_enter_an_item_name, Toast.LENGTH_SHORT).show();
                 }
@@ -71,25 +64,9 @@ public class ShoppingItemActivity extends WimsActivity {
             }
         });
 
-        //CheckBox checkBox = (CheckBox)findViewById(R.id.itemListCheckBox);
-
-
-        /*checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
-                if (isChecked){
-
-                    relativeLayout.setBackgroundResource(R.color.Indigo200);
-                }
-                else {
-                    relativeLayout.setBackgroundResource(R.color.colorPrimary);
-                }
-            }
-        });*/
-
     }
 
-    // This method will list all the items from the received shopping list.
+    // This method will list all the items from the received shopping list. Also used to list items when new is added currently.
     public void listItems(ArrayList<String> items, final String title) {
 
         GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
@@ -103,25 +80,19 @@ public class ShoppingItemActivity extends WimsActivity {
             TextView itemsText = (TextView) layout.findViewById(R.id.itemListName);
             itemsText.setText(items.get(i));
 
-            TextView amountText = (TextView)layout.findViewById(R.id.itemListAmount);
-            amountText.setText("x" + 100);
-
             checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
                     if (isChecked){
                         checks++;
-                        changeTitle(checks, title);
-                        changeColour(checks);
+                        changeActionBar(checks, title);
                     }
                     else {
                         checks--;
-                        changeTitle(checks, title);
-                        changeColour(checks);
+                        changeActionBar(checks, title);
                     }
                 }
             });
-
 
             listItemsSupport(layout);
         }
@@ -133,13 +104,18 @@ public class ShoppingItemActivity extends WimsActivity {
         gridLayout.addView(v);
     }
 
+    // This method is to ensure that when the list is empty, the screen is clear.
     public void visibility(ArrayList<String> items){
+        GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
         if (!items.isEmpty()){
-            GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
             gridLayout.setVisibility(View.VISIBLE);
+        } else {
+            gridLayout.setVisibility(View.INVISIBLE);
         }
     }
 
+    // This method changes the title of the action bar to the amount of items checked
+    // TODO: Remove hardcoded values.
     public void changeTitle(int checks, String title) {
         TextView textView = (TextView)findViewById(R.id.wims_action_bar_title);
 
@@ -154,6 +130,7 @@ public class ShoppingItemActivity extends WimsActivity {
         }
     }
 
+    // This method changes the colour of the action bar when items are checked.
     public void changeColour(int checks){
         final RelativeLayout relativeLayout = (RelativeLayout)findViewById(R.id.wims_action_bar_primary_view);
 
@@ -165,14 +142,23 @@ public class ShoppingItemActivity extends WimsActivity {
         }
     }
 
+    // This method changed the visibility of the buttons in the action bar - This is only feasible because no other buttons exist when all are unchecked.
     public void changeButtons(int checks) {
 
+        WimsButton deleteButton = (WimsButton)findViewById(R.id.wims_action_bar_shopping_delete);
 
         if (checks != 0) {
-
+            deleteButton.setVisibility(View.VISIBLE);
 
         } else {
-
+        deleteButton.setVisibility(View.INVISIBLE);
         }
+    }
+
+    // This method simply call the change methods respectively.
+    public void changeActionBar(int checks, String title) {
+        changeTitle(checks, title);
+        changeColour(checks);
+        changeButtons(checks);
     }
 }

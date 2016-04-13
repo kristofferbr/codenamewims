@@ -19,21 +19,20 @@ import android.widget.TextView;
  */
 public class WimsActivity extends FragmentActivity {
 
-    private final float ACTION_BAR_SPACING_LEFT_RIGHT = 5;
-    private final float ACTION_BAR_SPACING_TOP_BOTTOM = 6;
-    private final float ACTION_BAR_TEXT_PADDING = 4 * ACTION_BAR_SPACING_TOP_BOTTOM;
-    private ActionBar actionBar;
-    private RelativeLayout actionBarCustomView;
-    private LeftActionBarLayout actionBarCustomViewLeft;
-    private RightActionBarLayout actionBarCustomViewRight;
-    private TextView actionBarTitleView;
+    private final float ACTION_BAR_SPACING_LEFT_RIGHT = 5; // Spacing in the action bar (left & right)
+    private final float ACTION_BAR_SPACING_TOP_BOTTOM = 6; // Spacing in the action bar (top & bottom)
+    private final float ACTION_BAR_TEXT_PADDING = 4 * ACTION_BAR_SPACING_TOP_BOTTOM; // Padding on the text
+    private ActionBar actionBar; // The action bar
+    private RelativeLayout actionBarCustomView; // The custom action bar view
+    private LeftActionBarLayout actionBarCustomViewLeft; // The left side of the action bar
+    private RightActionBarLayout actionBarCustomViewRight; // The right side of the action bar
+    private TextView actionBarTitleView; // The view which contains the title of the action bar
 
-
+    // Constants to use when inserting buttons to the action bar
     public static final int LEFT = 0;
     public static final int RIGHT = 1;
 
-
-
+    // Layout placed to the right in the action bar.
     private class RightActionBarLayout extends LinearLayout {
 
         public RightActionBarLayout(Context context) {
@@ -62,6 +61,7 @@ public class WimsActivity extends FragmentActivity {
         }
     }
 
+    // Layout placed to the left in the action bar
     private class LeftActionBarLayout extends LinearLayout {
 
         public LeftActionBarLayout(Context context) {
@@ -87,7 +87,7 @@ public class WimsActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        // Fetch the action bar
         actionBar = this.getActionBar();
 
         if (actionBar != null) {
@@ -99,6 +99,7 @@ public class WimsActivity extends FragmentActivity {
         }
     }
 
+    // Method to add a button to the action bar
     public void addWimsButtonToActionBar(WimsButton wimsButton, int side) {
 
         if (side == LEFT) {
@@ -110,11 +111,12 @@ public class WimsActivity extends FragmentActivity {
         }
     }
 
+    // Method to set the action bar title
     public void setActionBarTitle(String title) {
         actionBarTitleView.setText(title);
     }
 
-
+    // Creates the view of the action bar
     private View createActionBarView() {
 
         actionBarCustomView = new RelativeLayout(this);
@@ -130,6 +132,7 @@ public class WimsActivity extends FragmentActivity {
         actionBarCustomView.setBackgroundResource(R.color.colorPrimary);
         actionBarCustomView.setId(R.id.wims_action_bar_primary_view);
 
+        // Creates the back button which have to be there.
         final WimsButton backButton = new WimsButton(this, this.getResources().getDrawable(R.drawable.back_icon));
 
         backButton.setId(R.id.wims_action_bar_back_button);
@@ -152,6 +155,7 @@ public class WimsActivity extends FragmentActivity {
         actionBarTitleView = new TextView(this);
         actionBarTitleView.setId(R.id.wims_action_bar_title);
 
+        // To set default title of the action bar
         String title;
         if (this.getTitle() != null) {
             title = this.getTitle().toString();
@@ -161,6 +165,7 @@ public class WimsActivity extends FragmentActivity {
             title = "Unknown title";
         }
 
+        // Set params for custom title view.
         actionBarTitleView.setText(this.getTitle());
         actionBarTitleView.setTextSize(TypedValue.COMPLEX_UNIT_PX, calculateActionBarTextSize());
         actionBarTitleView.setGravity(Gravity.CENTER);
