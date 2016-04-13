@@ -129,8 +129,9 @@ public class ShoppingActivity extends WimsActivity {
         intent.putExtras(b);
 
         saveShoppingList(shoppingListName);
-
-        startActivity(intent);
+        LoadShoppingList(this);
+        DisplayShoppingList();
+        //startActivity(intent);
 
         return true;
     }
