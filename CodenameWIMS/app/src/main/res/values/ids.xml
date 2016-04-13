@@ -3,4 +3,5 @@
     <item type="id" name="wims_action_bar_back_button" />
     <item type="id" name="wims_action_bar_primary_view" />
     <item type="id" name="wims_action_bar_title" />
+    <item type="id" name="wims_action_bar_shopping_delete" />
 </resources>
