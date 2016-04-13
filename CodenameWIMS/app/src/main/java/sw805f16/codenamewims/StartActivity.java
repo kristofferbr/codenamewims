@@ -19,7 +19,7 @@ public class StartActivity extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE); // Removes action bar for start screen.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_screen); // When refactoring, change to activity_start_screen layoutet.
-        
+
         Button storemapButton = (Button) findViewById(R.id.startStoreBtn);
         Button shoppingButton = (Button) findViewById(R.id.startShoppingBtn);
         ImageButton settingsButton = (ImageButton) findViewById(R.id.startSettingsBtn);
