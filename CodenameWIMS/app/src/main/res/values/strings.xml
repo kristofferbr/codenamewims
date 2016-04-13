@@ -137,4 +137,5 @@
     <string name="add_item_dotdotdot">Add items...</string>
     <string name="plus">+</string>
     <string name="create_shopping_list">Create shopping list...</string>
+    <string name="please_enter_a_name">Please enter a name.</string>
 </resources>
