@@ -33,11 +33,9 @@ public class WimsButton extends LinearLayout {
         this(context, icon, null);
     }
 
-
     public WimsButton(Context context, String buttonText) {
         this(context, null, buttonText);
     }
-
 
     public WimsButton(Context context, Drawable icon, String buttonText) {
         super(context);
@@ -56,46 +54,34 @@ public class WimsButton extends LinearLayout {
         initializeButton(attrs);
     }
 
-
     private boolean firstTimeLayout = true;
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
 
-
         if (firstTimeLayout) {
 
             if (buttonText != null) {
-
 
                 if(icon != null) {
 
                     textViewParams.setMargins(SUBVIEW_SPACING, 0, 0, 0);
                 }
 
-
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, this.getHeight() - (int)(2.5 * BUTTON_PADDING));
-
-
                 textView.setIncludeFontPadding(false);
-
             }
-
             firstTimeLayout = !firstTimeLayout;
         }
     }
 
-
     private void initializeButton(AttributeSet attrs) {
-
 
         this.setOrientation(LinearLayout.HORIZONTAL);
 
-
         this.setPadding(BUTTON_PADDING, BUTTON_PADDING, BUTTON_PADDING, BUTTON_PADDING);
         this.setGravity(Gravity.CENTER);
-
 
         iconView = new ImageView(this.getContext());
 
@@ -104,25 +90,21 @@ public class WimsButton extends LinearLayout {
         iconView.setMaxWidth(ICON_MAX_WIDTH);
         iconView.setMaxHeight(ICON_MAX_HEIGHT);
 
-
         if (attrs != null) {
 
             TypedArray wimsButtonAttributes = getContext().obtainStyledAttributes(attrs, R.styleable.WimsButton);
             if(icon == null) {
                 icon = wimsButtonAttributes.getDrawable(R.styleable.WimsButton_button_icon);
             }
-
             if(buttonText == null) {
                 buttonText = wimsButtonAttributes.getString(R.styleable.WimsButton_button_text);
             }
-
             wimsButtonAttributes.recycle();
         }
 
         if(icon == null && buttonText == null) {
             throw new IllegalArgumentException("A WimsButton must have an icon or some text");
         }
-
 
         if(icon == null)
         {
@@ -142,8 +124,7 @@ public class WimsButton extends LinearLayout {
 
         // This is custom buttom style
         this.setBackgroundResource(R.drawable.start_button);
-
-
+        
         if (!this.isEnabled()) {
             iconView.setAlpha(0x59);
         }
