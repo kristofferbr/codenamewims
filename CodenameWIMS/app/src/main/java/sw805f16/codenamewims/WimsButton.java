@@ -124,7 +124,7 @@ public class WimsButton extends LinearLayout {
 
         // This is custom buttom style
         this.setBackgroundResource(R.drawable.start_button);
-        
+
         if (!this.isEnabled()) {
             iconView.setAlpha(0x59);
         }

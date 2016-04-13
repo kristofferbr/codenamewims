@@ -5,13 +5,7 @@ package sw805f16.codenamewims;
  */
 
 import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.Intent;
-import android.os.Parcelable;
-import android.support.v4.app.FragmentActivity;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -21,13 +15,11 @@ import android.widget.ImageButton;
 
 public class StartActivity extends Activity {
 
-
     protected void onCreate(Bundle savedInstanceState) {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE); // Removes action bar for start screen.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_screen); // When refactoring, change to activity_start_screen layoutet.
-
-
+        
         Button storemapButton = (Button) findViewById(R.id.startStoreBtn);
         Button shoppingButton = (Button) findViewById(R.id.startShoppingBtn);
         ImageButton settingsButton = (ImageButton) findViewById(R.id.startSettingsBtn);
@@ -41,7 +33,6 @@ public class StartActivity extends Activity {
 
             }
         });
-
 
         shoppingButton.setOnClickListener(new View.OnClickListener() {
             @Override
