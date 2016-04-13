@@ -7,42 +7,18 @@
         android:id="@+id/itemListCheckBox"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:buttonTint="@color/Indigo400"/>
+        android:buttonTint="@color/Indigo400"
+        android:shadowColor="@color/Indigo400"/>
 
     <TextView
         android:id="@+id/itemListName"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/itemListCheckBox"
-        android:singleLine="true"
-        android:ellipsize="end"
-        android:layout_marginTop="10dp"
-        android:textSize="20sp"/>
-
-    <Button
-        android:id="@+id/testButton1"
-        android:layout_toRightOf="@id/itemListName"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:text="-"
-        android:textSize="20sp"/>
-
-    <TextView
-        android:id="@+id/itemListAmount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/testButton1"
+        android:layout_toRightOf="@+id/itemListCheckBox"
+        android:layout_toEndOf="@+id/itemListCheckBox"
         android:singleLine="true"
         android:ellipsize="end"
         android:layout_marginTop="10dp"
-        android:textSize="20sp"/>
-
-    <Button
-        android:id="@+id/testButton2"
-        android:layout_toRightOf="@id/itemListAmount"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:text="+"
         android:textSize="20sp"/>
 
 </RelativeLayout>
