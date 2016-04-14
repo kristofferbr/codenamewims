@@ -33,21 +33,18 @@ public class ShoppingActivity extends WimsActivity {
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final EditText editText = (EditText)findViewById(R.id.shopping_textfield);
+                final EditText editText = (EditText) findViewById(R.id.shopping_textfield);
                 String shoppingListTextField = editText.getText().toString();
                 if (shoppingListTextField.equalsIgnoreCase("")) {
                     Toast.makeText(ShoppingActivity.this, R.string.please_enter_a_name, Toast.LENGTH_SHORT).show();
-                }
-                else {
+                } else {
                     editText.setText("");
                     AddShoppingList(shoppingListTextField);
                 }
             }
         });
 
-        LoadShoppingList(this);
         DisplayShoppingList();
-        saveShoppingList();
     }
 
     public class ShoppingListClass {
@@ -73,24 +70,11 @@ public class ShoppingActivity extends WimsActivity {
         return mEdit1.commit();
     }
 
-    public boolean saveShoppingList(String shoppingListName)
+    public void saveShoppingList(String shoppingListName)
     {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor mEdit1 = sp.edit();
-    /* mItems is an array */
-        int shoppingListSize = shoppingArrayList.size();
-        mEdit1.putInt("Shopping_List", shoppingListSize + 1);
-
-        for(int i=0;i< shoppingListSize;i++)
-        {
-            mEdit1.remove("Shopping_" + i);
-            mEdit1.putString("Shopping_" + i, shoppingArrayList.get(i).name);
-        }
-
-        mEdit1.remove("Shopping_" + shoppingListSize);
-        mEdit1.putString("Shopping_" + shoppingListSize, shoppingListName);
-
-        return mEdit1.commit();
+        ShoppingListClass shoppingList = new ShoppingListClass(shoppingListName, null);
+        shoppingArrayList.add(shoppingArrayList.size(), shoppingList);
+        saveShoppingList();
     }
 
     public void LoadShoppingList(Context mContext)
@@ -129,21 +113,31 @@ public class ShoppingActivity extends WimsActivity {
         intent.putExtras(b);
 
         saveShoppingList(shoppingListName);
-        LoadShoppingList(this);
         DisplayShoppingList();
-        //startActivity(intent);
+        startActivity(intent);
 
         return true;
+    }
+
+    public void DeleteShoppingList(final int shoppingListAddress) {
+
+        shoppingArrayList.remove(shoppingListAddress);
+        saveShoppingList();
+
     }
 
     // This method adds takes a name for a shopping list, and an ArrayList of items on that list.
     // It will then display it.
     public void DisplayShoppingList(){
-GridLayout layout2 = (GridLayout) findViewById(R.id.shopping_lists);
-        layout2.removeAllViews();
+
+        LoadShoppingList(getApplicationContext());
+
+        GridLayout gridLayout = (GridLayout) findViewById(R.id.shopping_lists);
+        gridLayout.removeAllViews();
         int size = shoppingArrayList.size();
         for(int i=0;i<size;i++) {
 
+            final int currentI = i;
             final String name = shoppingArrayList.get(i).name;
             final ArrayList mItems = shoppingArrayList.get(i).items;
 
@@ -158,10 +152,17 @@ GridLayout layout2 = (GridLayout) findViewById(R.id.shopping_lists);
                     Bundle b = new Bundle();
                     b.putStringArrayList("itemsList", mItems);
                     b.putString("title", name);
-                    saveShoppingList();
-
                     intent.putExtras(b);
                     startActivity(intent);
+                }
+            });
+
+            layout.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    DeleteShoppingList(currentI);
+                    DisplayShoppingList();
+                    return true;
                 }
             });
 
@@ -190,7 +191,6 @@ GridLayout layout2 = (GridLayout) findViewById(R.id.shopping_lists);
             }
 
             // Adding the layout we just created to the shopping list layout for complete display.
-            GridLayout gridLayout = (GridLayout) findViewById(R.id.shopping_lists);
             gridLayout.addView(layout);
         }
     }
