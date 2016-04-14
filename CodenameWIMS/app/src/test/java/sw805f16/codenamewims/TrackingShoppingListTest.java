@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowIntent;
 import org.robolectric.shadows.ShadowListView;
 
 import static org.robolectric.Shadows.*;
@@ -54,7 +53,7 @@ public class TrackingShoppingListTest {
         try {
             String jsonString = activity.getResources().getString(R.string.shop_json);
             JSONObject dummyJson = new JSONObject(jsonString);
-            fragment.extractInformationFromJson(dummyJson);
+            JSONContainer.extractInformationFromJson(dummyJson);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -92,13 +91,13 @@ public class TrackingShoppingListTest {
         // Then I want to regret that I have skipped an item an unmark it
         item = (LinearLayout) itemList.getItemAtPosition(1);
         actual = (ImageView) item.getChildAt(1);
-        fragment.markUnmarkItem(1, true);
+        fragment.markUnmarkItemInAdapter(1, true);
         assertNull(actual.getDrawable());
         // When I accidentally mark an item as "put in basket"
         // Then I want to undo the action
         item = (LinearLayout) itemList.getItemAtPosition(1);
         actual = (ImageView) item.getChildAt(1);
-        fragment.markUnmarkItem(1, false);
+        fragment.markUnmarkItemInAdapter(1, false);
         assertNull(actual.getDrawable());
     }
 
@@ -109,7 +108,7 @@ public class TrackingShoppingListTest {
         suggestionList.performItemClick(0);
         shadowItemList.populateItems();
 
-        fragment.sortItemList(new WimsPoints(0, 0));
+        fragment.sortItemListInAdapter(new WimsPoints(0, 0));
         TextView actual = (TextView) ((LinearLayout) itemList.getItemAtPosition(0)).getChildAt(0);
         assertThat(actual.getText().toString(), is("Minced Beef"));
 

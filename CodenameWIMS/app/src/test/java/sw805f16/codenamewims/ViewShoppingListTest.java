@@ -52,7 +52,7 @@ public class ViewShoppingListTest {
         try {
             String jsonString = shoppingActivity.getResources().getString(R.string.shop_json);
             JSONObject dummyJson = new JSONObject(jsonString);
-            fragment.extractInformationFromJson(dummyJson);
+            JSONContainer.extractInformationFromJson(dummyJson);
         } catch (JSONException e) {
             e.printStackTrace();
         }

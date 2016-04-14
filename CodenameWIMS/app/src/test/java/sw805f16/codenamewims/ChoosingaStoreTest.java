@@ -14,9 +14,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowIntent;
 import org.robolectric.shadows.ShadowListView;
-import org.robolectric.shadows.ShadowView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,7 +60,7 @@ public class ChoosingaStoreTest {
         // Given I am a user
         // When I am at the home screen
         // And I search for the name of a store
-        main.extractInformationFromJson(dummyJson);
+        main.extractStoreInformationFromJson(dummyJson);
         //We search for føtex
         search.setQuery("Føtex", false);
 
@@ -98,7 +96,7 @@ public class ChoosingaStoreTest {
     @Test
     public void extract_information_from_json_test() throws Exception {
         //The string is passed to the method
-        main.extractInformationFromJson(dummyJson);
+        main.extractStoreInformationFromJson(dummyJson);
 
         HashMap<String, String> testMap = main.getStores();
         //Here we assert whether it has extracted the name correctly and whether it is the right id
@@ -109,7 +107,7 @@ public class ChoosingaStoreTest {
     @Test
     public void search_result_ranking() throws Exception {
         //We pass the json array to the extract method
-        main.extractInformationFromJson(dummyJson);
+        main.extractStoreInformationFromJson(dummyJson);
         //We make an iterator to go through the stores HashMap in MainActvity
         Iterator testIt = main.getStores().entrySet().iterator();
         ArrayList<String> testValues = new ArrayList<>();
@@ -144,7 +142,7 @@ public class ChoosingaStoreTest {
 
     @Test
     public void change_from_start_to_storemap() throws Exception {
-        main.extractInformationFromJson(dummyJson);
+        main.extractStoreInformationFromJson(dummyJson);
         Button testButton = (Button) main.findViewById(R.id.storemapbutton);
 
         //We search for føtex and submit the search
@@ -160,7 +158,7 @@ public class ChoosingaStoreTest {
 
     @Test
     public void change_from_start_to_shopping_list() throws Exception {
-        main.extractInformationFromJson(dummyJson);
+        main.extractStoreInformationFromJson(dummyJson);
         Button testButton = (Button) main.findViewById(R.id.shoppingListButton);
 
         //We search for føtex and submit the search

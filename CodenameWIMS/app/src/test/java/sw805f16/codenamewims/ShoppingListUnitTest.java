@@ -23,18 +23,17 @@ import static org.hamcrest.CoreMatchers.*;
  */
 
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
+@Config(constants = BuildConfig.class, shadows = OutlineShadow.class)
 public class ShoppingListUnitTest {
 
     ShoppingListActivity shoppingListActivity;
     ItemEnum unmarked_item, marked_item, unavailable_item;
     ShoppingListAdapter shoppingListAdapter;
-    LinearLayout firstLayout;
-    LinearLayout secondLayout;
-    Pair<LinearLayout, ItemEnum> firstItem;
-    Pair<LinearLayout, ItemEnum> secondItem;
+    LinearItemLayout firstLayout;
+    LinearItemLayout secondLayout;
+    LinearItemLayout dummyLayout;
     ListView itemListView;
-    ArrayList<Pair<LinearLayout, ItemEnum>> itemList = new ArrayList<>();
+    ArrayList<LinearItemLayout> itemList = new ArrayList<>();
     ShoppingListFragment testFragment;
 
     @Before
@@ -48,15 +47,14 @@ public class ShoppingListUnitTest {
 
         itemListView = (ListView) testFragment.getView().findViewById(R.id.itemList);
 
-        firstLayout = (LinearLayout) LinearLayout.inflate(testFragment.getActivity().getApplicationContext(),
-                R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
-        secondLayout = (LinearLayout) LinearLayout.inflate(testFragment.getActivity().getApplicationContext(),
-                R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
+        firstLayout = new LinearItemLayout(testFragment.getActivity().getApplicationContext(),(ViewGroup) itemListView.getEmptyView());
+        secondLayout = new LinearItemLayout(testFragment.getActivity().getApplicationContext(),(ViewGroup) itemListView.getEmptyView());
+        dummyLayout = new LinearItemLayout(testFragment.getActivity().getApplicationContext(),(ViewGroup) itemListView.getEmptyView());
 
-        firstItem = new Pair<LinearLayout, ItemEnum>(firstLayout, ItemEnum.MARKED);
-        secondItem = new Pair<LinearLayout, ItemEnum>(secondLayout, ItemEnum.UNMARKED);
-        itemList.add(firstItem);
-        itemList.add(secondItem);
+        firstLayout.setStatus(ItemEnum.MARKED);
+        secondLayout.setStatus(ItemEnum.UNMARKED);
+        itemList.add(firstLayout);
+        itemList.add(secondLayout);
 
         shoppingListAdapter = new ShoppingListAdapter(testFragment.getActivity().getApplicationContext(),
                 R.layout.simple_list_view, itemList);
@@ -67,12 +65,38 @@ public class ShoppingListUnitTest {
         assertThat(unmarked_item, is(ItemEnum.UNMARKED));
         assertThat(marked_item, is(ItemEnum.MARKED));
         assertThat(unavailable_item, is(ItemEnum.UNAVAILABLE));
+        ItemEnum testEnum = ItemEnum.UNMARKED;
+        testEnum = testEnum.changeStatus(false);
+        assertThat(testEnum, is(ItemEnum.MARKED));
+        testEnum = testEnum.changeStatus(false);
+        assertThat(testEnum, is(ItemEnum.UNMARKED));
+        testEnum = testEnum.changeStatus(true);
+        assertThat(testEnum, is(ItemEnum.UNAVAILABLE));
     }
 
     @Test
-    public void shoppingListAdapterTest(){
-        shoppingListAdapter.swap(0,1);
-        assertThat(shoppingListAdapter.getItem(0), is(secondItem));
-        assertThat(shoppingListAdapter.getItem(1), is(firstItem));
+    public void shoppingListAdapterTest() {
+        shoppingListAdapter.swap(0, 1);
+        assertThat(shoppingListAdapter.getItem(0), is(secondLayout));
+        assertThat(shoppingListAdapter.getItem(1), is(firstLayout));
+        assertThat(shoppingListAdapter.getCount(), is(2));
+
+        LinearItemLayout dummyItem = dummyLayout;
+        dummyLayout.setStatus(ItemEnum.UNAVAILABLE);
+        shoppingListAdapter.add(dummyItem);
+        shoppingListAdapter.add(dummyItem);
+        shoppingListAdapter.add(dummyItem);
+        shoppingListAdapter.add(dummyItem);
+
+        shoppingListAdapter.swap(5, 1);
+
+        assertThat(shoppingListAdapter.getItem(5), is(firstLayout));
+        assertThat(shoppingListAdapter.getItem(1), is(dummyItem));
+        assertThat(shoppingListAdapter.getCount(), is(6));
+    }
+
+    @Test
+    public void shoppingListAdapterMarkUnmarkTest(){
+
     }
 }

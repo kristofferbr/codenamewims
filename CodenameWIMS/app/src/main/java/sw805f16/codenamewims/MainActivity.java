@@ -1,8 +1,6 @@
 package sw805f16.codenamewims;
 
-import android.app.Fragment;
 import android.content.Intent;
-import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -214,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
      * A method that extracts information from a json array and puts it in a hashmap
      * @param jsonArray The json array from the server
      */
-    public void extractInformationFromJson(JSONArray jsonArray) {
+    public void extractStoreInformationFromJson(JSONArray jsonArray) {
         try {
             JSONObject tmpObject;
             //Because this method is only called when we have a new JSON array we clear stores
@@ -246,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
         JsonArrayRequest jsonRequest = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                extractInformationFromJson(response);
+                extractStoreInformationFromJson(response);
             }
         }, new Response.ErrorListener() {
             @Override
