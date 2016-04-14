@@ -5,18 +5,17 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Created by kbrod on 30/03/2016.
  * Class that is to be used to get a WIFI fingerprint
  */
 public class WifiFingerprinter{
-
-    WifiManager wifiM;
     Context context;
-    List<ScanResult> Scannings;
 
     public WifiFingerprinter(Context con){
 
@@ -26,37 +25,33 @@ public class WifiFingerprinter{
     }
 
 
-    public ScanResult[] getFingerPrint(){
+    public ArrayList<ScanResult> getFingerPrint(){
 
-        ScanResult[] fingerPrint = new ScanResult[0];
-        wifiM = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiM = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 
-
+        ArrayList<ScanResult> Scannings = new ArrayList<>();
 
         if(wifiM.startScan()) {
 
-            Scannings = wifiM.getScanResults();
-            fingerPrint = Scannings.toArray(fingerPrint);
-            fingerPrint = filterScanResults(fingerPrint);
+            Scannings.addAll(wifiM.getScanResults());
+            Scannings = filterScanResults(Scannings);
         } else {
             Toast.makeText(context, "There were no wifi signals", Toast.LENGTH_SHORT).show();
             return null;
         }
 
-        return fingerPrint;
+        return Scannings;
 
     }
 
 
-    public ScanResult[] filterScanResults(ScanResult[] in) {
+    public ArrayList<ScanResult> filterScanResults(ArrayList<ScanResult> in) {
         //TODO: Change the resource later
         List<String> filter = Arrays.asList(context.getResources().getStringArray(R.array.test_bssid));
-        ScanResult[] tmpArray = new ScanResult[filter.size()];
-        int i = 0;
+        ArrayList<ScanResult> tmpArray = new ArrayList<>();
         for (ScanResult result : in) {
             if (filter.contains(result.BSSID)) {
-                tmpArray[i] = result;
-                i++;
+                tmpArray.add(result);
             }
         }
         return tmpArray;

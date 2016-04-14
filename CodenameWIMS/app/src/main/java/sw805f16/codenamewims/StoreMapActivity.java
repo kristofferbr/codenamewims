@@ -9,7 +9,6 @@ import android.net.wifi.ScanResult;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v4.content.res.TypedArrayUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -46,11 +45,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -60,7 +57,7 @@ public class StoreMapActivity extends AppCompatActivity {
     //The threshold value for determining probabilities
     private static final int threshold = -63;
     //TODO: Change this to better represent distance
-    private static final int maxDist = 25;
+    private static final int maxDist = 10;
 
     // URL til map /api/store/ID/map
     public boolean isInFront = false;
@@ -444,7 +441,7 @@ public class StoreMapActivity extends AppCompatActivity {
                     fram.removeViewAt(i);
                 }
 
-                ScanResult[] scanResults = fingerprinter.getFingerPrint();
+                ArrayList<ScanResult> scanResults = fingerprinter.getFingerPrint();
                 scanResults = sortScanByKStrongest(scanResults, 3);
                 WimsPoints location = positioningUser(scanResults, mapData);
 
@@ -500,22 +497,21 @@ public class StoreMapActivity extends AppCompatActivity {
 
     }
 
-    public ScanResult[] sortScanByKStrongest(ScanResult[] results, int k) {
-        ScanResult[] retArray = new ScanResult[k];
+    public ArrayList<ScanResult> sortScanByKStrongest(ArrayList<ScanResult> results, int k) {
+        ArrayList<ScanResult> retArray = new ArrayList<>();
         int highestLevel;
         ScanResult highestResult = null;
-        List<ScanResult> tmpResults = new ArrayList<>(Arrays.asList(results));
 
         for (int i = 0; i < k; i++) {
             highestLevel = -100;
-            for (ScanResult res : tmpResults) {
+            for (ScanResult res : results) {
                 if (res != null && res.level > highestLevel) {
                     highestResult = res;
                     highestLevel = res.level;
                 }
             }
-            retArray[i] = highestResult;
-            tmpResults.remove(highestResult);
+            retArray.add(highestResult);
+            results.remove(highestResult);
         }
         return retArray;
     }
@@ -1201,14 +1197,16 @@ public class StoreMapActivity extends AppCompatActivity {
                         HashMap<String, ArrayList<Integer>> fingerPrintTemp = new HashMap<>();
                         HashMap<String, Integer> finishedHashMap = new HashMap<>();
 
-                        ScanResult[] scanres;
+                        ArrayList<ScanResult> scanres;
                         scanres = fingerprinter.getFingerPrint();
 
                         for (ScanResult res : scanres) {
-                            fingerPrintTemp.put(res.BSSID, new ArrayList<Integer>());
+                            if (res != null) {
+                                fingerPrintTemp.put(res.BSSID, new ArrayList<Integer>());
+                            }
                         }
 
-                        for (int i = 0; i < 10; i++) {
+                        for (int i = 0; i < 20; i++) {
                             try {
                                 Thread.sleep(1000);
                             } catch (InterruptedException e) {
@@ -1216,7 +1214,7 @@ public class StoreMapActivity extends AppCompatActivity {
                             }
                             scanres = fingerprinter.getFingerPrint();
                             for (ScanResult res : scanres) {
-                                if (res != null) {
+                                if (res != null && fingerPrintTemp.containsKey(res.BSSID)) {
                                     fingerPrintTemp.get(res.BSSID).add(res.level);
 
 //                                    if (thresholdMeasure) {
@@ -1292,14 +1290,14 @@ public class StoreMapActivity extends AppCompatActivity {
      * @param scanResult The scan from where we want the nearest fingerprints
      * @return The points that the scan indicates is the nearest.
      */
-    public WimsPoints[] kNearestNeighbor(ArrayList<WimsPoints> mapData, int k, ScanResult[] scanResult){
+    public ArrayList<WimsPoints> kNearestNeighbor(ArrayList<WimsPoints> mapData, int k, ArrayList<ScanResult> scanResult){
 
-        WimsPoints[] nearestNeighbors = new WimsPoints[k];
+        ArrayList<WimsPoints> nearestNeighbors = new ArrayList<>();
 
         int i = 0;
         for (WimsPoints point : mapData) {
-            if (DistanceBetweenScanAndPoint(point, scanResult) <= maxDist) {
-                nearestNeighbors[i] = point;
+            if (DistanceBetweenScanAndPoint(point, scanResult) <= maxDist && !point.fingerprint.isEmpty()) {
+                nearestNeighbors.add(point);
                 i++;
             }
             if (i > k - 1) {
@@ -1317,16 +1315,16 @@ public class StoreMapActivity extends AppCompatActivity {
      * @param scanresult The scan that has been received
      * @return the distance between scan and point
      */
-    public double DistanceBetweenScanAndPoint(WimsPoints point, ScanResult[] scanresult){
+    public double DistanceBetweenScanAndPoint(WimsPoints point, ArrayList<ScanResult> scanresult){
 
-        double[] vec = new double[scanresult.length];
+        ArrayList<Double> vec = new ArrayList<>();
         double distance = 0;
 
 
-        for(int i = 0; i <scanresult.length; i++){
-            if(scanresult[i] != null && point.fingerprint.containsKey(scanresult[i].BSSID))
-            vec[i] = Math.abs(scanresult[i].level - point.fingerprint.get(scanresult[i].BSSID));
-            else vec[i] = 0;
+        for(int i = 0; i <scanresult.size(); i++){
+            if(scanresult.get(i) != null && point.fingerprint.containsKey(scanresult.get(i).BSSID))
+            vec.add((double) Math.abs(scanresult.get(i).level - point.fingerprint.get(scanresult.get(i).BSSID)));
+            else vec.add(0.0);
         }
 
         for (double d : vec) {
@@ -1345,16 +1343,19 @@ public class StoreMapActivity extends AppCompatActivity {
      * @param mapData The list of WimsPoints in the map
      * @return The point the user is most likely closest to
      */
-    public WimsPoints positioningUser(ScanResult[] scanResults, ArrayList<WimsPoints> mapData) {
-        WimsPoints[] candidates = kNearestNeighbor(mapData, 10, scanResults);
+    public WimsPoints positioningUser(ArrayList<ScanResult> scanResults, ArrayList<WimsPoints> mapData) {
+        ArrayList<WimsPoints> candidates = kNearestNeighbor(mapData, 10, scanResults);
 
-        double[] candidatePriori = new double[candidates.length - 1];
+        ArrayList<Double> candidatePriori = new ArrayList<>();
         double totalPriori = 0;
 
-        for (int i = 0; i < candidates.length; i++) {
-            for (int n = 0; n < scanResults.length; n++) {
-                if (scanResults[n] != null) {
-                    candidatePriori[i] = candidatePriori[i] * candidates[i].getProbabilityDistribution().get(scanResults[n].BSSID);
+        for (int i = 0; i < candidates.size(); i++) {
+            for (int n = 0; n < scanResults.size(); n++) {
+                if (n == 0) {
+                    candidatePriori.add(1.0);
+                }
+                if (scanResults.get(n) != null) {
+                    candidatePriori.set(i, (candidatePriori.get(i) * candidates.get(i).getProbabilityDistribution().get(scanResults.get(n).BSSID)));
                 }
             }
         }
@@ -1366,10 +1367,11 @@ public class StoreMapActivity extends AppCompatActivity {
         double highestPosterior = 0;
         WimsPoints returnPoint = new WimsPoints();
 
-        for (int i = 0; i < candidates.length; i++) {
-            posterior = (candidatePriori[i]/totalPriori);
+        for (int i = 0; i < candidates.size(); i++) {
+            posterior = (candidatePriori.get(i)/totalPriori);
             if (posterior > highestPosterior) {
-                returnPoint = candidates[i];
+                returnPoint = candidates.get(i);
+                highestPosterior = posterior;
             }
         }
 
