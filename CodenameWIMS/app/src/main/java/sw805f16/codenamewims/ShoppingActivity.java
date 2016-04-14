@@ -45,6 +45,11 @@ public class ShoppingActivity extends WimsActivity {
         });
         DisplayShoppingList();
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        DisplayShoppingList();
+    }
 
     public class ShoppingListClass {
         String name;
@@ -111,8 +116,6 @@ public class ShoppingActivity extends WimsActivity {
 
         SaveShoppingList(shoppingListName);
         startActivity(intent);
-        DisplayShoppingList();
-
         return true;
     }
 
