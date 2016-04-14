@@ -1,10 +1,13 @@
 package sw805f16.codenamewims;
 
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -42,7 +45,7 @@ public class ShoppingItemActivity extends WimsActivity {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
+                GridLayout gridLayout = (GridLayout) findViewById(R.id.itemListGrid);
                 for (int i = 0; i < ticked.size(); i++) {
                     gridLayout.removeView((ViewGroup) ticked.get(i));
                 }
@@ -50,13 +53,14 @@ public class ShoppingItemActivity extends WimsActivity {
                 // TODO: This method has an error. It currently removes all items with same name, if removing just 1 of them. Maybe change things to a listview with an adapter
                 for (int i = 0; i < items.size(); i++) {
                     for (int j = 0; j < ticked.size(); j++)
-                    if (items.get(i).equals(texts.get(j))) {
-                        items.remove(i);
-                    }
+                        if (items.get(i).equals(texts.get(j))) {
+                            items.remove(i);
+                        }
                 }
+                visibility(items);
                 checks = 0;
                 changeActionBar(checks, title);
-                visibility(items);
+
             }
         });
 
@@ -68,12 +72,13 @@ public class ShoppingItemActivity extends WimsActivity {
         listItems(items, title);
 
         Button addButton = (Button)findViewById(R.id.item_add_btn);
+        final EditText editText = (EditText)findViewById(R.id.item_textfield);
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String s = "";
-                EditText editText = (EditText)findViewById(R.id.item_textfield);
+                //EditText editText = (EditText)findViewById(R.id.item_textfield);
                 s = editText.getText().toString();
 
                 // Just a check so it's not possible to add an empty string.
@@ -86,6 +91,32 @@ public class ShoppingItemActivity extends WimsActivity {
                     visibility(items);
                     listItems(items, title);
                 }
+                hideKeyboard();
+            }
+        });
+
+
+
+        editText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    String s = "";
+                    s = editText.getText().toString();
+
+                    if (s.equalsIgnoreCase("")) {
+                        Toast.makeText(ShoppingItemActivity.this, R.string.Please_enter_an_item_name, Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        editText.setText("");
+                        items.add(s);
+                        visibility(items);
+                        listItems(items, title);
+                    }
+                    hideKeyboard();
+                }
+
+                return false;
             }
         });
 
@@ -96,7 +127,7 @@ public class ShoppingItemActivity extends WimsActivity {
 
         final GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
         gridLayout.removeAllViews();
-        
+
         for (int i = 0; i < items.size(); i++){
 
             LayoutInflater inflater = LayoutInflater.from(this);
@@ -195,6 +226,15 @@ public class ShoppingItemActivity extends WimsActivity {
         changeTitle(checks, title);
         changeColour(checks);
         changeButtons(checks);
+    }
+
+    private void hideKeyboard() {
+        // Check if no view has focus:
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager inputManager = (InputMethodManager) this.getSystemService(INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
     }
 
 }
