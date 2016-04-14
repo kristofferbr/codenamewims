@@ -11,6 +11,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import java.util.List;
 
 /**
@@ -18,16 +20,16 @@ import java.util.List;
  */
 public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
 
-    public ShoppingListAdapter(Context context,@LayoutRes int resource,@NonNull List<LinearItemLayout> objects){
+    public ShoppingListAdapter(Context context, @LayoutRes int resource, @NonNull List<LinearItemLayout> objects) {
         super(context, resource, objects);
     }
 
-    public ShoppingListAdapter(Context context,@LayoutRes int resource,@NonNull List<LinearItemLayout> objects,
-                               @NonNull ArrayList<WimsPoints> supprod){
+    public ShoppingListAdapter(Context context, @LayoutRes int resource, @NonNull List<LinearItemLayout> objects,
+                               @NonNull ArrayList<WimsPoints> supprod) {
         this(context, resource, objects);
     }
 
-    public void swap(int i, int j){
+    public void swap(int i, int j) {
         LinearItemLayout tempPair1 = getItem(i);
         LinearItemLayout tempPair2 = getItem(j);
         remove(tempPair1);
@@ -37,7 +39,7 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
 
     }
 
-    public void editItemEnum(int i, ItemEnum status){
+    public void editItemEnum(int i, ItemEnum status) {
         LinearItemLayout tempPair1 = getItem(i);
         LinearItemLayout edittedPair = tempPair1;
         remove(tempPair1);
@@ -45,13 +47,14 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
         insert(edittedPair, i);
     }
 
-    private void reorderList(){
+    private void reorderList() {
 
     }
 
     /**
      * This method is used for marking and unmarking the items in the item list
-     * @param position The position of the item in the list
+     *
+     * @param position  The position of the item in the list
      * @param longClick True if the method is called from a long click, False if it should be marked as put in the basket
      */
     public void markUnmarkItem(int position, boolean longClick) {
@@ -118,8 +121,8 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
         String text;
         int index;
         //The first loop through the unmarked item list is to pull the text from the LinearLayouts
-        for(int i = 0; i < getCount(); i++){
-            if(getItem(i).getStatus() == ItemEnum.UNMARKED){
+        for (int i = 0; i < getCount(); i++) {
+            if (getItem(i).getStatus() == ItemEnum.UNMARKED) {
                 text = ((TextView) getItem(i).getChildAt(0)).getText().toString();
                 //We then find the index of the product with that name, in the products list
                 index = JSONContainer.indexOfProductWithName(text);
@@ -130,7 +133,7 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
         LinearItemLayout tmpLayout;
         //In the second loop we sort the list
         for (int i = 0; i < getCount(); i++) {
-            if(getItem(i).getStatus() == ItemEnum.UNMARKED) {
+            if (getItem(i).getStatus() == ItemEnum.UNMARKED) {
                 //First we find the nearest neighbor between the start and the WimsPoints in the tmpSet
                 point = nearestNeightbor(start, tmpSet);
                 //When the nearest neighbor is found the start is updated
@@ -139,7 +142,7 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
                 tmpSet.remove(point);
                 //In the third loop we do the actual sorting, using point
                 for (int n = 0; n < getCount(); n++) {
-                    if(getItem(n).getStatus() == ItemEnum.UNMARKED) {
+                    if (getItem(n).getStatus() == ItemEnum.UNMARKED) {
                         text = ((TextView) getItem(i).getChildAt(0)).getText().toString();
                         //We check if the item has the same name as point
                         if (text.equalsIgnoreCase(point.getProductName())) {
@@ -160,8 +163,9 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
 
     /**
      * A nearest neighbor algorithm. It finds the point in a set that is nearest the start point
+     *
      * @param start The start point
-     * @param set The set of points for comparison
+     * @param set   The set of points for comparison
      * @return The WimsPoint closest to the start point
      */
     private WimsPoints nearestNeightbor(WimsPoints start, ArrayList<WimsPoints> set) {
@@ -180,7 +184,4 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
         //When we have found the nearest neighbor we return it
         return closestPoint;
     }
-
-
-
 }

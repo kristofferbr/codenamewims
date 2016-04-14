@@ -1,7 +1,5 @@
 package sw805f16.codenamewims;
 
-import android.content.ClipData;
-
 /**
  * Created by Kogni on 06-Apr-16.
  */
@@ -27,5 +25,4 @@ public enum ItemEnum {
 
     }
 }
-
 
