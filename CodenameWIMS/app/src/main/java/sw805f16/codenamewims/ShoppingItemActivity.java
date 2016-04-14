@@ -4,10 +4,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -64,27 +67,44 @@ public class ShoppingItemActivity extends WimsActivity {
         listItems();
 
         Button addButton = (Button)findViewById(R.id.item_add_btn);
+        final EditText editText = (EditText)findViewById(R.id.item_textfield);
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String s = "";
-                EditText editText = (EditText)findViewById(R.id.item_textfield);
-                s = editText.getText().toString();
+                AddItem();
+            }
+        });
 
-                // Just a check so it's not possible to add an empty string.
-                if (s.equalsIgnoreCase("")) {
-                    Toast.makeText(ShoppingItemActivity.this, R.string.Please_enter_an_item_name, Toast.LENGTH_SHORT).show();
+
+
+        editText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    AddItem();
                 }
-                else {
-                    editText.setText("");
-                    SaveItemList(s);
-                    listItems();
-                }
+
+                return false;
             }
         });
     }
+    public void AddItem(){
+        final EditText editText = (EditText)findViewById(R.id.item_textfield);
+        String s = "";
+        s = editText.getText().toString();
 
+        // Just a check so it's not possible to add an empty string.
+        if (s.equalsIgnoreCase("")) {
+            Toast.makeText(ShoppingItemActivity.this, R.string.Please_enter_an_item_name, Toast.LENGTH_SHORT).show();
+        }
+        else {
+            editText.setText("");
+            SaveItemList(s);
+            listItems();
+        }
+        hideKeyboard();
+    }
     public boolean SaveItemList() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor mEdit1 = sp.edit();
@@ -146,7 +166,6 @@ public class ShoppingItemActivity extends WimsActivity {
                     }
                 }
             });
-
             listItemsSupport(layout);
         }
     }
@@ -213,6 +232,15 @@ public class ShoppingItemActivity extends WimsActivity {
         changeTitle(checks, title);
         changeColour(checks);
         changeButtons(checks);
+    }
+
+    private void hideKeyboard() {
+        // Check if no view has focus:
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager inputManager = (InputMethodManager) this.getSystemService(INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
     }
 
 }
