@@ -55,7 +55,7 @@ public class ShoppingActivity extends WimsActivity {
         }
     }
 
-    public boolean saveShoppingList() {
+    public boolean SaveShoppingList() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor mEdit1 = sp.edit();
         mEdit1.putInt("Shopping_List", shoppingArrayList.size());
@@ -67,11 +67,11 @@ public class ShoppingActivity extends WimsActivity {
         return mEdit1.commit();
     }
 
-    public void saveShoppingList(String shoppingListName)
+    public void SaveShoppingList(String shoppingListName)
     {
         ShoppingListClass shoppingList = new ShoppingListClass(shoppingListName, null);
         shoppingArrayList.add(shoppingArrayList.size(), shoppingList);
-        saveShoppingList();
+        SaveShoppingList();
     }
 
     public void LoadShoppingList(Context mContext)
@@ -109,7 +109,7 @@ public class ShoppingActivity extends WimsActivity {
         b.putString("title", shoppingListName);
         intent.putExtras(b);
 
-        saveShoppingList(shoppingListName);
+        SaveShoppingList(shoppingListName);
         DisplayShoppingList();
         startActivity(intent);
 
@@ -119,7 +119,7 @@ public class ShoppingActivity extends WimsActivity {
     public void DeleteShoppingList(final int shoppingListAddress) {
 
         shoppingArrayList.remove(shoppingListAddress);
-        saveShoppingList();
+        SaveShoppingList();
     }
 
     // This method adds takes a name for a shopping list, and an ArrayList of items on that list.
