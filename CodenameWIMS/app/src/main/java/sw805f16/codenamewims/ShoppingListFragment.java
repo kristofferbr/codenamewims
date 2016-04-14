@@ -17,6 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -148,9 +149,7 @@ public class ShoppingListFragment extends Fragment {
                 TextView tmpText = suggestionList.get(position);
                 tmpText.setWidth(R.dimen.list_item_width);
                 tmpText.setHeight(R.dimen.list_item_height);
-                LinearItemLayout tmpLayout = new LinearItemLayout(getActivity().getApplicationContext(),
-                        (ViewGroup) itemListView.getEmptyView());
-
+                LinearItemLayout tmpLayout = (LinearItemLayout) LinearItemLayout.inflate(getActivity().getApplicationContext(), R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
                 tmpLayout.addView(tmpText, 0);
 
                 tmpLayout.setStatus(ItemEnum.UNMARKED);

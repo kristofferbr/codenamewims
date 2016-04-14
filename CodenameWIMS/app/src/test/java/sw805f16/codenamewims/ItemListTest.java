@@ -1,12 +1,10 @@
 package sw805f16.codenamewims;
 
 import android.content.Intent;
-import android.widget.SearchView;
 import android.widget.FrameLayout;
-
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.SearchView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,17 +16,18 @@ import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowListView;
 
+import static org.junit.Assert.assertNull;
 import static org.robolectric.Shadows.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Created by Kogni on 14-Apr-16.
  */
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, shadows = OutlineShadow.class)
-public class CurrentItemTest {
-
+public class ItemListTest {
     StoreMapActivity activity;
     ShoppingListFragment fragment;
     ShadowListView shadowItemList;
@@ -50,7 +49,7 @@ public class CurrentItemTest {
         currentItem=(FrameLayout)fragment.getView().findViewById(R.id.currentItem);
 
         try{
-           String jsonString=activity.getResources().getString(R.string.shop_json);
+            String jsonString=activity.getResources().getString(R.string.shop_json);
             JSONObject dummyJson=new JSONObject(jsonString);
             JSONContainer.extractInformationFromJson(dummyJson);
         }
@@ -70,17 +69,11 @@ public class CurrentItemTest {
     }
 
     @Test
-    public void currentItemMark(){
-        LinearItemLayout item = (LinearItemLayout) currentItem.getChildAt(0);
+    public void itemListMark(){
+        LinearItemLayout item = (LinearItemLayout) itemList.getItemAtPosition(0);
+        Integer id = item.getImageId();
         ImageView actual = (ImageView) item.getChildAt(1);
-        currentItem.performClick();
-        assertThat(actual.getDrawable(), is(activity.getResources().getDrawable(R.drawable.checkmark)));
-    }
-
-    public void currentItemSkip(){
-        LinearItemLayout item = (LinearItemLayout) currentItem.getChildAt(0);
-        ImageView actual = (ImageView) item.getChildAt(1);
-        currentItem.performLongClick();
-        assertThat(actual.getDrawable(), is(activity.getResources().getDrawable(R.drawable.skip)));
+        fragment.markUnmarkItemInAdapter(0, false);
+        assertThat(id.toString(), is(((LinearItemLayout) itemList.getItemAtPosition(0)).getImageId().toString()));
     }
 }

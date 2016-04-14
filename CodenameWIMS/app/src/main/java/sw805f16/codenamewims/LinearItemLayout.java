@@ -2,6 +2,7 @@ package sw805f16.codenamewims;
 
 import android.content.ClipData;
 import android.content.Context;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -13,9 +14,16 @@ public class LinearItemLayout extends LinearLayout {
     private Integer imageId;
     private ItemEnum status;
 
-    LinearItemLayout(Context context){
+    public LinearItemLayout(Context context){
         super(context);
     }
+    public LinearItemLayout(Context context, AttributeSet attrs){
+        super(context,attrs);
+    }
+    public LinearItemLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+    }
+
     LinearItemLayout(Context context, ViewGroup viewGroup ){
         super(context);
         LinearLayout.inflate(context, R.layout.item_layout, this);

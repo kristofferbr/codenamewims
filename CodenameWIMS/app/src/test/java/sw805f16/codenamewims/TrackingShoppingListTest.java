@@ -84,12 +84,12 @@ public class TrackingShoppingListTest {
         fragment.markCurrentItem(false);
         assertThat(actual.getDrawable(), is(activity.getResources().getDrawable(R.drawable.checkmark)));
         // And then I want to indicate that i am skipping an Item because I do not want to buy it
-        item = (LinearLayout) currentItem.getChildAt(0);
+        item = (LinearItemLayout) currentItem.getChildAt(0);
         actual = (ImageView) item.getChildAt(1);
         fragment.markCurrentItem(true);
         assertThat(actual.getDrawable(), is(activity.getResources().getDrawable(R.drawable.skip)));
         // Then I want to regret that I have skipped an item an unmark it
-        item = (LinearLayout) itemList.getItemAtPosition(1);
+        item = (LinearItemLayout) itemList.getItemAtPosition(1);
         actual = (ImageView) item.getChildAt(1);
         fragment.markUnmarkItemInAdapter(1, true);
         assertNull(actual.getDrawable());
