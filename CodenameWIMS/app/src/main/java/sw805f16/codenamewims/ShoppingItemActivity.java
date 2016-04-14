@@ -1,6 +1,9 @@
 package sw805f16.codenamewims;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,9 +24,11 @@ import java.util.ArrayList;
  */
 public class ShoppingItemActivity extends WimsActivity {
 
+    ArrayList itemArrayList = new ArrayList();
     int checks = 0; // This variable is used to keep track of how many items have been checked off.
-    ArrayList ticked = new ArrayList();
+    ArrayList<Integer> ticked = new ArrayList();
     ArrayList<String> texts = new ArrayList();
+    String title = "";
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,8 +36,7 @@ public class ShoppingItemActivity extends WimsActivity {
 
         // Get the bundle from the intent received.
         Bundle b = getIntent().getExtras();
-        final ArrayList<String> items = b.getStringArrayList("itemsList");
-        final String title = b.getString("title");
+        title = b.getString("title");
 
         WimsButton deleteButton = new WimsButton(getApplicationContext(), getResources().getDrawable(R.drawable.delete_icon));
         deleteButton.setVisibility(View.INVISIBLE);
@@ -42,30 +46,22 @@ public class ShoppingItemActivity extends WimsActivity {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
                 for (int i = 0; i < ticked.size(); i++) {
-                    gridLayout.removeView((ViewGroup) ticked.get(i));
+                    itemArrayList.remove(i);
+                    SaveItemList();
+                    listItems();
                 }
 
-                // TODO: This method has an error. It currently removes all items with same name, if removing just 1 of them. Maybe change things to a listview with an adapter
-                for (int i = 0; i < items.size(); i++) {
-                    for (int j = 0; j < ticked.size(); j++)
-                    if (items.get(i).equals(texts.get(j))) {
-                        items.remove(i);
-                    }
-                }
                 checks = 0;
                 changeActionBar(checks, title);
-                visibility(items);
             }
         });
 
-        visibility(items);
 
         // Set title in actionbar.
         setActionBarTitle(title);
 
-        listItems(items, title);
+        listItems();
 
         Button addButton = (Button)findViewById(R.id.item_add_btn);
 
@@ -82,28 +78,58 @@ public class ShoppingItemActivity extends WimsActivity {
                 }
                 else {
                     editText.setText("");
-                    items.add(s);
-                    visibility(items);
-                    listItems(items, title);
+                    SaveItemList(s);
+                    listItems();
                 }
             }
         });
+    }
 
+    public boolean SaveItemList() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor mEdit1 = sp.edit();
+        mEdit1.putInt("Item_List_" + title, itemArrayList.size());
+
+        for (int i = 0; i < itemArrayList.size(); i++) {
+            mEdit1.remove("Item_List_" + title + i);
+            mEdit1.putString("Item_List_" + title + i, itemArrayList.get(i).toString());
+        }
+        return mEdit1.commit();
+    }
+    public void SaveItemList(String name) {
+
+        itemArrayList.add(itemArrayList.size(), name);
+        SaveItemList();
+    }
+    public void LoadItemList(Context mContext)
+    {
+        SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(mContext);
+        itemArrayList.clear();
+        int size = mSharedPreference1.getInt("Item_List_" + title, 0);
+
+        for(int i=0;i<size;i++)
+        {
+            itemArrayList.add(mSharedPreference1.getString("Item_List_" + title + i, null));
+        }
     }
 
     // This method will list all the items from the received shopping list. Also used to list items when new is added currently.
-    public void listItems(final ArrayList<String> items, final String title) {
+    public void listItems() {
+        LoadItemList(getApplicationContext());
+
+        visibility();
 
         final GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
         gridLayout.removeAllViews();
-        
-        for (int i = 0; i < items.size(); i++){
 
+        for (int i = 0; i < itemArrayList.size(); i++){
+
+            final int currentIteration = i;
             LayoutInflater inflater = LayoutInflater.from(this);
             final RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.shopping_list_item, null, false);
             final CheckBox checkBox = (CheckBox) layout.findViewById(R.id.itemListCheckBox);
             TextView itemsText = (TextView) layout.findViewById(R.id.itemListName);
-            itemsText.setText(items.get(i));
+            itemsText.setText(itemArrayList.get(i).toString());
 
             checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
@@ -111,20 +137,12 @@ public class ShoppingItemActivity extends WimsActivity {
                     if (isChecked){
                         checks++;
                         changeActionBar(checks, title);
-                        RelativeLayout r = (RelativeLayout) ((ViewGroup) checkBox.getParent());
-                        ticked.add(r);
-                        TextView tw = (TextView)r.findViewById(R.id.itemListName);
-                        String s = tw.getText().toString();
-                        texts.add(s);
+                        ticked.add(currentIteration);
                     }
                     else {
                         checks--;
                         changeActionBar(checks, title);
-                        RelativeLayout r = (RelativeLayout) ((ViewGroup) checkBox.getParent());
-                        ticked.remove(r);
-                        TextView tw = (TextView)r.findViewById(R.id.itemListName);
-                        String s = tw.toString();
-                        texts.remove(s);
+                        ticked.remove(currentIteration);
                     }
                 }
             });
@@ -140,9 +158,9 @@ public class ShoppingItemActivity extends WimsActivity {
     }
 
     // This method is to ensure that when the list is empty, the screen is clear.
-    public void visibility(ArrayList<String> items){
+    public void visibility(){
         GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
-        if (!items.isEmpty()){
+        if (!itemArrayList.isEmpty()){
             gridLayout.setVisibility(View.VISIBLE);
         } else {
             gridLayout.setVisibility(View.INVISIBLE);
@@ -186,7 +204,7 @@ public class ShoppingItemActivity extends WimsActivity {
             deleteButton.setVisibility(View.VISIBLE);
 
         } else {
-        deleteButton.setVisibility(View.INVISIBLE);
+            deleteButton.setVisibility(View.INVISIBLE);
         }
     }
 

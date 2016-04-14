@@ -90,11 +90,11 @@ public class ShoppingActivity extends WimsActivity {
 
     private ShoppingListClass LoadItemList(String name, Context mContext) {
         SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(mContext);
-        int size = mSharedPreference1.getInt("Item_List", 0);
+        int size = mSharedPreference1.getInt("Item_List_" + name, 0);
         ArrayList mItems = new ArrayList();
 
         for(int i=0;i<size;i++) {
-            String mItemName = mSharedPreference1.getString("Item_" + i, null);
+            String mItemName = mSharedPreference1.getString("Item_List_" + name + i, null);
             mItems.add(i,mItemName);
         }
         ShoppingListClass shoppingList = new ShoppingListClass(name, mItems);
@@ -110,8 +110,8 @@ public class ShoppingActivity extends WimsActivity {
         intent.putExtras(b);
 
         SaveShoppingList(shoppingListName);
-        DisplayShoppingList();
         startActivity(intent);
+        DisplayShoppingList();
 
         return true;
     }
