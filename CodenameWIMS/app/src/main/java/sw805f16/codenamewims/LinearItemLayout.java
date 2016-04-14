@@ -18,7 +18,7 @@ public class LinearItemLayout extends LinearLayout {
     }
     LinearItemLayout(Context context, ViewGroup viewGroup ){
         super(context);
-        View.inflate(context, R.layout.item_layout, viewGroup);
+        LinearLayout.inflate(context, R.layout.item_layout, this);
     }
 
     public Integer getImageId() {

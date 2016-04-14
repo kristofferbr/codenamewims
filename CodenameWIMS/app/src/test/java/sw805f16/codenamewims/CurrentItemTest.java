@@ -73,6 +73,7 @@ public class CurrentItemTest {
     public void currentItemMark(){
         LinearItemLayout item = (LinearItemLayout) currentItem.getChildAt(0);
         ImageView actual = (ImageView) item.getChildAt(1);
+        //ImageView act = (ImageView) actual.getChildAt(1);
         fragment.markCurrentItem(false);
         assertThat(actual.getDrawable(), is(activity.getResources().getDrawable(R.drawable.checkmark)));
     }
