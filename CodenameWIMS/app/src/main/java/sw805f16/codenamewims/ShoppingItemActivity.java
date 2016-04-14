@@ -30,12 +30,12 @@ public class ShoppingItemActivity extends WimsActivity {
     ArrayList itemArrayList = new ArrayList();
     int checks = 0; // This variable is used to keep track of how many items have been checked off.
     ArrayList<Integer> ticked = new ArrayList();
-    ArrayList<String> texts = new ArrayList();
     String title = "";
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_shopping_list);
+        setActionBarTitle(title);
 
         // Get the bundle from the intent received.
         Bundle b = getIntent().getExtras();
@@ -45,6 +45,9 @@ public class ShoppingItemActivity extends WimsActivity {
         deleteButton.setVisibility(View.INVISIBLE);
         deleteButton.setId(R.id.wims_action_bar_shopping_delete);
         addWimsButtonToActionBar(deleteButton, RIGHT);
+        Button addButton = (Button)findViewById(R.id.item_add_btn);
+
+        final EditText editText = (EditText)findViewById(R.id.item_textfield);
 
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,23 +63,12 @@ public class ShoppingItemActivity extends WimsActivity {
             }
         });
 
-
-        // Set title in actionbar.
-        setActionBarTitle(title);
-
-        listItems();
-
-        Button addButton = (Button)findViewById(R.id.item_add_btn);
-        final EditText editText = (EditText)findViewById(R.id.item_textfield);
-
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AddItem();
             }
         });
-
-
 
         editText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
@@ -88,13 +80,14 @@ public class ShoppingItemActivity extends WimsActivity {
                 return false;
             }
         });
+        listItems();
     }
     public void AddItem(){
         final EditText editText = (EditText)findViewById(R.id.item_textfield);
         String s = "";
         s = editText.getText().toString();
 
-        // Just a check so it's not possible to add an empty string.
+        // Ignoring of empty string.
         if (s.equalsIgnoreCase("")) {
             Toast.makeText(ShoppingItemActivity.this, R.string.Please_enter_an_item_name, Toast.LENGTH_SHORT).show();
         }
@@ -242,5 +235,4 @@ public class ShoppingItemActivity extends WimsActivity {
             inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
     }
-
 }
