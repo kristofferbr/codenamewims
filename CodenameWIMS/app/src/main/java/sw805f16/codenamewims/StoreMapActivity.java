@@ -8,7 +8,9 @@ import android.graphics.Bitmap;
 import android.net.wifi.ScanResult;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;import android.support.v7.app.AppCompatActivity;
+import android.os.Message;
+import android.support.v4.content.res.TypedArrayUtils;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import android.support.v7.widget.Toolbar;
@@ -443,6 +445,7 @@ public class StoreMapActivity extends AppCompatActivity {
                 }
 
                 ScanResult[] scanResults = fingerprinter.getFingerPrint();
+                scanResults = sortScanByKStrongest(scanResults, 3);
                 WimsPoints location = positioningUser(scanResults, mapData);
 
                 if(location != null)
@@ -495,6 +498,26 @@ public class StoreMapActivity extends AppCompatActivity {
             super.onBackPressed();
         }
 
+    }
+
+    public ScanResult[] sortScanByKStrongest(ScanResult[] results, int k) {
+        ScanResult[] retArray = new ScanResult[k];
+        int highestLevel;
+        ScanResult highestResult = null;
+        List<ScanResult> tmpResults = new ArrayList<>(Arrays.asList(results));
+
+        for (int i = 0; i < k; i++) {
+            highestLevel = -100;
+            for (ScanResult res : tmpResults) {
+                if (res != null && res.level > highestLevel) {
+                    highestResult = res;
+                    highestLevel = res.level;
+                }
+            }
+            retArray[i] = highestResult;
+            tmpResults.remove(highestResult);
+        }
+        return retArray;
     }
 
 
@@ -1279,7 +1302,7 @@ public class StoreMapActivity extends AppCompatActivity {
                 nearestNeighbors[i] = point;
                 i++;
             }
-            if (i > k) {
+            if (i > k - 1) {
                 break;
             }
         }

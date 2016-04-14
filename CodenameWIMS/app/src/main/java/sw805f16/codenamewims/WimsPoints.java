@@ -20,7 +20,7 @@ public class WimsPoints extends PointF implements Parcelable{
     public WimsPoints Parent;
     private String productName;
     public String ID;
-    public HashMap<String,Integer> fingerprint = null;
+    public HashMap<String,Integer> fingerprint = new HashMap<>();
     private HashMap<String, Float> probDist = new HashMap<>();
 
     public WimsPoints(){
