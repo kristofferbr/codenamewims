@@ -3,6 +3,8 @@ package sw805f16.codenamewims;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -20,6 +22,8 @@ import java.util.ArrayList;
 public class ShoppingItemActivity extends WimsActivity {
 
     int checks = 0; // This variable is used to keep track of how many items have been checked off.
+    ArrayList ticked = new ArrayList();
+    ArrayList<String> texts = new ArrayList();
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,16 +32,37 @@ public class ShoppingItemActivity extends WimsActivity {
         // Get the bundle from the intent received.
         Bundle b = getIntent().getExtras();
         final ArrayList<String> items = b.getStringArrayList("itemsList");
+        final String title = b.getString("title");
 
         WimsButton deleteButton = new WimsButton(getApplicationContext(), getResources().getDrawable(R.drawable.delete_icon));
         deleteButton.setVisibility(View.INVISIBLE);
         deleteButton.setId(R.id.wims_action_bar_shopping_delete);
         addWimsButtonToActionBar(deleteButton, RIGHT);
 
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
+                for (int i = 0; i < ticked.size(); i++) {
+                    gridLayout.removeView((ViewGroup) ticked.get(i));
+                }
+
+                // TODO: This method has an error. It currently removes all items with same name, if removing just 1 of them. Maybe change things to a listview with an adapter
+                for (int i = 0; i < items.size(); i++) {
+                    for (int j = 0; j < ticked.size(); j++)
+                    if (items.get(i).equals(texts.get(j))) {
+                        items.remove(i);
+                    }
+                }
+                checks = 0;
+                changeActionBar(checks, title);
+                visibility(items);
+            }
+        });
+
         visibility(items);
 
-        // Retrieve the title & set title in actionbar.
-        final String title = b.getString("title");
+        // Set title in actionbar.
         setActionBarTitle(title);
 
         listItems(items, title);
@@ -67,16 +92,16 @@ public class ShoppingItemActivity extends WimsActivity {
     }
 
     // This method will list all the items from the received shopping list. Also used to list items when new is added currently.
-    public void listItems(ArrayList<String> items, final String title) {
+    public void listItems(final ArrayList<String> items, final String title) {
 
-        GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
+        final GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
         gridLayout.removeAllViews();
-
+        
         for (int i = 0; i < items.size(); i++){
 
             LayoutInflater inflater = LayoutInflater.from(this);
-            RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.shopping_list_item, null, false);
-            CheckBox checkBox = (CheckBox) layout.findViewById(R.id.itemListCheckBox);
+            final RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.shopping_list_item, null, false);
+            final CheckBox checkBox = (CheckBox) layout.findViewById(R.id.itemListCheckBox);
             TextView itemsText = (TextView) layout.findViewById(R.id.itemListName);
             itemsText.setText(items.get(i));
 
@@ -86,10 +111,20 @@ public class ShoppingItemActivity extends WimsActivity {
                     if (isChecked){
                         checks++;
                         changeActionBar(checks, title);
+                        RelativeLayout r = (RelativeLayout) ((ViewGroup) checkBox.getParent());
+                        ticked.add(r);
+                        TextView tw = (TextView)r.findViewById(R.id.itemListName);
+                        String s = tw.getText().toString();
+                        texts.add(s);
                     }
                     else {
                         checks--;
                         changeActionBar(checks, title);
+                        RelativeLayout r = (RelativeLayout) ((ViewGroup) checkBox.getParent());
+                        ticked.remove(r);
+                        TextView tw = (TextView)r.findViewById(R.id.itemListName);
+                        String s = tw.toString();
+                        texts.remove(s);
                     }
                 }
             });
@@ -161,4 +196,5 @@ public class ShoppingItemActivity extends WimsActivity {
         changeColour(checks);
         changeButtons(checks);
     }
+
 }
