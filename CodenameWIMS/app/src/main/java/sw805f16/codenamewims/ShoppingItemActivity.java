@@ -54,7 +54,7 @@ public class ShoppingItemActivity extends WimsActivity {
                     SaveItemList();
                     listItems();
                 }
-
+                ticked.clear();
                 checks = 0;
                 changeActionBar(checks, title);
             }
