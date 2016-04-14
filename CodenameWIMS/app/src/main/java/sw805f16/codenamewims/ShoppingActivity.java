@@ -43,7 +43,6 @@ public class ShoppingActivity extends WimsActivity {
                 }
             }
         });
-
         DisplayShoppingList();
     }
 
@@ -59,11 +58,9 @@ public class ShoppingActivity extends WimsActivity {
     public boolean saveShoppingList() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor mEdit1 = sp.edit();
-    /* mItems is an array */
-        int shoppingListSize = shoppingArrayList.size();
-        mEdit1.putInt("Shopping_List", shoppingListSize);
+        mEdit1.putInt("Shopping_List", shoppingArrayList.size());
 
-        for (int i = 0; i < shoppingListSize; i++) {
+        for (int i = 0; i < shoppingArrayList.size(); i++) {
             mEdit1.remove("Shopping_" + i);
             mEdit1.putString("Shopping_" + i, shoppingArrayList.get(i).name);
         }
@@ -123,7 +120,6 @@ public class ShoppingActivity extends WimsActivity {
 
         shoppingArrayList.remove(shoppingListAddress);
         saveShoppingList();
-
     }
 
     // This method adds takes a name for a shopping list, and an ArrayList of items on that list.
@@ -134,9 +130,8 @@ public class ShoppingActivity extends WimsActivity {
 
         GridLayout gridLayout = (GridLayout) findViewById(R.id.shopping_lists);
         gridLayout.removeAllViews();
-        int size = shoppingArrayList.size();
-        for(int i=0;i<size;i++) {
 
+        for(int i=0;i<shoppingArrayList.size();i++) {
             final int currentI = i;
             final String name = shoppingArrayList.get(i).name;
             final ArrayList mItems = shoppingArrayList.get(i).items;
@@ -172,24 +167,18 @@ public class ShoppingActivity extends WimsActivity {
 
             // This for loop adds a number of textviews to a gridlayout to display.
             // This is done to ensure string length isn't an issue.
-            for (int n = 0; n < mItems.size() && n < 5; n++) {
-
+            for (int n = 0; n < mItems.size() && n < 6; n++) {
                 TextView textViewLayout = (TextView) inflater.inflate(R.layout.text_view, null, false);
                 TextView textView = (TextView) textViewLayout.findViewById(R.id.shopping_items);
-                textView.setText(mItems.get(n).toString());
+                if (n==5)
+                    textView.setText("...");
+                else
+                    textView.setText(mItems.get(n).toString());
 
                 GridLayout gridLayoutTV = (GridLayout) layout.findViewById(R.id.shopping_textViews_container);
                 gridLayoutTV.addView(textViewLayout);
-            }
-            if (6 < mItems.size()) {
-                TextView textViewLayout = (TextView) inflater.inflate(R.layout.text_view, null, false);
-                TextView textView = (TextView) textViewLayout.findViewById(R.id.shopping_items);
-                textView.setText("...");
 
-                GridLayout gridLayoutTV = (GridLayout) layout.findViewById(R.id.shopping_textViews_container);
-                gridLayoutTV.addView(textViewLayout);
             }
-
             // Adding the layout we just created to the shopping list layout for complete display.
             gridLayout.addView(layout);
         }
