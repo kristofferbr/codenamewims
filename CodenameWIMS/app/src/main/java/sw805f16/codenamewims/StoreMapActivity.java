@@ -1375,6 +1375,10 @@ public class StoreMapActivity extends AppCompatActivity {
             }
         }
 
-        return returnPoint;
+        if (highestPosterior != 0) {
+            return returnPoint;
+        } else {
+            return null;
+        }
     }
 }
