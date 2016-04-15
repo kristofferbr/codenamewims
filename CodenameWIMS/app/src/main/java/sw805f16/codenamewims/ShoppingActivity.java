@@ -23,6 +23,7 @@ import java.util.ArrayList;
 
 public class ShoppingActivity extends WimsActivity {
 
+    // Global ArrayList containing all shopping lists.
     public final ArrayList<ShoppingListClass> shoppingArrayList = new ArrayList<>();
 
     @Override
@@ -36,6 +37,8 @@ public class ShoppingActivity extends WimsActivity {
             public void onClick(View v) {
                 final EditText editText = (EditText) findViewById(R.id.shopping_textfield);
                 String shoppingListTextField = editText.getText().toString();
+
+                //Ignore empty text fields
                 if (shoppingListTextField.equalsIgnoreCase("")) {
                     Toast.makeText(ShoppingActivity.this, R.string.please_enter_a_name, Toast.LENGTH_SHORT).show();
                 } else {
@@ -46,12 +49,19 @@ public class ShoppingActivity extends WimsActivity {
         });
         displayShoppingList();
     }
+
+    /**
+     * Update shopping list upon return from ShoppingItemActivity
+     */
     @Override
     public void onResume() {
         super.onResume();
         displayShoppingList();
     }
 
+    /**
+     * Class of shoppingArrayList.
+     */
     public class ShoppingListClass {
         String name;
         ArrayList items;
@@ -61,6 +71,10 @@ public class ShoppingActivity extends WimsActivity {
         }
     }
 
+    /**
+     * Save method for saving shopping list. Saves locally in shared preference.
+     * @return Commits changes.
+     */
     public boolean saveShoppingList() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor mEdit1 = sp.edit();
@@ -73,6 +87,10 @@ public class ShoppingActivity extends WimsActivity {
         return mEdit1.commit();
     }
 
+    /**
+     * Save new shopping list
+     * @param shoppingListName Name of shopping list to be saved
+     */
     public void saveShoppingList(String shoppingListName)
     {
         ShoppingListClass shoppingList = new ShoppingListClass(shoppingListName, null);
@@ -80,6 +98,10 @@ public class ShoppingActivity extends WimsActivity {
         saveShoppingList();
     }
 
+    /**
+     * Loads shopping list from shared preference into ShoppingArrayList
+     * @param mContext Activity context.
+     */
     public void loadShoppingList(Context mContext)
     {
         SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -94,6 +116,12 @@ public class ShoppingActivity extends WimsActivity {
         }
     }
 
+    /**
+     * Loads items from local storage into a ShoppingListClass
+     * @param name Name of the shopping list
+     * @param mContext
+     * @return ShoppingListClass with shopping list name and ArrayList of items in that shopping list
+     */
     private ShoppingListClass loadItemList(String name, Context mContext) {
         SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(mContext);
         int size = mSharedPreference1.getInt("Item_List_" + name, 0);
@@ -107,6 +135,11 @@ public class ShoppingActivity extends WimsActivity {
         return shoppingList;
     }
 
+    /**
+     * Method called for creating new shopping list and starting ShoppingItemActivity
+     * @param shoppingListName Name of the new shopping list
+     * @return true
+     */
     public boolean addShoppingList(final String shoppingListName){
         final ArrayList itemList = new ArrayList();
         Intent intent = new Intent(getApplicationContext(), ShoppingItemActivity.class);
@@ -120,7 +153,11 @@ public class ShoppingActivity extends WimsActivity {
         return true;
     }
 
-    public void deleteShoppingList(final int shoppingListAddress) {
+    /**
+     * Deletes a shopping list.
+     * @param shoppingListAddress index location in ShoppingListArray of shopping list to be deleted
+     */
+   public void deleteShoppingList(final int shoppingListAddress) {
 
         shoppingArrayList.remove(shoppingListAddress);
         saveShoppingList();
@@ -128,13 +165,20 @@ public class ShoppingActivity extends WimsActivity {
 
     // This method adds takes a name for a shopping list, and an ArrayList of items on that list.
     // It will then display it.
+
+    /**
+     * This method populates the GridView with shopping list cards.
+     */
     public void displayShoppingList(){
 
         loadShoppingList(getApplicationContext());
 
         GridLayout gridLayout = (GridLayout) findViewById(R.id.shopping_lists);
+
+        //Start from a clear screen.
         gridLayout.removeAllViews();
 
+        //Increment through ShoppingArrayList and create a note for each
         for(int i=0;i<shoppingArrayList.size();i++) {
             final int currentI = i;
             final String name = shoppingArrayList.get(i).name;
@@ -156,6 +200,7 @@ public class ShoppingActivity extends WimsActivity {
                 }
             });
 
+            // onLongClickListener for deleting individual shopping lists.
             layout.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
@@ -170,7 +215,8 @@ public class ShoppingActivity extends WimsActivity {
             title.setText(name);
 
             // This for loop adds a number of textviews to a gridlayout to display.
-            // This is done to ensure string length isn't an issue.
+            // These are the items in the shopping list
+            // No more than 5 items for each note is displayed in this view
             for (int n = 0; n < mItems.size() && n < 6; n++) {
                 TextView textViewLayout = (TextView) inflater.inflate(R.layout.text_view, null, false);
                 TextView textView = (TextView) textViewLayout.findViewById(R.id.shopping_items);
@@ -188,6 +234,9 @@ public class ShoppingActivity extends WimsActivity {
         }
     }
 
+    /**
+     * Hide keyboard when clicking outside of text field.
+     */
     private void hideKeyboard() {
         // Check if no view has focus:
         View view = this.getCurrentFocus();
