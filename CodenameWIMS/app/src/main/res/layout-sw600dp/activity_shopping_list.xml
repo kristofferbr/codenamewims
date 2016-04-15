@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/shoppingParent"
+    android:background="@color/Indigo400"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="sw805f16.codenamewims.ShoppingListActivity"
+    android:focusableInTouchMode="true">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="10dp">
+        <!--> Need to improve this <-->
+        <EditText
+            android:id="@+id/shopping_textfield"
+            android:layout_width="282dp"
+            android:layout_height="48dp"
+            android:background="@drawable/rounded_edittext"
+            android:layout_marginRight="10dp"
+            android:windowSoftInputMode="stateHidden"
+            android:hint="@string/create_shopping_list"
+            android:textColorHint="@drawable/edittext_hint"
+            android:singleLine="true"/>
+
+        <Button
+            android:id="@+id/shopping_add_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="+"
+            android:textColor="@color/White"
+            android:textSize="25sp"
+            android:layout_toRightOf="@+id/shopping_textfield"
+            android:background="@drawable/start_button"/>
+
+        <ScrollView
+            android:layout_below="@+id/shopping_add_btn"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="5dp">
+
+            <GridLayout
+                android:id="@+id/shopping_lists"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/shopping_textfield"
+                android:layout_marginTop="5dp"
+                android:columnCount="2"
+                android:rowCount="5">
+
+            </GridLayout>
+        </ScrollView>
+    </RelativeLayout>
+</RelativeLayout>
