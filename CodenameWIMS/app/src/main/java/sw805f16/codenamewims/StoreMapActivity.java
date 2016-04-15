@@ -31,8 +31,6 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.apache.commons.math3.stat.descriptive.rank.Percentile;
-
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -46,18 +44,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 
 public class StoreMapActivity extends AppCompatActivity {
 
-    //The threshold value for determining probabilities
-    private static final int threshold = -63;
     //TODO: Change this to better represent distance
-    private static final int maxDist = 10;
+    private static final int maxDist = 25;
 
     // URL til map /api/store/ID/map
     public boolean isInFront = false;
@@ -82,12 +75,10 @@ public class StoreMapActivity extends AppCompatActivity {
     ListView listResults;
     final ArrayList<String> results = new ArrayList<>();
     ArrayAdapter<String> adapter;
+    HashMap<String, Float> marginalLikelihood = new HashMap<>();
 
     ArrayList<WimsPoints> mapData = new ArrayList<>();
     WimsPoints currentWimsPoint;
-    private boolean thresholdMeasure = false;
-    private double tValue = 0;
-    private ArrayList<Double> sampleData = new ArrayList<>();
 
 
     /*For drawing neighbors*/
@@ -103,7 +94,6 @@ public class StoreMapActivity extends AppCompatActivity {
 
     /* Used for fingerprinting*/
     Thread fingerthread;
-    HashMap fingerPrint=new HashMap(3);
     WifiFingerprinter fingerprinter;
     static Handler mHandler;
 
@@ -158,27 +148,6 @@ public class StoreMapActivity extends AppCompatActivity {
                 FingerPrintPutton.setVisibility(View.INVISIBLE);
 
 
-            }
-        });
-
-        final Button thresholdButton = (Button) findViewById(R.id.threshold);
-        thresholdButton.setVisibility(View.GONE);
-
-        thresholdButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!thresholdMeasure) {
-                    thresholdMeasure = true;
-                } else {
-                    Collections.sort(sampleData);
-                    double[] arr = new double[sampleData.size()];
-                    for (int i = 0; i < sampleData.size(); i++) { arr[i] = sampleData.get(i); }
-                    Percentile percentile = new Percentile();
-                    percentile.setData(arr);
-                    tValue = percentile.evaluate(75);
-                    TextView view = (TextView) findViewById(R.id.testText);
-                    view.setText(String.valueOf(tValue));
-                }
             }
         });
         // Set variables for gestures
@@ -423,10 +392,16 @@ public class StoreMapActivity extends AppCompatActivity {
 
         getMapLayout();
 
+        final Toast toast = Toast.makeText(StoreMapActivity.this, "", Toast.LENGTH_SHORT);
+
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message message) {
-                Toast.makeText(getApplicationContext(),"SCANNINGS COMPLETE",Toast.LENGTH_LONG).show();
+                toast.setText("SCANNING COMPLETE");
+                if (toast.getView().getWindowVisibility() == View.VISIBLE) {
+                    toast.cancel();
+                }
+                toast.show();
             }
         };
 
@@ -447,7 +422,13 @@ public class StoreMapActivity extends AppCompatActivity {
 
                 if(location != null)
                 fram.addView(posfac.getPositionOfFingerPrintPoint((int)location.x,(int)location.y));
-                else Toast.makeText(getApplicationContext(),"No location found", Toast.LENGTH_SHORT).show();
+                else {
+                    toast.setText("No location found");
+                    if (toast.getView().getWindowVisibility() == View.VISIBLE) {
+                        toast.cancel();
+                    }
+                    toast.show();
+                }
 
             }
         });
@@ -1194,55 +1175,51 @@ public class StoreMapActivity extends AppCompatActivity {
 
                 while(true) {
                     while (isScanning) {
-                        HashMap<String, ArrayList<Integer>> fingerPrintTemp = new HashMap<>();
-                        HashMap<String, Integer> finishedHashMap = new HashMap<>();
+                        HashMap<String, ArrayList<Float>> fingerPrintTemp = new HashMap<>();
+                        HashMap<String, Float> finishedFingerprint = new HashMap<>();
+                        HashMap<String, Float> initialResult = new HashMap<>();
 
                         ArrayList<ScanResult> scanres;
                         scanres = fingerprinter.getFingerPrint();
 
                         for (ScanResult res : scanres) {
                             if (res != null) {
-                                fingerPrintTemp.put(res.BSSID, new ArrayList<Integer>());
+                                fingerPrintTemp.put(res.BSSID, new ArrayList<Float>());
+                                initialResult.put(res.BSSID, (float) res.level);
                             }
                         }
 
-                        for (int i = 0; i < 20; i++) {
+                        for (int i = 0; i < 60; i++) {
+                            scanres = fingerprinter.getFingerPrint();
+                            for (ScanResult res : scanres) {
+                                if (res != null && fingerPrintTemp.containsKey(res.BSSID)) {
+                                    fingerPrintTemp.get(res.BSSID).add((float) res.level);
+                                }
+                            }
                             try {
                                 Thread.sleep(1000);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                            scanres = fingerprinter.getFingerPrint();
-                            for (ScanResult res : scanres) {
-                                if (res != null && fingerPrintTemp.containsKey(res.BSSID)) {
-                                    fingerPrintTemp.get(res.BSSID).add(res.level);
-
-//                                    if (thresholdMeasure) {
-//                                        sampleData.add((double) res.level);
-//                                    }
-                                }
-                            }
                         }
-
 
                         Iterator it = fingerPrintTemp.entrySet().iterator();
                         while (it.hasNext()) {
                             HashMap.Entry pair = (HashMap.Entry) it.next();
-                            int total = 0;
-                            int observation = 0;
+                            float total = 0;
+                            float observation = 0;
                             for (int y = 0; y < fingerPrintTemp.get(pair.getKey()).size(); y++) {
-                                if (fingerPrintTemp.get(pair.getKey()).get(y) > threshold) {
+                                if (Math.abs(fingerPrintTemp.get(pair.getKey()).get(y) - initialResult.get(pair.getKey())) < 5) {
                                     observation++;
                                 }
                                 total = total + fingerPrintTemp.get(pair.getKey()).get(y);
                             }
-                            finishedHashMap.put(pair.getKey().toString(), total / fingerPrintTemp.get(pair.getKey()).size());
-                            currentWimsPoint.setProbabilityDistributions((String) pair.getKey(), (observation / fingerPrintTemp.get(pair.getKey()).size()));
+                            finishedFingerprint.put((String) pair.getKey(), (total / (float) fingerPrintTemp.get(pair.getKey()).size()));
+                            currentWimsPoint.setProbabilityDistributions((String) pair.getKey(), ( observation / (float) fingerPrintTemp.get(pair.getKey()).size()));
 
                         }
 
-                        fingerPrint = finishedHashMap;
-                        currentWimsPoint.fingerprint = finishedHashMap;
+                        currentWimsPoint.fingerprint = finishedFingerprint;
                         Message message = mHandler.obtainMessage();
                         message.sendToTarget();
                         isScanning = false;
@@ -1296,7 +1273,7 @@ public class StoreMapActivity extends AppCompatActivity {
 
         int i = 0;
         for (WimsPoints point : mapData) {
-            if (DistanceBetweenScanAndPoint(point, scanResult) <= maxDist && !point.fingerprint.isEmpty()) {
+            if (!point.fingerprint.isEmpty() && DistanceBetweenScanAndPoint(point, scanResult) <= maxDist) {
                 nearestNeighbors.add(point);
                 i++;
             }
@@ -1333,7 +1310,13 @@ public class StoreMapActivity extends AppCompatActivity {
 
         distance = Math.sqrt(distance);
 
+        point.setPriori(1/(distance+1));
+
         return distance;
+    }
+
+    public void computeMarginalLikelihood() {
+
     }
 
 
@@ -1346,21 +1329,17 @@ public class StoreMapActivity extends AppCompatActivity {
     public WimsPoints positioningUser(ArrayList<ScanResult> scanResults, ArrayList<WimsPoints> mapData) {
         ArrayList<WimsPoints> candidates = kNearestNeighbor(mapData, 10, scanResults);
 
-        ArrayList<Double> candidatePriori = new ArrayList<>();
-        double totalPriori = 0;
+        ArrayList<Double> cadidateLikelihood = new ArrayList<>();
 
         for (int i = 0; i < candidates.size(); i++) {
             for (int n = 0; n < scanResults.size(); n++) {
                 if (n == 0) {
-                    candidatePriori.add(1.0);
+                    cadidateLikelihood.add(1.0);
                 }
                 if (scanResults.get(n) != null) {
-                    candidatePriori.set(i, (candidatePriori.get(i) * candidates.get(i).getProbabilityDistribution().get(scanResults.get(n).BSSID)));
+                    cadidateLikelihood.set(i, (cadidateLikelihood.get(i) * candidates.get(i).getProbabilityDistribution().get(scanResults.get(n).BSSID)));
                 }
             }
-        }
-        for (double prob : candidatePriori) {
-            totalPriori = totalPriori + prob;
         }
 
         double posterior;
@@ -1368,7 +1347,7 @@ public class StoreMapActivity extends AppCompatActivity {
         WimsPoints returnPoint = new WimsPoints();
 
         for (int i = 0; i < candidates.size(); i++) {
-            posterior = (candidatePriori.get(i)/totalPriori);
+            posterior = (cadidateLikelihood.get(i) * candidates.get(i).getPriori());
             if (posterior > highestPosterior) {
                 returnPoint = candidates.get(i);
                 highestPosterior = posterior;

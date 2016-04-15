@@ -20,8 +20,9 @@ public class WimsPoints extends PointF implements Parcelable{
     public WimsPoints Parent;
     private String productName;
     public String ID;
-    public HashMap<String,Integer> fingerprint = new HashMap<>();
+    public HashMap<String,Float> fingerprint = new HashMap<>();
     private HashMap<String, Float> probDist = new HashMap<>();
+    private double priori = 0;
 
     public WimsPoints(){
 
@@ -61,6 +62,14 @@ public class WimsPoints extends PointF implements Parcelable{
 
     public HashMap<String, Float> getProbabilityDistribution() {
         return probDist;
+    }
+
+    public double getPriori() {
+        return priori;
+    }
+
+    public void setPriori(double value) {
+        priori = value;
     }
 
     public String getProductName() {
