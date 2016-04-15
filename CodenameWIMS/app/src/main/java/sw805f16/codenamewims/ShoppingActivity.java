@@ -191,7 +191,7 @@ public class ShoppingActivity extends WimsActivity {
             layout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(getApplicationContext(), ShoppingItemActivity.class);
+                    Intent intent = new Intent(getApplicationContext(), ShoppingListActivity.class);
                     Bundle b = new Bundle();
                     b.putStringArrayList("itemsList", mItems);
                     b.putString("title", name);

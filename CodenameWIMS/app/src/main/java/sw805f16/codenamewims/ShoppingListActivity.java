@@ -11,28 +11,32 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 
-public class ShoppingListActivity extends AppCompatActivity {
+public class ShoppingListActivity extends WimsActivity {
 
     private Toolbar toolbar;
+    String title = "";
 
     ShoppingListFragment fragment = new ShoppingListFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_shopping_list);
+        setContentView(R.layout.activity_item_shopping_list);
 
+        Bundle b = getIntent().getExtras();
         // my_child_toolbar is defined in the layout file
-        Toolbar myChildToolbar =
-                (Toolbar) findViewById(R.id.app_bar);
-        setSupportActionBar(myChildToolbar);
+        title = b.getString("title");
+        setActionBarTitle(title);
 
-        // Get a support ActionBar corresponding to this toolbar
-      //  ActionBar ab = getSupportActionBar();
+        WimsButton deleteButton = new WimsButton(getApplicationContext(), getResources().getDrawable(R.drawable.delete_icon));
+        deleteButton.setVisibility(View.INVISIBLE);
+        deleteButton.setId(R.id.wims_action_bar_shopping_delete);
+        addWimsButtonToActionBar(deleteButton, RIGHT);
 
-        // Enable the Up button
-        //ab.setDisplayHomeAsUpEnabled(true);
+        //Button addButton = (Button)findViewById(R.id.item_add_btn);
 
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -43,7 +47,7 @@ public class ShoppingListActivity extends AppCompatActivity {
             fragment.setInitialSavedState((Fragment.SavedState) getIntent().getParcelableExtra("state"));
         }
 
-        fragmentTransaction.add(R.id.shoppingParent, fragment, "shoppingFragment");
+        fragmentTransaction.add(R.id.shoppingListParent, fragment, "shoppingFragment");
         fragmentTransaction.commit();
     }
 
