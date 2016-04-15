@@ -11,7 +11,7 @@ import android.widget.LinearLayout;
  * Created by Kogni on 13-Apr-16.
  */
 public class LinearItemLayout extends LinearLayout {
-    private Integer imageId;
+    private Integer imageId = null;
     private ItemEnum status;
 
     public LinearItemLayout(Context context){

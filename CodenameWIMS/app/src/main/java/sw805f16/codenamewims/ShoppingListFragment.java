@@ -153,6 +153,7 @@ public class ShoppingListFragment extends Fragment {
                 tmpLayout.addView(tmpText, 0);
 
                 tmpLayout.setStatus(ItemEnum.UNMARKED);
+                tmpLayout.setImageId(0);
                 //Then we add the layout to the item list, notify the adapter and sort the list
                 itemAdapter.add(tmpLayout);
                 // TODO: When we have positions, change this to that
@@ -306,7 +307,7 @@ public class ShoppingListFragment extends Fragment {
             item.setImageId(R.drawable.skip);
         }
         //Because the content of the currentItem is the first item in the unmarked list, it is removed and added to the marked list
-        itemAdapter.editItemEnum(0, ItemEnum.UNMARKED);
+        itemAdapter.editItemEnum(0, ItemEnum.MARKED);
         sortItemListInAdapter(new WimsPoints(0, 0));
         itemAdapter.notifyDataSetChanged();
     }
@@ -375,6 +376,7 @@ public class ShoppingListFragment extends Fragment {
                         //We set its clickable state to false
                         item.setClickable(false);
                         item.setStatus(ItemEnum.UNAVAILABLE);
+                        item.setImageId(R.drawable.grayout);
                         itemAdapter.sortItemList(new WimsPoints(0, 0));
                     }
                 }
@@ -388,6 +390,7 @@ public class ShoppingListFragment extends Fragment {
                         tmpText.setTextColor(Color.BLACK);
 
                         item.setStatus(ItemEnum.UNMARKED);
+                        item.setImageId(0);
                         //We re-enable its clickable state
                         item.setClickable(true);
                     }
@@ -401,6 +404,7 @@ public class ShoppingListFragment extends Fragment {
                         tmpText.setTextColor(Color.DKGRAY);
                         ((ImageView) item.getChildAt(1)).setImageDrawable(null);
                         item.setStatus(ItemEnum.UNAVAILABLE);
+                        item.setImageId(R.drawable.grayout);
                         item.setClickable(false);
                     }
                 }

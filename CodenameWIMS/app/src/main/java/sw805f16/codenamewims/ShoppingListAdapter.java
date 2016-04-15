@@ -62,7 +62,8 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
         ImageView mark = (ImageView) item.getChildAt(1);
         //First, we determine what the current status of the item is
         //If the item is set to checkmark, we either want to change it to skip or unmark it
-        if (item.getImageId() == R.drawable.checkmark) {
+
+        if (item.getImageId() != null && item.getImageId() == R.drawable.checkmark) {
             //If the item was longClicked, we change the drawable to skip
             if (longClick) {
                 mark.setImageDrawable(getContext().getResources().getDrawable(R.drawable.skip));
@@ -77,18 +78,16 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
                 item.setImageId(0);
                 //After adding it the item to the unmarked list we sort the list
                 // TODO: When we have positions, change this to that
-                sortItemList(new WimsPoints(0, 0));
             }
         }
         //If the item is set to skip, we either want to change it to checkmark or unmark it.
-        else if (item.getImageId() == R.drawable.skip) {
+        else if (item.getImageId() != null && item.getImageId() == R.drawable.skip) {
             //If a long click was performed we unmark the item
             if (longClick) {
                 mark.setImageDrawable(null);
-                item.setImageId(0);
                 editItemEnum(position, ItemEnum.UNMARKED);
+                item.setImageId(0);
                 // TODO: When we have positions, change this to that
-                sortItemList(new WimsPoints(0, 0));
             }
             //If a normal click is performed, we checkmark the item
             else {
@@ -109,10 +108,10 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
                 mark.setImageDrawable(getContext().getResources().getDrawable(R.drawable.checkmark));
                 item.setImageId(R.drawable.checkmark);
             }
+            editItemEnum(position, ItemEnum.MARKED);
         }
-        editItemEnum(position, ItemEnum.MARKED);
 
-        reorderList();
+        sortItemList(new WimsPoints(0, 0));
 
     }
 
@@ -143,7 +142,7 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
                 //In the third loop we do the actual sorting, using point
                 for (int n = 0; n < getCount(); n++) {
                     if (getItem(n).getStatus() == ItemEnum.UNMARKED) {
-                        text = ((TextView) getItem(i).getChildAt(0)).getText().toString();
+                        text = ((TextView) getItem(n).getChildAt(0)).getText().toString();
                         //We check if the item has the same name as point
                         if (text.equalsIgnoreCase(point.getProductName())) {
                             //If we have a match we remove the item and add it on the position i from the enclosing loop
