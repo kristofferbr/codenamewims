@@ -40,16 +40,16 @@
             android:layout_height="match_parent"
             android:layout_marginTop="5dp">
 
-    <GridLayout
-        android:id="@+id/shopping_lists"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/shopping_textfield"
-        android:layout_marginTop="5dp"
-        android:columnCount="2"
-        android:rowCount="5">
+            <GridLayout
+                android:id="@+id/shopping_lists"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/shopping_textfield"
+                android:layout_marginTop="5dp"
+                android:columnCount="2"
+                android:rowCount="5">
 
-    </GridLayout>
-    </ScrollView>
-</RelativeLayout>
+            </GridLayout>
+        </ScrollView>
+    </RelativeLayout>
 </RelativeLayout>

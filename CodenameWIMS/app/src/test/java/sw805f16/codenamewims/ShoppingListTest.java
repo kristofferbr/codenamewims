@@ -27,7 +27,7 @@ import static org.hamcrest.CoreMatchers.*;
  */
 
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
+@Config(constants = BuildConfig.class, shadows = OutlineShadow.class)
 public class ShoppingListTest {
 
     JSONObject dummyJson;
@@ -57,7 +57,7 @@ public class ShoppingListTest {
         try {
             dummyJson = new JSONObject(jsonString);
             //We extract the information from the JSONObject to fill the products HashMap
-            testFragment.extractInformationFromJson(dummyJson);
+            JSONContainer.extractInformationFromJson(dummyJson);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -121,8 +121,8 @@ public class ShoppingListTest {
                     "  \"_id\": \"56e6a28a28c3e3314a6849e0\",\n" +
                     "  \"products\": []\n" +
                     "}";
-            JSONObject newJson = new JSONObject(newJsonString);
-            testFragment.extractInformationFromJson(newJson);
+                JSONObject newJson = new JSONObject(newJsonString);
+            JSONContainer.extractInformationFromJson(newJson);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -130,7 +130,7 @@ public class ShoppingListTest {
         //Then we set the store id to the new id
         testFragment.setStoreId("56e6a28a28c3e3314a6849e0");
 
-        LinearLayout actual = (LinearLayout) testList.getItemAtPosition(0);
+        LinearItemLayout actual = (LinearItemLayout) testList.getItemAtPosition(0);
         //Lastly we assert whether the background of the items have been grayed out
         assertThat(actual.getBackground(), is(shoppingListActivity.getResources().getDrawable(R.drawable.grayout)));
     }

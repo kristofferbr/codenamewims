@@ -23,7 +23,7 @@ import org.robolectric.annotation.Config;
  */
 
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
+@Config(constants = BuildConfig.class, shadows = OutlineShadow.class)
 public class StoreMapActivityTest {
 
     @Test

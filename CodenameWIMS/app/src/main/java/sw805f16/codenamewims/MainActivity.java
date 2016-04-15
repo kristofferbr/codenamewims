@@ -1,8 +1,6 @@
 package sw805f16.codenamewims;
 
-import android.app.Fragment;
 import android.content.Intent;
-import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -69,14 +67,21 @@ public class MainActivity extends AppCompatActivity {
 
         request(queue, url);
 
+        initializeViews();
+    }
 
+    /**
+     * This method is responsible for initializing the views on the
+     * user interface
+     */
+    public void initializeViews() {
         searchView = (SearchView) findViewById(R.id.search);
         searchResults = (ListView) findViewById(R.id.query_results);
         resultList = new ArrayList<>();
         //Here we set up the adapter for the results listview
         adapter = new ArrayAdapter<>(getApplicationContext(),
-                                     R.layout.simple_list_view,
-                                     resultList);
+                R.layout.simple_list_view,
+                resultList);
         searchResults.setAdapter(adapter);
 
         //When clicking the items the searchview searches for the contents of the item
@@ -100,8 +105,6 @@ public class MainActivity extends AppCompatActivity {
                 //If it is not the listview is populated like with onQueryTextChange()
                 if (pickedSuggestion || stores.containsKey(query.toLowerCase())) {
                     TextView titleText = (TextView) findViewById(R.id.title);
-                    //We clear the title text to set the new title
-                    titleText.setText("");
                     titleText.setText(SearchRanking.capitaliseFirstLetters(query));
                     //The search field is emptied
                     searchView.setQuery("", false);
@@ -166,10 +169,7 @@ public class MainActivity extends AppCompatActivity {
         //Handle
         int id = item.getItemId();
 
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+        return id == R.id.action_settings || super.onOptionsItemSelected(item);
     }
 
     /**
@@ -212,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
      * A method that extracts information from a json array and puts it in a hashmap
      * @param jsonArray The json array from the server
      */
-    public void extractInformationFromJson(JSONArray jsonArray) {
+    public void extractStoreInformationFromJson(JSONArray jsonArray) {
         try {
             JSONObject tmpObject;
             //Because this method is only called when we have a new JSON array we clear stores
@@ -244,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
         JsonArrayRequest jsonRequest = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                extractInformationFromJson(response);
+                extractStoreInformationFromJson(response);
             }
         }, new Response.ErrorListener() {
             @Override

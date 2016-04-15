@@ -34,7 +34,7 @@ import static org.hamcrest.CoreMatchers.*;
  */
 
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
+@Config(constants = BuildConfig.class, shadows = OutlineShadow.class)
 public class ViewShoppingListTest {
 
     ShoppingListFragment fragment;
@@ -52,7 +52,7 @@ public class ViewShoppingListTest {
         try {
             String jsonString = shoppingActivity.getResources().getString(R.string.shop_json);
             JSONObject dummyJson = new JSONObject(jsonString);
-            fragment.extractInformationFromJson(dummyJson);
+            JSONContainer.extractInformationFromJson(dummyJson);
         } catch (JSONException e) {
             e.printStackTrace();
         }

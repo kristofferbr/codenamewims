@@ -11,7 +11,7 @@ import org.robolectric.annotation.Config;
  * And she's buying a stairway to (bugfree) heaven
  */
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
+@Config(constants = BuildConfig.class, shadows = OutlineShadow.class)
 public class DrawPathTest {
 
     @Test

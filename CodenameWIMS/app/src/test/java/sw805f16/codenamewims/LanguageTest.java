@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
  */
 
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
+@Config(constants = BuildConfig.class, shadows = OutlineShadow.class)
 public class LanguageTest {
 
     @Test

@@ -103,14 +103,14 @@ public class StoreMapActivity extends AppCompatActivity {
         setContentView(R.layout.activity_store_map);
 
         // my_child_toolbar is defined in the layout file
-        toolbar = (Toolbar)findViewById(R.id.app_bar);
-        setSupportActionBar(toolbar);
+        // toolbar = (Toolbar)findViewById(R.id.app_bar);
+        //setSupportActionBar(toolbar);
 
         // Get a support ActionBar corresponding to this toolbar
-        ActionBar ab = getSupportActionBar();
+        //ActionBar ab = getSupportActionBar();
 
         // Enable the Up button
-        ab.setDisplayHomeAsUpEnabled(true);
+        // ab.setDisplayHomeAsUpEnabled(true);
 
         this.store_id = getIntent().getStringExtra("storeId");
         fragment = ShoppingListFragment.newInstance(store_id);
@@ -223,8 +223,10 @@ public class StoreMapActivity extends AppCompatActivity {
                         int w = v.getMeasuredWidth();
                         int h = v.getMeasuredHeight();
 
-                        spotX = (int) (500 / (float) w * x);
-                        spotY = (int) (750 / (float) h * y);
+                        Log.w("Billedeopløsning","X: "+fram.getChildAt(0).getMeasuredWidth() + "Y: " + fram.getChildAt(0).getMeasuredHeight());
+
+                        spotX = (int) (1312 / (float) w * x);
+                        spotY = (int) (2132 / (float) h * y);
                         if (fram.getChildCount() == 1) {
                             fram.addView(posfac.getPostitionOverlay(spotX, spotY));
                             addPointIfNew(spotX, spotY, mapData);
@@ -265,8 +267,8 @@ public class StoreMapActivity extends AppCompatActivity {
                             int w = v.getMeasuredWidth();
                             int h = v.getMeasuredHeight();
 
-                            startX = (int) (500 / (float) w * x);
-                            starty = (int) (750 / (float) h * y);
+                            startX = (int) (1312 / (float) w * x);
+                            starty = (int) (2132 / (float) h * y);
 
                             if(isWithin(startX, starty, mapData)) {
                                 start = !start;
@@ -278,8 +280,8 @@ public class StoreMapActivity extends AppCompatActivity {
                             int w = v.getMeasuredWidth();
                             int h = v.getMeasuredHeight();
 
-                            endX = (int) (500 / (float) w * x);
-                            endY = (int) (750 / (float) h * y);
+                            endX = (int) (1312 / (float) w * x);
+                            endY = (int) (2132 / (float) h * y);
 
 
                             if (isWithin(endX, endY, mapData)) {
@@ -392,7 +394,6 @@ public class StoreMapActivity extends AppCompatActivity {
             @Override
             public void handleMessage(Message message) {
                 Toast.makeText(getApplicationContext(),"SCANNINGS COMPLETE",Toast.LENGTH_LONG).show();
-                fingerthread.interrupt();
 
             }
         };
@@ -402,15 +403,18 @@ public class StoreMapActivity extends AppCompatActivity {
         findMe.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int count = fram.getChildCount();
+                int count = fram.getChildCount()-1;
                 for(int i = count; i > 0; i--)
                 {
                     fram.removeViewAt(i);
                 }
 
-                WimsPoints location;
+                WimsPoints location = new WimsPoints();
                 location = findNearestNeighbor(mapData);
+
+                if(location != null)
                 fram.addView(posfac.getPositionOfFingerPrintPoint((int)location.x,(int)location.y));
+                else Toast.makeText(getApplicationContext(),"No locatioj found", Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -1127,6 +1131,9 @@ public class StoreMapActivity extends AppCompatActivity {
         return 0;
     }
 
+    /***
+     * Used for setting up the thread for fingerprinting
+     */
     public void setupFingerPrintThread(){
 
         fingerthread = new Thread(new Runnable() {
@@ -1152,7 +1159,7 @@ public class StoreMapActivity extends AppCompatActivity {
                         fingerPrintTemp.get(scanres[1].BSSID).add(scanres[1].level);
                         fingerPrintTemp.get(scanres[2].BSSID).add(scanres[2].level);
 
-                        for (int i = 0; i < 15; i++) {
+                        for (int i = 0; i < 5; i++) {
                             try {
                                 Thread.sleep(1000);
                             } catch (InterruptedException e) {
@@ -1191,6 +1198,11 @@ public class StoreMapActivity extends AppCompatActivity {
     }
 
 
+    /***
+     * Used for drawing the acquired data from the server on the screen, so that it can be worked on further
+     * @param data The array of wimspoints
+     * @return The imageview with a drawable that represents the points and neighborships
+     */
     public ImageView DrawDataOnMap(ArrayList<WimsPoints> data){
 
         ImageView ViewToAddDrawing = posfac.getPostitionOverlay((int) data.get(0).x, (int) data.get(0).y);
@@ -1215,32 +1227,69 @@ public class StoreMapActivity extends AppCompatActivity {
     }
 
 
+    /***
+     * A simple nearest neighbor algorithm for positioning
+     * @param mapData The data of the map
+     * @return The point that the scan indicates is the nearest.
+     */
     public WimsPoints findNearestNeighbor(ArrayList<WimsPoints> mapData){
 
         ScanResult[] scanresult = fingerprinter.getFingerPrint();
 
-        WimsPoints nearestLocation = null;
-        double distance = 100000000;
-        double tempdistance = 0;
+        WimsPoints three_hit_nearestLocation = null;
+        WimsPoints two_hit_nearestLocation = null;
+        WimsPoints one_hit_nearestLocation = null;
+        double three_hit_distance = Double.POSITIVE_INFINITY;
+        double two_hit_distance = Double.POSITIVE_INFINITY;;
+        double one_hit_distnace = Double.POSITIVE_INFINITY;;
+        double three_hit_tempdistance = 0;
+        double two_hit_tempdistance = 0;
+        double one_hit_tempdistance = 0;
 
-        for(int i = 1; i < mapData.size(); i++){
+        for(int i = 0; i < mapData.size(); i++){
             if(mapData.get(i).fingerprint != null){
 
-                if(mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) && mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) &&mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID))
+                if(mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) && mapData.get(i).fingerprint.containsKey(scanresult[1].BSSID) &&mapData.get(i).fingerprint.containsKey(scanresult[2].BSSID))
                 {
-                    tempdistance = DistanceBetweenScanAndPoint(mapData.get(i),scanresult);
-                    if(tempdistance < distance){
-                        distance = tempdistance;
-                        nearestLocation = mapData.get(i);
+                    three_hit_tempdistance = DistanceBetweenScanAndPoint(mapData.get(i),scanresult);
+                    if(three_hit_tempdistance < three_hit_distance){
+                        three_hit_distance = three_hit_tempdistance;
+                        three_hit_nearestLocation = mapData.get(i);
+                    }
+                } else if(mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) && mapData.get(i).fingerprint.containsKey(scanresult[1].BSSID) ||
+                        mapData.get(i).fingerprint.containsKey(scanresult[1].BSSID) && mapData.get(i).fingerprint.containsKey(scanresult[2].BSSID) ||
+                        mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) && mapData.get(i).fingerprint.containsKey(scanresult[2].BSSID))
+                {
+                    two_hit_tempdistance = DistanceBetweenScanAndPoint(mapData.get(i),scanresult);
+                    if(two_hit_tempdistance < two_hit_distance)
+                    {
+                        two_hit_distance = two_hit_tempdistance;
+                        two_hit_nearestLocation = mapData.get(i);
+                    }
+                } else if (mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) || mapData.get(i).fingerprint.containsKey(scanresult[1].BSSID) || mapData.get(i).fingerprint.containsKey(scanresult[2].BSSID)){
+
+                    one_hit_tempdistance = DistanceBetweenScanAndPoint(mapData.get(i),scanresult);
+
+                    if(one_hit_tempdistance < one_hit_distnace){
+                        one_hit_distnace = one_hit_tempdistance;
+                        one_hit_nearestLocation = mapData.get(i);
                     }
                 }
             }
 
         }
 
-        if(nearestLocation != null)
+        if(three_hit_nearestLocation != null)
         {
-            return nearestLocation;
+            return three_hit_nearestLocation;
+        }
+        else if(two_hit_nearestLocation != null)
+        {
+            return two_hit_nearestLocation;
+        }
+        else if( one_hit_nearestLocation != null)
+        {
+            return one_hit_nearestLocation;
         }
         else return null;
 
@@ -1248,6 +1297,12 @@ public class StoreMapActivity extends AppCompatActivity {
     }
 
 
+    /***
+     *
+     * @param point The point to check distance up against
+     * @param scanresult The scan that has been received
+     * @return the distance between scan and point
+     */
     public double DistanceBetweenScanAndPoint(WimsPoints point, ScanResult[] scanresult){
 
         double[] vec = {0,0,0};
@@ -1255,7 +1310,9 @@ public class StoreMapActivity extends AppCompatActivity {
 
 
         for(int i = 0; i <scanresult.length; i++){
+            if(point.fingerprint.containsKey(scanresult[i].BSSID))
             vec[i] = Math.abs(scanresult[i].level - point.fingerprint.get(scanresult[i].BSSID));
+            else vec[i] = 0;
         }
 
         distance = Math.sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2] * vec[2]);

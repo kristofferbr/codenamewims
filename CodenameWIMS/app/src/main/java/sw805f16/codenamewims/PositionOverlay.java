@@ -19,10 +19,13 @@ import java.util.ArrayList;
  * map, in order to indicate position
  */
 public class PositionOverlay {
+    private static int BITMAP_WIDTH = 1312;
+    private static int BITMAP_HEIGHT = 2132;
 
 
     /*Global values used for the creation of the imageview*/
     ImageView overlay;
+    ViewGroup.LayoutParams params;
     Paint paints = new Paint();
     Context con;
     Bitmap emptyBit;
@@ -35,6 +38,7 @@ public class PositionOverlay {
     PositionOverlay(Context context){
 
         con = context;
+        params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     }
 
 
@@ -48,7 +52,7 @@ public class PositionOverlay {
     {
 
         /*The bitmap on which the point is drawn*/
-        emptyBit = Bitmap.createBitmap(500,750,Bitmap.Config.ARGB_8888);
+        emptyBit = Bitmap.createBitmap(BITMAP_WIDTH,BITMAP_HEIGHT,Bitmap.Config.ARGB_8888);
 
         /*Make the canvas draw on the bitmap*/
         Canvas can = new Canvas(emptyBit);
@@ -62,6 +66,7 @@ public class PositionOverlay {
 
         /*The imageview is Instantiated*/
         overlay = new ImageView(con);
+        overlay.setLayoutParams(params);
 
         ViewGroup.LayoutParams param = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         overlay.setLayoutParams(param);
@@ -81,7 +86,7 @@ public class PositionOverlay {
 
         paintsForingerprint.setColor(Color.RED);
         /*The bitmap on which the point is drawn*/
-        emptyBit = Bitmap.createBitmap(500,750,Bitmap.Config.ARGB_8888);
+        emptyBit = Bitmap.createBitmap(BITMAP_WIDTH,BITMAP_HEIGHT,Bitmap.Config.ARGB_8888);
 
         /*Make the canvas draw on the bitmap*/
         Canvas can = new Canvas(emptyBit);
@@ -121,7 +126,7 @@ public class PositionOverlay {
         StartPoint.fscore = EndPoint.distance(StartPoint.x, StartPoint.y);
 
          /*The bitmap on which the point is drawn*/
-        emptyBit = Bitmap.createBitmap(500,750,Bitmap.Config.ARGB_8888);
+        emptyBit = Bitmap.createBitmap(BITMAP_WIDTH,BITMAP_HEIGHT,Bitmap.Config.ARGB_8888);
 
         /*Make the canvas draw on the bitmap*/
         Canvas can = new Canvas(emptyBit);
@@ -208,12 +213,13 @@ public class PositionOverlay {
 
 
         ImageView viewToReturn = new ImageView(con);
-        viewToReturn.setLayoutParams(view.getLayoutParams());
+
+        viewToReturn.setLayoutParams(params);
         Bitmap temp_bitmap = ((BitmapDrawable)view.getDrawable()).getBitmap();
 
         Bitmap mutable_bitmap = temp_bitmap.copy(Bitmap.Config.ARGB_8888, true);
 
-        Bitmap bitmap = Bitmap.createScaledBitmap(temp_bitmap,500,750,false);
+        Bitmap bitmap = Bitmap.createScaledBitmap(temp_bitmap,BITMAP_WIDTH,BITMAP_HEIGHT,false);
 
         /*Make the canvas draw on the bitmap*/
         Canvas can = new Canvas(bitmap);
@@ -236,12 +242,12 @@ public class PositionOverlay {
     public ImageView drawLineOnSameMap(ImageView view, int StartPositionX, int StartPositionY,
                                        int EndPositionX, int EndPositionY){
         ImageView viewToReturn = new ImageView(con);
-        viewToReturn.setLayoutParams(view.getLayoutParams());
+        viewToReturn.setLayoutParams(params);
         Bitmap temp_bitmap = ((BitmapDrawable)view.getDrawable()).getBitmap();
 
         Bitmap mutable_bitmap = temp_bitmap.copy(Bitmap.Config.ARGB_8888, true);
 
-        Bitmap bitmap = Bitmap.createScaledBitmap(temp_bitmap,500,750,false);
+        Bitmap bitmap = Bitmap.createScaledBitmap(temp_bitmap,BITMAP_WIDTH,BITMAP_HEIGHT,false);
 
         /*Make the canvas draw on the bitmap*/
         Canvas can = new Canvas(bitmap);
