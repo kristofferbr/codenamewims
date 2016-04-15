@@ -11,6 +11,7 @@ import android.preference.PreferenceManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
@@ -39,16 +40,16 @@ public class ShoppingActivity extends WimsActivity {
                     Toast.makeText(ShoppingActivity.this, R.string.please_enter_a_name, Toast.LENGTH_SHORT).show();
                 } else {
                     editText.setText("");
-                    AddShoppingList(shoppingListTextField);
+                    addShoppingList(shoppingListTextField);
                 }
             }
         });
-        DisplayShoppingList();
+        displayShoppingList();
     }
     @Override
     public void onResume() {
         super.onResume();
-        DisplayShoppingList();
+        displayShoppingList();
     }
 
     public class ShoppingListClass {
@@ -60,7 +61,7 @@ public class ShoppingActivity extends WimsActivity {
         }
     }
 
-    public boolean SaveShoppingList() {
+    public boolean saveShoppingList() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor mEdit1 = sp.edit();
         mEdit1.putInt("Shopping_List", shoppingArrayList.size());
@@ -72,14 +73,14 @@ public class ShoppingActivity extends WimsActivity {
         return mEdit1.commit();
     }
 
-    public void SaveShoppingList(String shoppingListName)
+    public void saveShoppingList(String shoppingListName)
     {
         ShoppingListClass shoppingList = new ShoppingListClass(shoppingListName, null);
         shoppingArrayList.add(shoppingArrayList.size(), shoppingList);
-        SaveShoppingList();
+        saveShoppingList();
     }
 
-    public void LoadShoppingList(Context mContext)
+    public void loadShoppingList(Context mContext)
     {
         SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(mContext);
         shoppingArrayList.clear();
@@ -88,12 +89,12 @@ public class ShoppingActivity extends WimsActivity {
         for(int i=0;i<size;i++)
         {
             String shoppingListName = mSharedPreference1.getString("Shopping_" + i, null);
-            ShoppingListClass mItems = LoadItemList(shoppingListName, mContext);
+            ShoppingListClass mItems = loadItemList(shoppingListName, mContext);
             shoppingArrayList.add(i, mItems);
         }
     }
 
-    private ShoppingListClass LoadItemList(String name, Context mContext) {
+    private ShoppingListClass loadItemList(String name, Context mContext) {
         SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(mContext);
         int size = mSharedPreference1.getInt("Item_List_" + name, 0);
         ArrayList mItems = new ArrayList();
@@ -106,30 +107,30 @@ public class ShoppingActivity extends WimsActivity {
         return shoppingList;
     }
 
-    public boolean AddShoppingList(final String shoppingListName){
+    public boolean addShoppingList(final String shoppingListName){
         final ArrayList itemList = new ArrayList();
         Intent intent = new Intent(getApplicationContext(), ShoppingItemActivity.class);
         Bundle b = new Bundle();
         b.putStringArrayList("itemsList", itemList);
         b.putString("title", shoppingListName);
         intent.putExtras(b);
-
-        SaveShoppingList(shoppingListName);
+        hideKeyboard();
+        saveShoppingList(shoppingListName);
         startActivity(intent);
         return true;
     }
 
-    public void DeleteShoppingList(final int shoppingListAddress) {
+    public void deleteShoppingList(final int shoppingListAddress) {
 
         shoppingArrayList.remove(shoppingListAddress);
-        SaveShoppingList();
+        saveShoppingList();
     }
 
     // This method adds takes a name for a shopping list, and an ArrayList of items on that list.
     // It will then display it.
-    public void DisplayShoppingList(){
+    public void displayShoppingList(){
 
-        LoadShoppingList(getApplicationContext());
+        loadShoppingList(getApplicationContext());
 
         GridLayout gridLayout = (GridLayout) findViewById(R.id.shopping_lists);
         gridLayout.removeAllViews();
@@ -158,8 +159,8 @@ public class ShoppingActivity extends WimsActivity {
             layout.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    DeleteShoppingList(currentI);
-                    DisplayShoppingList();
+                    deleteShoppingList(currentI);
+                    displayShoppingList();
                     return true;
                 }
             });
@@ -184,6 +185,15 @@ public class ShoppingActivity extends WimsActivity {
             }
             // Adding the layout we just created to the shopping list layout for complete display.
             gridLayout.addView(layout);
+        }
+    }
+
+    private void hideKeyboard() {
+        // Check if no view has focus:
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager inputManager = (InputMethodManager) this.getSystemService(INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
     }
 }
