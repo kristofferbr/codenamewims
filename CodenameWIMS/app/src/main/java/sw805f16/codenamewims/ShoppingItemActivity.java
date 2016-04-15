@@ -186,9 +186,9 @@ public class ShoppingItemActivity extends WimsActivity {
 
         if (checks != 0) {
             if (checks == 1){
-                textView.setText(checks + " Valgt");
+                textView.setText(checks + getString(R.string.marked_singulare));
             } else {
-                textView.setText(checks + " Valgte");
+                textView.setText(checks + getString(R.string.marked_plural));
             }
         } else {
             textView.setText(title);

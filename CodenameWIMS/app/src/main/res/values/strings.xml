@@ -138,4 +138,6 @@
     <string name="plus">+</string>
     <string name="create_shopping_list">Create shopping list...</string>
     <string name="please_enter_a_name">Please enter a name.</string>
+    <string name="marked_singulare">" Valgt"</string>
+    <string name="marked_plural">" Valgte"</string>
 </resources>
