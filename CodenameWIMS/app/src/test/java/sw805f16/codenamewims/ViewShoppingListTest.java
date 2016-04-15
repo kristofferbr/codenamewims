@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.support.v4.widget.DrawerLayout;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -44,10 +45,9 @@ public class ViewShoppingListTest {
     public void setup() {
         shoppingActivity = Robolectric.setupActivity(ShoppingListActivity.class);
         fragment = (ShoppingListFragment) shoppingActivity.getFragmentManager().findFragmentByTag("shoppingFragment");
-        SearchView search = (SearchView) fragment.getView().findViewById(R.id.shopSearch);
+        EditText search = (EditText) fragment.getView().findViewById(R.id.item_textfield);
         ShadowListView suggestionList = shadowOf((ListView) fragment.getView().findViewById(R.id.suggestions));
         ShadowListView itemList = shadowOf((ListView) fragment.getView().findViewById(R.id.itemList));
-        Button storeButton = (Button) fragment.getView().findViewById(R.id.shopStoreButton);
 
         try {
             String jsonString = shoppingActivity.getResources().getString(R.string.shop_json);
@@ -57,12 +57,10 @@ public class ViewShoppingListTest {
             e.printStackTrace();
         }
 
-        search.setQuery("Milk", false);
+        search.setText((CharSequence)"Milk");
         suggestionList.populateItems();
         suggestionList.performItemClick(0);
         itemList.populateItems();
-
-        storeButton.performClick();
     }
 
     @Test

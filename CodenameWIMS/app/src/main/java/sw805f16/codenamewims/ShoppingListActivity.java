@@ -31,12 +31,37 @@ public class ShoppingListActivity extends WimsActivity {
         title = b.getString("title");
         setActionBarTitle(title);
 
+        WimsButton startScreenButton = new WimsButton(getApplicationContext(), getResources().getDrawable(R.drawable.no_icon));
+        WimsButton storeMapButton = new WimsButton(getApplicationContext(), getResources().getDrawable(R.drawable.no_icon));
         WimsButton deleteButton = new WimsButton(getApplicationContext(), getResources().getDrawable(R.drawable.delete_icon));
+
+        startScreenButton.setVisibility(View.INVISIBLE);
+        startScreenButton.setId(R.id.wims_action_bar_transition_start);
+        addWimsButtonToActionBar(startScreenButton, RIGHT);
+
+        storeMapButton.setVisibility(View.INVISIBLE);
+        storeMapButton.setId(R.id.wims_action_bar_transition_storemap);
+        addWimsButtonToActionBar(storeMapButton, RIGHT);
+
         deleteButton.setVisibility(View.INVISIBLE);
         deleteButton.setId(R.id.wims_action_bar_shopping_delete);
         addWimsButtonToActionBar(deleteButton, RIGHT);
 
-        //Button addButton = (Button)findViewById(R.id.item_add_btn);
+        //The buttons are for transitioning to the MainActivity and StoreMapActivity, respectively
+        startScreenButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                transitionToStartScreen();
+            }
+        });
+        storeMapButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                transitionToStoreMap();
+            }
+        });
 
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
