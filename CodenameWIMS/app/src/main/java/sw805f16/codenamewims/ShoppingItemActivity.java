@@ -27,28 +27,35 @@ import java.util.ArrayList;
  */
 public class ShoppingItemActivity extends WimsActivity {
 
-    ArrayList itemArrayList = new ArrayList();
+    ArrayList itemArrayList = new ArrayList(); // This arrayList is used to keep the items in.
     int checks = 0; // This variable is used to keep track of how many items have been checked off.
-    ArrayList<Integer> ticked = new ArrayList();
-    String title = "";
+    ArrayList<Integer> ticked = new ArrayList(); // This keeps track of the items being ticked off.
+    String title = ""; // String variable used to control the title in the action bar.
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_shopping_list);
-        setActionBarTitle(title);
 
         // Get the bundle from the intent received.
         Bundle b = getIntent().getExtras();
-        title = b.getString("title");
 
+        // Fetch the title of a shopping list and set the action bar title.
+        title = b.getString("title");
+        setActionBarTitle(title);
+
+        // Create a delete button and hide it, for use when items are ticked off.
         WimsButton deleteButton = new WimsButton(getApplicationContext(), getResources().getDrawable(R.drawable.delete_icon));
         deleteButton.setVisibility(View.INVISIBLE);
         deleteButton.setId(R.id.wims_action_bar_shopping_delete);
         addWimsButtonToActionBar(deleteButton, RIGHT);
+
+        // Add button used to add new items.
         Button addButton = (Button)findViewById(R.id.item_add_btn);
 
+        // The text field for adding new items.
         final EditText editText = (EditText)findViewById(R.id.item_textfield);
 
+        // Delete button functionality
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -63,6 +70,7 @@ public class ShoppingItemActivity extends WimsActivity {
             }
         });
 
+        // Add button functionality
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -70,6 +78,7 @@ public class ShoppingItemActivity extends WimsActivity {
             }
         });
 
+        // This overrides the "done" button on the keyboard.
         editText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -81,9 +90,11 @@ public class ShoppingItemActivity extends WimsActivity {
             }
         });
 
-        changeTitle(checks, title);
+        // List all items when first activity is first created.
         listItems();
     }
+
+    // Method for adding an item to the list.
     public void addItem(){
         final EditText editText = (EditText)findViewById(R.id.item_textfield);
         String s = "";
@@ -100,6 +111,8 @@ public class ShoppingItemActivity extends WimsActivity {
         }
         hideKeyboard();
     }
+
+    // Method for saving an item to local memory.
     public boolean saveItemList() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor mEdit1 = sp.edit();
@@ -111,11 +124,15 @@ public class ShoppingItemActivity extends WimsActivity {
         }
         return mEdit1.commit();
     }
+
+    // Method for saving an item and adding a name.
     public void saveItemList(String name) {
 
         itemArrayList.add(itemArrayList.size(), name);
         saveItemList();
     }
+
+    // Method to load items from shopping list.
     public void loadItemList(Context mContext)
     {
         SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -135,7 +152,7 @@ public class ShoppingItemActivity extends WimsActivity {
         visibility();
 
         final GridLayout gridLayout = (GridLayout)findViewById(R.id.itemListGrid);
-        gridLayout.removeAllViews();
+        gridLayout.removeAllViews(); // Removes all views to not create conflicts.
 
         for (int i = 0; i < itemArrayList.size(); i++){
 
@@ -146,6 +163,7 @@ public class ShoppingItemActivity extends WimsActivity {
             TextView itemsText = (TextView) layout.findViewById(R.id.itemListName);
             itemsText.setText(itemArrayList.get(i).toString());
 
+            // Listener to keep track of items being ticked off and on.
             checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
@@ -181,19 +199,16 @@ public class ShoppingItemActivity extends WimsActivity {
         }
     }
 
-    // This method changes the title of the action bar to the amount of items checked
-    // TODO: Remove hardcoded values.
+    // This method changes the title of the action bar to the amount of items checked.
     public void changeTitle(int checks, String title) {
-        TextView textView = (TextView)findViewById(R.id.wims_action_bar_title);
-
         if (checks != 0) {
             if (checks == 1){
-                textView.setText(checks + getString(R.string.marked_singulare));
+                setActionBarTitle(checks + getString(R.string.marked_singulare));
             } else {
-                textView.setText(checks + getString(R.string.marked_plural));
+                setActionBarTitle(checks + getString(R.string.marked_plural));
             }
         } else {
-            textView.setText(title);
+            setActionBarTitle(title);
         }
     }
 
@@ -229,6 +244,7 @@ public class ShoppingItemActivity extends WimsActivity {
         changeButtons(checks);
     }
 
+    // Method to hide keyboard.
     private void hideKeyboard() {
         // Check if no view has focus:
         View view = this.getCurrentFocus();
