@@ -35,15 +35,20 @@ public class ShoppingActivity extends WimsActivity {
 
         Button addButton = (Button)findViewById(R.id.shopping_add_btn);
         final EditText editText = (EditText) findViewById(R.id.shopping_textfield);
-        final String shoppingListTextField = editText.getText().toString();
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String shoppingListTextField = editText.getText().toString();
+
                 //Ignore empty text fields
                 if (shoppingListTextField.equalsIgnoreCase("")) {
                     Toast.makeText(ShoppingActivity.this, R.string.please_enter_a_name, Toast.LENGTH_SHORT).show();
-                } else {
+                }
+                else if (alreadyExists(shoppingListTextField)){
+                    Toast.makeText(ShoppingActivity.this, shoppingListTextField + getString(R.string.x_already_exists), Toast.LENGTH_SHORT).show();
+                }
+                else {
                     editText.setText("");
                     addShoppingList(shoppingListTextField);
                 }
@@ -54,10 +59,15 @@ public class ShoppingActivity extends WimsActivity {
         editText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                String shoppingListTextField = editText.getText().toString();
                 //Ignore empty text fields
                 if (shoppingListTextField.equalsIgnoreCase("")) {
                     Toast.makeText(ShoppingActivity.this, R.string.please_enter_a_name, Toast.LENGTH_SHORT).show();
-                } else {
+                }
+                else if (alreadyExists(shoppingListTextField)){
+                        Toast.makeText(ShoppingActivity.this, shoppingListTextField + getString(R.string.x_already_exists), Toast.LENGTH_SHORT).show();
+                    }
+                else {
                     editText.setText("");
                     addShoppingList(shoppingListTextField);
                 }
@@ -66,6 +76,15 @@ public class ShoppingActivity extends WimsActivity {
             }
         });
         displayShoppingList();
+    }
+
+    private boolean alreadyExists(String shoppingListTextField) {
+        for (int i = 0; i < shoppingArrayList.size(); i++){
+            if (shoppingArrayList.get(i).name.equals(shoppingListTextField)){
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
