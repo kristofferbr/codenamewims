@@ -29,7 +29,7 @@ public class ShoppingItemActivity extends WimsActivity {
 
     ArrayList itemArrayList = new ArrayList(); // This arrayList is used to keep the items in.
     int checks = 0; // This variable is used to keep track of how many items have been checked off.
-    ArrayList<Integer> ticked = new ArrayList(); // This keeps track of the items being ticked off.
+    ArrayList<Integer> ticked = new ArrayList<>(); // This keeps track of the items being ticked off.
     String title = ""; // String variable used to control the title in the action bar.
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,11 +59,18 @@ public class ShoppingItemActivity extends WimsActivity {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                for (int i = 0; i < ticked.size(); i++) {
-                    itemArrayList.remove(i);
-                    saveItemList();
-                    listItems();
+                if (itemArrayList.size() == ticked.size()) {
+                    itemArrayList.clear();
                 }
+                else{
+                    while (ticked.size() != 0) {
+                        int maxIndex = getMaxIntIndex();
+                        itemArrayList.remove(ticked.get(maxIndex).intValue());
+                        ticked.remove(maxIndex);
+                    }
+                }
+                saveItemList();
+                listItems();
                 ticked.clear();
                 checks = 0;
                 changeActionBar(checks, title);
@@ -93,6 +100,23 @@ public class ShoppingItemActivity extends WimsActivity {
         // List all items when first activity is first created.
         listItems();
     }
+
+    /**
+     * Get the index value of the element with the highest number in the ArrayList Ticked
+     * @return interger value of the index with the highest value
+     */
+    private int getMaxIntIndex() {
+        int max = Integer.MIN_VALUE;
+        int maxIndex = Integer.MIN_VALUE;
+        for(int i=0; i<ticked.size(); i++){
+            if(ticked.get(i) > max){
+                max = ticked.get(i);
+                maxIndex = i;
+            }
+        }
+        return maxIndex;
+    }
+
 
     // Method for adding an item to the list.
     public void addItem(){
@@ -175,7 +199,11 @@ public class ShoppingItemActivity extends WimsActivity {
                     else {
                         checks--;
                         changeActionBar(checks, title);
-                        ticked.remove(currentIteration);
+                        for (int j = 0; j < ticked.size(); j++) {
+                            if (ticked.get(j).equals(currentIteration)) {
+                                ticked.remove(j);
+                            }
+                        }
                     }
                 }
             });
@@ -202,7 +230,7 @@ public class ShoppingItemActivity extends WimsActivity {
     // This method changes the title of the action bar to the amount of items checked.
     public void changeTitle(int checks, String title) {
         if (checks != 0) {
-            if (checks == 1){
+            if (checks == 1) {
                 setActionBarTitle(checks + getString(R.string.marked_singulare));
             } else {
                 setActionBarTitle(checks + getString(R.string.marked_plural));
