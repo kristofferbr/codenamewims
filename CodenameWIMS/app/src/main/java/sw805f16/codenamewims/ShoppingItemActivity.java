@@ -54,7 +54,7 @@ public class ShoppingItemActivity extends WimsActivity {
             public void onClick(View v) {
                 for (int i = 0; i < ticked.size(); i++) {
                     itemArrayList.remove(i);
-                    SaveItemList();
+                    saveItemList();
                     listItems();
                 }
                 ticked.clear();
@@ -66,7 +66,7 @@ public class ShoppingItemActivity extends WimsActivity {
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AddItem();
+                addItem();
             }
         });
 
@@ -74,7 +74,7 @@ public class ShoppingItemActivity extends WimsActivity {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    AddItem();
+                    addItem();
                 }
 
                 return false;
@@ -82,7 +82,7 @@ public class ShoppingItemActivity extends WimsActivity {
         });
         listItems();
     }
-    public void AddItem(){
+    public void addItem(){
         final EditText editText = (EditText)findViewById(R.id.item_textfield);
         String s = "";
         s = editText.getText().toString();
@@ -93,12 +93,12 @@ public class ShoppingItemActivity extends WimsActivity {
         }
         else {
             editText.setText("");
-            SaveItemList(s);
+            saveItemList(s);
             listItems();
         }
         hideKeyboard();
     }
-    public boolean SaveItemList() {
+    public boolean saveItemList() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor mEdit1 = sp.edit();
         mEdit1.putInt("Item_List_" + title, itemArrayList.size());
@@ -109,12 +109,12 @@ public class ShoppingItemActivity extends WimsActivity {
         }
         return mEdit1.commit();
     }
-    public void SaveItemList(String name) {
+    public void saveItemList(String name) {
 
         itemArrayList.add(itemArrayList.size(), name);
-        SaveItemList();
+        saveItemList();
     }
-    public void LoadItemList(Context mContext)
+    public void loadItemList(Context mContext)
     {
         SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(mContext);
         itemArrayList.clear();
@@ -128,7 +128,7 @@ public class ShoppingItemActivity extends WimsActivity {
 
     // This method will list all the items from the received shopping list. Also used to list items when new is added currently.
     public void listItems() {
-        LoadItemList(getApplicationContext());
+        loadItemList(getApplicationContext());
 
         visibility();
 
