@@ -80,6 +80,8 @@ public class ShoppingItemActivity extends WimsActivity {
                 return false;
             }
         });
+
+        changeTitle(checks, title);
         listItems();
     }
     public void addItem(){
