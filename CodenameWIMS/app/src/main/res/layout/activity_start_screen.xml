@@ -13,15 +13,26 @@
         android:layout_marginTop="55dp"/>
 
     <Button
-        android:id="@+id/startStoreBtn"
+        android:id="@+id/startChooseStoreBtn"
         android:layout_width="125dp"
         android:layout_height="60dp"
-        android:text="Store"
+        android:text="Choose Store"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="25dp"
         android:background="@drawable/start_button"
         android:textColor="@color/White"
         android:layout_below="@id/start_logo"/>
+
+    <Button
+        android:id="@+id/startStoreBtn"
+        android:layout_width="125dp"
+        android:layout_height="60dp"
+        android:text="Store"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/start_button"
+        android:textColor="@color/White"
+        android:layout_below="@id/startChooseStoreBtn"/>
 
     <Button
         android:id="@+id/startShoppingBtn"
