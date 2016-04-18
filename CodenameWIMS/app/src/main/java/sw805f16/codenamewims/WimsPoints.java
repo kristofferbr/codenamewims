@@ -1,6 +1,7 @@
 package sw805f16.codenamewims;
 
 import android.graphics.PointF;
+import android.net.wifi.ScanResult;
 import android.os.Parcelable;
 
 import java.util.ArrayList;
@@ -56,8 +57,8 @@ public class WimsPoints extends PointF implements Parcelable{
         return (float)Math.sqrt(tempX*tempX+tempY*tempY);
     }
 
-    public void setProbabilityDistributions(String bssid, float probability) {
-        this.probDist.put(bssid, probability);
+    public void setProbabilityDistributions(String key, float probability) {
+        this.probDist.put(key, probability);
     }
 
     public HashMap<String, Float> getProbabilityDistribution() {
