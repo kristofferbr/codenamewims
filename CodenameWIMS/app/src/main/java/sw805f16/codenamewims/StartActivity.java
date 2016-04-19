@@ -5,13 +5,20 @@ package sw805f16.codenamewims;
  */
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
+
+import java.util.zip.Inflater;
 
 
 public class StartActivity extends Activity {
@@ -33,8 +40,10 @@ public class StartActivity extends Activity {
         chooseStoreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(StartActivity.this, "REPLACE ME!", Toast.LENGTH_SHORT).show();
-            }
+                open(v);
+                
+                //Replace with code
+                storeID = 1;            }
         });
 
         storemapButton.setOnClickListener(new View.OnClickListener() {
@@ -67,5 +76,19 @@ public class StartActivity extends Activity {
                 System.exit(0);
             }
         });
+    }
+    public void open(View view){
+        Dialog dialog = new Dialog(this);
+        final LayoutInflater inflater = new LayoutInflater(this) {
+            @Override
+            public LayoutInflater cloneInContext(Context newContext) {
+
+
+                return null;
+            }
+        };
+        dialog.setContentView(R.layout.dialog_choose_store);
+
+        dialog.show();
     }
 }
