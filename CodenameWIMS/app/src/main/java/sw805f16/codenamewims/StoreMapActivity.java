@@ -58,6 +58,7 @@ public class StoreMapActivity extends AppCompatActivity {
     public boolean createMapDataModeNeighbors = false;
     public boolean fingerpriting = false;
     public boolean isScanning = false;
+    private boolean confident = false;
     public String store_id = "56e6a28a28c3e3314a6849df"; // The ID of føtex! :)
     public String base_url= "http://nielsema.ddns.net/sw8/api/store/";
     RequestQueue rqueue;
@@ -75,7 +76,7 @@ public class StoreMapActivity extends AppCompatActivity {
     ListView listResults;
     final ArrayList<String> results = new ArrayList<>();
     ArrayAdapter<String> adapter;
-    HashMap<String, Float> marginalLikelihood = new HashMap<>();
+    private int maxDepth = 2;
 
     ArrayList<WimsPoints> mapData = new ArrayList<>();
     WimsPoints currentWimsPoint;
@@ -96,7 +97,6 @@ public class StoreMapActivity extends AppCompatActivity {
     Thread fingerthread;
     WifiFingerprinter fingerprinter;
     static Handler mHandler;
-
 
 
     @Override
@@ -406,7 +406,7 @@ public class StoreMapActivity extends AppCompatActivity {
         };
 
 
-        Button findMe = (Button) findViewById(R.id.findme);
+        final Button findMe = (Button) findViewById(R.id.findme);
         findMe.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -420,20 +420,25 @@ public class StoreMapActivity extends AppCompatActivity {
                 scanResults = filterScanByKStrongest(scanResults, 3);
                 WimsPoints location = positioningUser(scanResults, mapData);
 
-                if(location != null)
-                fram.addView(posfac.getPositionOfFingerPrintPoint((int)location.x,(int)location.y));
-                else {
-                    toast.setText("No location found");
-                    if (toast.getView().getWindowVisibility() == View.VISIBLE) {
-                        toast.cancel();
+                if(location != null) {
+                    if (confident) {
+                        fram.addView(posfac.getPositionOfFingerPrintPoint((int) location.x, (int) location.y));
+                        currentWimsPoint = location;
+                        maxDepth = 2;
+                    } else if (findPointInNeighborChain(location, 0, maxDepth,
+                               new ArrayList<WimsPoints>(), new ArrayList<WimsPoints>())){
+                        fram.addView(posfac.getPositionOfFingerPrintPoint((int) location.x, (int) location.y));
+                        currentWimsPoint = location;
+                        maxDepth = 2;
+                    } else {
+                        maxDepth++;
                     }
-                    toast.show();
                 }
-
+                else {
+                    maxDepth++;
+                }
             }
         });
-
-
     }
 
     @Override
@@ -1369,6 +1374,38 @@ public class StoreMapActivity extends AppCompatActivity {
         return distance;
     }
 
+    public boolean findPointInNeighborChain(WimsPoints point, int layer,
+                                            int maxDepth, ArrayList<WimsPoints> frontier,
+                                            ArrayList<WimsPoints> visited) {
+        if (layer <= maxDepth) {
+            ArrayList<WimsPoints> neighbors = point.Neighbours;
+
+            if (!neighbors.isEmpty()) {
+                for (WimsPoints neighbor : neighbors) {
+                    if (visited.contains(neighbor)) {
+                        continue;
+                    }
+                    if (neighbor.equals(point)) {
+                        return true;
+                    }
+                    frontier.add(neighbor);
+                    visited.add(neighbor);
+                }
+                point = frontier.get(0);
+                frontier.remove(0);
+                return findPointInNeighborChain(point, layer + 1, maxDepth, frontier, visited);
+            } else if (!frontier.isEmpty()){
+                point = frontier.get(0);
+                frontier.remove(0);
+                return findPointInNeighborChain(point, layer + 1, maxDepth, frontier, visited);
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
 
     /**
      * This algorithm returns the WimsPoint that the user is most likely closest to
@@ -1407,7 +1444,12 @@ public class StoreMapActivity extends AppCompatActivity {
         }
 
         if (highestPosterior != 0) {
-            return returnPoint;
+            if (highestPosterior > 0.8) {
+                confident = true;
+                return returnPoint;
+            } else {
+                return returnPoint;
+            }
         } else {
             return null;
         }
