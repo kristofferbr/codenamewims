@@ -3,9 +3,11 @@ package sw805f16.codenamewims;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.preference.PreferenceManager;
 import android.support.v4.view.GestureDetectorCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -30,6 +32,8 @@ import android.widget.TextView;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 
@@ -49,7 +53,7 @@ public class ShoppingListFragment extends Fragment {
     //These variables are for the suggestion list in the searchview
     private ArrayAdapter suggestionAdapter;
     private ListView suggestionListView;
-    private ArrayList<TextView> suggestionList;
+    private ArrayList<String> suggestionList;
 
     //These variables are for the items in the shopping list
     private ShoppingListAdapter itemAdapter;
@@ -101,7 +105,7 @@ public class ShoppingListFragment extends Fragment {
         // Inflate the layout for this fragment
         //We put the inflated view in a local variable
         ItemList = new ArrayList<>();
-        itemAdapter = new ShoppingListAdapter(getActivity().getApplicationContext(),
+        itemAdapter = new ShoppingListAdapter(getActivity(),
                 R.layout.simple_list_view,
                 ItemList);
         suggestionList = new ArrayList<>();
@@ -233,12 +237,13 @@ public class ShoppingListFragment extends Fragment {
         suggestionListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //We pull the text view from the suggestion list and resize it
-                TextView tmpText = suggestionList.get(position);
-                tmpText.setWidth(R.dimen.list_item_width);
-                tmpText.setHeight(R.dimen.list_item_height);
+
                 LinearItemLayout tmpLayout = (LinearItemLayout) LinearItemLayout.inflate(getActivity().getApplicationContext(), R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
-                tmpLayout.addView(tmpText, 0);
+
+                //We pull the text view from the suggestion list and resize it
+                TextView tmpText;
+                tmpText = (TextView) tmpLayout.getChildAt(0);
+                tmpText.setText(suggestionList.get(position));
 
                 tmpLayout.setStatus(ItemEnum.UNMARKED);
                 tmpLayout.setImageId(0);
@@ -260,23 +265,26 @@ public class ShoppingListFragment extends Fragment {
         }
 
         ArrayList<String> stringItemList = savedInstanceState.getStringArrayList("itemList");
-        TextView savedTextView = new TextView(getActivity().getApplicationContext());
+        TextView savedTextView;
         Integer id;
         ItemEnum tmpEnum;
         ArrayList<Integer> itemImageIdList = savedInstanceState.getIntegerArrayList("markImages");
 
+        ItemList.clear();
+
         //Here we pull the the list of unmarked items and refill the item list
         for (int i = 0; i < stringItemList.size();i++){
-            ItemList.clear();
-            savedTextView.setText(stringItemList.get(i));
 
             //Here we inflate a LinearLayout with a custom layout
             LinearItemLayout tmpLayout = new LinearItemLayout(getActivity().getApplicationContext(),
                     (ViewGroup) itemListView.getEmptyView());
+
+            savedTextView = (TextView) tmpLayout.findViewById(R.id.label);
+            savedTextView.setText(stringItemList.get(i));
+
             id = itemImageIdList.get(i);
             tmpLayout.setImageId(id);
             tmpEnum = (ItemEnum) savedInstanceState.getSerializable(stringItemList.get(i));
-            tmpLayout.addView(savedTextView, 0);
             tmpLayout.setStatus(tmpEnum);
             //Then we add the newly made layout to the item list
             ItemList.add(tmpLayout);
@@ -434,11 +442,8 @@ public class ShoppingListFragment extends Fragment {
         tmpList = SearchRanking.rankSearchResults(query, tmpList);
 
         for (String str : tmpList) {
-            //We set the text for the textviews to the strings in tmpList
-            tmpView.setText(str);
-
-            //We add the textviews to the suggestion list
-            suggestionList.add(tmpView);
+            //We add the string to the suggestion list
+            suggestionList.add(str);
         }
 
         //Then we notify the adapter that the list is modified
@@ -483,6 +488,22 @@ public class ShoppingListFragment extends Fragment {
         //We also save the list of products for this store
         outState.putParcelableArrayList("products", JSONContainer.getProducts());
     }
+
+    /*public boolean saveShoppingList() {
+        FileOutputStream fos = getContext().openFileOutput("itemList", Context.MODE_PRIVATE);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(object);
+        oos.close();
+        fos.close();
+        SharedPreferences.Editor mEdit1 = sp.edit();
+        mEdit1.putInt("Shopping_List", shoppingArrayList.size());
+
+        for (int i = 0; i < shoppingArrayList.size(); i++) {
+            mEdit1.remove("Shopping_" + i);
+            mEdit1.putString("Shopping_" + i, shoppingArrayList.get(i).name);
+        }
+        return mEdit1.commit();
+    }*/
 
     /**
      * This method is used to remove an item from the item list

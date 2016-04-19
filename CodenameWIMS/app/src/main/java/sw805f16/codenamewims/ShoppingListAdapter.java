@@ -1,10 +1,13 @@
 package sw805f16.codenamewims;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.util.Pair;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -20,14 +23,21 @@ import java.util.List;
  */
 public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
 
-    public ShoppingListAdapter(Context context, @LayoutRes int resource, @NonNull List<LinearItemLayout> objects) {
+    private final Activity context;
+
+    /*public ShoppingListAdapter(Context context, @LayoutRes int resource, @NonNull List<LinearItemLayout> objects) {
         super(context, resource, objects);
+    }*/
+
+    public ShoppingListAdapter(Activity context, @LayoutRes int resource, @NonNull List<LinearItemLayout> objects) {
+        super(context, resource, objects);
+        this.context = context;
     }
 
-    public ShoppingListAdapter(Context context, @LayoutRes int resource, @NonNull List<LinearItemLayout> objects,
+    /*public ShoppingListAdapter(Context context, @LayoutRes int resource, @NonNull List<LinearItemLayout> objects,
                                @NonNull ArrayList<WimsPoints> supprod) {
         this(context, resource, objects);
-    }
+    }*/
 
     public void swap(int i, int j) {
         LinearItemLayout tempPair1 = getItem(i);
@@ -47,8 +57,17 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
         insert(edittedPair, i);
     }
 
-    private void reorderList() {
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent){
 
+        LayoutInflater inflater = context.getLayoutInflater();
+        LinearItemLayout rowView = (LinearItemLayout) inflater.inflate(R.layout.item_layout, null, true);
+        rowView.setText(getItem(position).getText());
+        if(getItem(position).getImageId() != 0) {
+            ImageView imageView = (ImageView) getItem(position).getChildAt(2);
+            imageView.setImageDrawable(context.getResources().getDrawable(getItem(position).getImageId()));
+        }
+        return rowView;
     }
 
     /**
