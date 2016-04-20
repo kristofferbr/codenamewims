@@ -140,4 +140,5 @@
     <string name="please_enter_a_name">Please enter a name.</string>
     <string name="marked_singulare">" Valgt"</string>
     <string name="marked_plural">" Valgte"</string>
+    <string name="x_already_exists">" already exists"</string>
 </resources>

@@ -9,8 +9,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -32,22 +34,57 @@ public class ShoppingActivity extends WimsActivity {
         setContentView(R.layout.activity_shopping_list);
 
         Button addButton = (Button)findViewById(R.id.shopping_add_btn);
+        final EditText editText = (EditText) findViewById(R.id.shopping_textfield);
+
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final EditText editText = (EditText) findViewById(R.id.shopping_textfield);
                 String shoppingListTextField = editText.getText().toString();
 
                 //Ignore empty text fields
                 if (shoppingListTextField.equalsIgnoreCase("")) {
                     Toast.makeText(ShoppingActivity.this, R.string.please_enter_a_name, Toast.LENGTH_SHORT).show();
-                } else {
+                }
+                else if (alreadyExists(shoppingListTextField)){
+                    Toast.makeText(ShoppingActivity.this, shoppingListTextField + getString(R.string.x_already_exists), Toast.LENGTH_SHORT).show();
+                }
+                else {
                     editText.setText("");
                     addShoppingList(shoppingListTextField);
                 }
             }
         });
+
+        // This overrides the "done" button on the keyboard.
+        editText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                String shoppingListTextField = editText.getText().toString();
+                //Ignore empty text fields
+                if (shoppingListTextField.equalsIgnoreCase("")) {
+                    Toast.makeText(ShoppingActivity.this, R.string.please_enter_a_name, Toast.LENGTH_SHORT).show();
+                }
+                else if (alreadyExists(shoppingListTextField)){
+                        Toast.makeText(ShoppingActivity.this, shoppingListTextField + getString(R.string.x_already_exists), Toast.LENGTH_SHORT).show();
+                    }
+                else {
+                    editText.setText("");
+                    addShoppingList(shoppingListTextField);
+                }
+
+                return false;
+            }
+        });
         displayShoppingList();
+    }
+
+    private boolean alreadyExists(String shoppingListTextField) {
+        for (int i = 0; i < shoppingArrayList.size(); i++){
+            if (shoppingArrayList.get(i).name.equals(shoppingListTextField)){
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
