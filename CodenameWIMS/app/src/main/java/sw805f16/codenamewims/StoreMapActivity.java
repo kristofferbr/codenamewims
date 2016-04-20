@@ -43,9 +43,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 public class StoreMapActivity extends AppCompatActivity {
 
@@ -77,6 +80,7 @@ public class StoreMapActivity extends AppCompatActivity {
     final ArrayList<String> results = new ArrayList<>();
     ArrayAdapter<String> adapter;
     private int maxDepth = 2;
+    HashMap<String, Double> marginalLikelihood = new HashMap<>();
 
     ArrayList<WimsPoints> mapData = new ArrayList<>();
     WimsPoints currentWimsPoint;
@@ -415,7 +419,7 @@ public class StoreMapActivity extends AppCompatActivity {
                 {
                     fram.removeViewAt(i);
                 }
-
+                computeMarginalLikelihood();
                 ArrayList<ScanResult> scanResults = fingerprinter.getFingerPrint();
                 scanResults = filterScanByKStrongest(scanResults, 3);
                 WimsPoints location = positioningUser(scanResults, mapData);
@@ -425,8 +429,10 @@ public class StoreMapActivity extends AppCompatActivity {
                         fram.addView(posfac.getPositionOfFingerPrintPoint((int) location.x, (int) location.y));
                         currentWimsPoint = location;
                         maxDepth = 2;
-                    } else if (findPointInNeighborChain(location, 0, maxDepth,
-                               new ArrayList<WimsPoints>(), new ArrayList<WimsPoints>())){
+                        confident = false;
+                    } else if (findPointInNeighborChain(location, currentWimsPoint, 0, maxDepth,
+                               new ArrayList<WimsPoints>(), new ArrayList<WimsPoints>(),
+                               new ArrayList<WimsPoints>())){
                         fram.addView(posfac.getPositionOfFingerPrintPoint((int) location.x, (int) location.y));
                         currentWimsPoint = location;
                         maxDepth = 2;
@@ -515,6 +521,23 @@ public class StoreMapActivity extends AppCompatActivity {
             }
             retList.add(tmpRes);
             results.remove(tmpRes);
+        }
+        return retList;
+    }
+
+    public List<String> sortStringAlphabetically(List<String> strs) {
+        List<String> retList = new ArrayList<>();
+
+        String tmpRes;
+        while (!results.isEmpty()) {
+            tmpRes = strs.get(0);
+            for (int i = 0; i < results.size(); i++) {
+                if (strs.get(i).compareTo(tmpRes) > 0) {
+                    tmpRes = strs.get(i);
+                }
+            }
+            retList.add(tmpRes);
+            strs.remove(tmpRes);
         }
         return retList;
     }
@@ -1231,7 +1254,7 @@ public class StoreMapActivity extends AppCompatActivity {
                             }
                         }
                         int measurements;
-                        for (measurements = 0; measurements < 60; measurements++) {
+                        for (measurements = 0; measurements < 20; measurements++) {
                             try {
                                 Thread.sleep(1000);
                             } catch (InterruptedException e) {
@@ -1285,6 +1308,14 @@ public class StoreMapActivity extends AppCompatActivity {
         String retString = "";
         for (ScanResult res : results) {
             retString = retString + res.BSSID;
+        }
+        return retString;
+    }
+
+    public String concatStrings(List<String> strs) {
+        String retString = "";
+        for (String res : strs) {
+            retString = retString + res;
         }
         return retString;
     }
@@ -1374,30 +1405,38 @@ public class StoreMapActivity extends AppCompatActivity {
         return distance;
     }
 
-    public boolean findPointInNeighborChain(WimsPoints point, int layer,
-                                            int maxDepth, ArrayList<WimsPoints> frontier,
-                                            ArrayList<WimsPoints> visited) {
+    public boolean findPointInNeighborChain(WimsPoints goal, WimsPoints current, int layer,
+                                            int maxDepth, ArrayList<WimsPoints> pointsInCurrentLayer,
+                                            ArrayList<WimsPoints> visited, ArrayList<WimsPoints> pointsInNextLayer) {
         if (layer <= maxDepth) {
-            ArrayList<WimsPoints> neighbors = point.Neighbours;
+            ArrayList<WimsPoints> neighbors = current.Neighbours;
 
             if (!neighbors.isEmpty()) {
                 for (WimsPoints neighbor : neighbors) {
                     if (visited.contains(neighbor)) {
                         continue;
                     }
-                    if (neighbor.equals(point)) {
+                    if (neighbor.equals(goal)) {
                         return true;
                     }
-                    frontier.add(neighbor);
+                    pointsInNextLayer.add(neighbor);
                     visited.add(neighbor);
                 }
-                point = frontier.get(0);
-                frontier.remove(0);
-                return findPointInNeighborChain(point, layer + 1, maxDepth, frontier, visited);
-            } else if (!frontier.isEmpty()){
-                point = frontier.get(0);
-                frontier.remove(0);
-                return findPointInNeighborChain(point, layer + 1, maxDepth, frontier, visited);
+                if (!pointsInCurrentLayer.isEmpty()) {
+                    current = pointsInCurrentLayer.get(0);
+                    pointsInCurrentLayer.remove(0);
+                    return findPointInNeighborChain(goal, current, layer, maxDepth, pointsInCurrentLayer, visited, pointsInNextLayer);
+                } else {
+                    return findPointInNeighborChain(goal, current, layer + 1, maxDepth, pointsInNextLayer, visited, new ArrayList<WimsPoints>());
+                }
+            } else if (!pointsInCurrentLayer.isEmpty()){
+                current = pointsInCurrentLayer.get(0);
+                pointsInCurrentLayer.remove(0);
+                return findPointInNeighborChain(goal, current, layer, maxDepth, pointsInCurrentLayer, visited, pointsInNextLayer);
+            } else if (!pointsInNextLayer.isEmpty()){
+                current = pointsInNextLayer.get(0);
+                pointsInNextLayer.remove(0);
+                return findPointInNeighborChain(goal, current, layer + 1, maxDepth, pointsInNextLayer, visited, new ArrayList<WimsPoints>());
             } else {
                 return false;
             }
@@ -1406,6 +1445,39 @@ public class StoreMapActivity extends AppCompatActivity {
         }
     }
 
+    public void computeMarginalLikelihood() {
+        List<String> bssids = Arrays.asList(getResources().getStringArray(R.array.test_bssid));
+        bssids = sortStringAlphabetically(bssids);
+
+        ArrayList<String> configurations = new ArrayList<>();
+        ArrayList<String> tmpConfig = new ArrayList<>();
+        String tmpBssid;
+
+        for (int i = 0; i < bssids.size() - 2; i++) {
+            tmpConfig.add(bssids.get(i));
+            for (int n = i+1; n < bssids.size() - 1; n++) {
+                tmpConfig.add(bssids.get(n));
+                for (int k = n+1; k < bssids.size(); k++) {
+                    tmpConfig.add(bssids.get(k));
+                    tmpBssid = concatStrings(tmpConfig);
+                    configurations.add(tmpBssid);
+                    tmpConfig.remove(k);
+                }
+                tmpConfig.remove(n);
+            }
+            tmpConfig.remove(i);
+        }
+
+        double likelihood = 0;
+        for (String str : configurations) {
+            for (int i = 0; i < mapData.size(); i++) {
+                if (mapData.get(i).getProbabilityDistribution().containsKey(str)) {
+                    likelihood += mapData.get(i).getProbabilityDistribution().get(str);
+                }
+            }
+            marginalLikelihood.put(str, (likelihood / mapData.size()));
+        }
+    }
 
     /**
      * This algorithm returns the WimsPoint that the user is most likely closest to
@@ -1417,9 +1489,9 @@ public class StoreMapActivity extends AppCompatActivity {
         ArrayList<WimsPoints> candidates = kNearestNeighbor(mapData, 10, scanResults);
 
         ArrayList<Float> candidateLikelihood = new ArrayList<>();
-        float totalLikelihood = 0;
 
         String tmpKey = concatBSSIDs(scanResults);
+        double normaliser = marginalLikelihood.get(tmpKey) != 0 ? marginalLikelihood.get(tmpKey) : 1;
         for (int i = 0; i < candidates.size(); i++) {
             candidateLikelihood.add((float) 0);
             if (candidates.get(i).getProbabilityDistribution().containsKey(tmpKey)) {
@@ -1427,16 +1499,12 @@ public class StoreMapActivity extends AppCompatActivity {
             }
         }
 
-        for (float prob : candidateLikelihood) {
-            totalLikelihood = totalLikelihood + prob;
-        }
-
         double posterior;
         double highestPosterior = 0;
         WimsPoints returnPoint = new WimsPoints();
 
         for (int i = 0; i < candidates.size(); i++) {
-            posterior = ((candidateLikelihood.get(i) * candidates.get(i).getPriori()) / totalLikelihood);
+            posterior = ((candidateLikelihood.get(i) * candidates.get(i).getPriori()) / normaliser);
             if (posterior > highestPosterior) {
                 returnPoint = candidates.get(i);
                 highestPosterior = posterior;
