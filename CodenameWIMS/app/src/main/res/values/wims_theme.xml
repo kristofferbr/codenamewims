@@ -4,7 +4,7 @@
         <item name="android:windowBackground">@color/colorPrimary</item>
     </style>
 
-    <style name="GirafTheme.NoTitleBar" parent="WimsTheme">
+    <style name="Theme.NoTitleBar" parent="WimsTheme">
         <item name="android:windowNoTitle">true</item>
     </style>
 </resources>

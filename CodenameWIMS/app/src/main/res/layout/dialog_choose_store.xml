@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<<<<<<< HEAD
     android:orientation="vertical"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
@@ -24,4 +25,22 @@
         android:fadeScrollbars="true"
         android:layout_gravity="center"
         android:visibility="invisible"/>
+=======
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+        <SearchView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/dialog_search" />
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:id="@+id/dialog_query_results"
+            android:fadeScrollbars="true"
+            android:layout_gravity="center"
+            android:visibility="visible"/>
+
+>>>>>>> c4c25ebaf9ed746018640e03a2e19f3db87887b5
 </LinearLayout>
