@@ -39,23 +39,23 @@
         android:layout_centerInParent="true"/>
 
     <FrameLayout
-        android:layout_below="@id/shoppingListButton"
-        android:layout_width="wrap_content"
+    android:layout_below="@id/shoppingListButton"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/searchframe">
+
+    <SearchView
+        android:layout_width="450px"
         android:layout_height="wrap_content"
-        android:id="@+id/searchframe">
+        android:id="@+id/search"
+        android:layout_gravity="center_horizontal"/>
 
-        <SearchView
-            android:layout_width="450px"
-            android:layout_height="wrap_content"
-            android:id="@+id/search"
-            android:layout_gravity="center_horizontal"/>
-
-        <ListView
-            android:layout_width="500px"
-            android:layout_height="500px"
-            android:id="@+id/query_results"
-            android:fadeScrollbars="true"
-            android:layout_gravity="center"
-            android:visibility="invisible"/>
-    </FrameLayout>
+    <ListView
+        android:layout_width="500px"
+        android:layout_height="500px"
+        android:id="@+id/query_results"
+        android:fadeScrollbars="true"
+        android:layout_gravity="center"
+        android:visibility="invisible"/>
+</FrameLayout>
 </RelativeLayout>
