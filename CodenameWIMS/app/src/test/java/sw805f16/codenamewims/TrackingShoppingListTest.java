@@ -4,9 +4,7 @@ import android.content.Intent;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.TextView;
 
 import org.json.JSONException;
@@ -54,7 +52,7 @@ public class TrackingShoppingListTest {
         try {
             String jsonString = activity.getResources().getString(R.string.shop_json);
             JSONObject dummyJson = new JSONObject(jsonString);
-            JSONContainer.extractInformationFromJson(dummyJson);
+            JSONContainer.extractProductInformationFromJson(dummyJson);
         } catch (JSONException e) {
             e.printStackTrace();
         }

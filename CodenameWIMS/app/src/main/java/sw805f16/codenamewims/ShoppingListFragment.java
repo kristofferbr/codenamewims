@@ -122,8 +122,10 @@ public class ShoppingListFragment extends Fragment {
         //If this fragment was called with an ID then the storeId is set
         if (getArguments() != null) {
             String id = getArguments().getString("storeId");
-            if(id != null || !id.isEmpty()) {
-                setStoreId(id);
+            if(id != null){
+                if(!id.isEmpty()) {
+                    setStoreId(id);
+                }
             }
             else
                 setStoreId("56e6a28a28c3e3314a6849df");
@@ -134,7 +136,7 @@ public class ShoppingListFragment extends Fragment {
         String url = "http://nielsema.ddns.net/sw8/api/store/" + storeId + "/products/";
         RequestQueue queue = Volley.newRequestQueue(getActivity().getApplicationContext());
 
-        JSONContainer.request(queue, url);
+        JSONContainer.getRequest(queue, url);
 
         //Then we return the view
         return mView;
@@ -328,7 +330,7 @@ public class ShoppingListFragment extends Fragment {
         String url = "http://nielsema.ddns.net/sw8/api/store/" + storeId + "/products/";
         RequestQueue queue = Volley.newRequestQueue(getActivity().getApplicationContext());
 
-        JSONContainer.request(queue, url);
+        JSONContainer.getRequest(queue, url);
     }
 
     /**
@@ -342,7 +344,7 @@ public class ShoppingListFragment extends Fragment {
             String url = "http://nielsema.ddns.net/sw8/api/store/" + id + "/products/";
             RequestQueue queue = Volley.newRequestQueue(getActivity().getApplicationContext());
 
-            JSONContainer.request(queue, url);
+            JSONContainer.getRequest(queue, url);
 
             LinearItemLayout item;
             TextView tmpText;

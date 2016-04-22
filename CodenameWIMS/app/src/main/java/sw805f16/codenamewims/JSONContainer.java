@@ -22,7 +22,7 @@ public final class JSONContainer {
      * A method that extracts information from a json array and puts it in a hashmap
      * @param jsonObject The json array from the server
      */
-    public static void extractInformationFromJson(JSONObject jsonObject) {
+    public static void extractProductInformationFromJson(JSONObject jsonObject) {
         try {
             JSONArray tmpArray;
             //Because this method is only called when we have a new JSON object we clear products
@@ -51,12 +51,12 @@ public final class JSONContainer {
         }
     }
 
-    public static void request(RequestQueue req, String url){
+    public static void getRequest(RequestQueue req, String url){
 
         JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>(){
             @Override
             public void onResponse(JSONObject response) {
-                extractInformationFromJson(response);
+                extractProductInformationFromJson(response);
             }
         }, new Response.ErrorListener() {
             @Override

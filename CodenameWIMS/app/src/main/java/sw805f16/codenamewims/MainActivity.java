@@ -35,7 +35,7 @@ import java.util.Map;
  *
  * */
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends WimsActivity {
 
     HashMap<String, String> stores = new HashMap<>();
     JSONArray json;
@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
     String storeId;
     boolean pickedSuggestion = false;
     Parcelable fragmentState;
-    private Toolbar toolbar;
 
 
     @Override
@@ -54,14 +53,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // When refactoring, change to activity_start_screen layoutet.
 
-        toolbar = (Toolbar)findViewById(R.id.app_bar);
-        setSupportActionBar(toolbar);
-
         if (getIntent().getParcelableExtra("state") != null) {
             fragmentState = getIntent().getParcelableExtra("state");
         }
 
-        //We make a request to the server and receives the list of stores
+        //We make a getRequest to the server and receives the list of stores
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = "http://nielsema.ddns.net/sw8/api/store/";
 
@@ -235,9 +231,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     /****
-     * The function that performs a request against our server
-     * @param req The queue to add the request
-     * @param url The url to request
+     * The function that performs a getRequest against our server
+     * @param req The queue to add the getRequest
+     * @param url The url to getRequest
      */
     private void request(RequestQueue req, String url){
 

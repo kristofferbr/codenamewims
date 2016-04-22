@@ -1,12 +1,11 @@
 package sw805f16.codenamewims;
 
 import android.content.Intent;
-import android.widget.SearchView;
 import android.widget.FrameLayout;
 
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,7 +33,7 @@ public class CurrentItemTest {
     ShadowListView shadowItemList;
     ListView itemList;
     FrameLayout currentItem;
-    SearchView search;
+    TextView search;
     ShadowListView suggestionList;
 
     @Before
@@ -43,7 +42,7 @@ public class CurrentItemTest {
         intent.putExtra("storeId","56e6a28a28c3e3314a6849df");
         activity= Robolectric.buildActivity(StoreMapActivity.class).withIntent(intent).create().get();
         fragment=(ShoppingListFragment)activity.getFragmentManager().findFragmentByTag("shoppingFragment");
-        search=(SearchView)fragment.getView().findViewById(R.id.shopSearch);
+        search=(TextView)fragment.getView().findViewById(R.id.item_textfield);
         suggestionList=shadowOf((ListView)fragment.getView().findViewById(R.id.suggestions));
         shadowItemList=shadowOf((ListView)fragment.getView().findViewById(R.id.itemList));
         itemList=(ListView)fragment.getView().findViewById(R.id.itemList);
@@ -52,18 +51,18 @@ public class CurrentItemTest {
         try{
            String jsonString=activity.getResources().getString(R.string.shop_json);
             JSONObject dummyJson=new JSONObject(jsonString);
-            JSONContainer.extractInformationFromJson(dummyJson);
+            JSONContainer.extractProductInformationFromJson(dummyJson);
         }
         catch(JSONException e){
             e.printStackTrace();
         }
 
-        search.setQuery("Milk", false);
+        search.setText("Milk");
         suggestionList.populateItems();
         suggestionList.performItemClick(0);
         shadowItemList.populateItems();
 
-        search.setQuery("Ost", false);
+        search.setText("Ost");
         suggestionList.populateItems();
         suggestionList.performItemClick(0);
         shadowItemList.populateItems();

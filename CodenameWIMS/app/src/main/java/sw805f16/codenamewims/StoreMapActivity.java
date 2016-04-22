@@ -12,6 +12,8 @@ import android.os.Message;import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,6 +24,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
@@ -52,18 +55,16 @@ public class StoreMapActivity extends WimsActivity {
 
     // URL til map /api/store/ID/map
     public boolean isInFront = false;
-    public boolean createMapDataModePoints = false;
-    public boolean createMapDataModeNeighbors = false;
-    public boolean fingerpriting = false;
     public boolean isScanning = false;
     public String store_id = "56e6a28a28c3e3314a6849df"; // The ID of føtex! :)
     public String base_url= "http://nielsema.ddns.net/sw8/api/store/";
     RequestQueue rqueue;
     float scale = 1;
     ScaleGestureDetector Scale;
-    SearchView search;
+    EditText search;
     JSONArray products;
     PositionOverlayFactory posfac;
+
     // Variables for dragging
     FrameLayout fram;
     float xOnStart = 0;
@@ -86,7 +87,6 @@ public class StoreMapActivity extends WimsActivity {
     boolean start = true;
     private Toolbar toolbar;
 
-
     ShoppingListFragment fragment;
 
     /* Used for fingerprinting*/
@@ -95,12 +95,10 @@ public class StoreMapActivity extends WimsActivity {
     WifiFingerprinter fingerprinter;
     static Handler mHandler;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_store_map);
+        setContentView(R.layout.activity_store);
 
         // my_child_toolbar is defined in the layout file
         // toolbar = (Toolbar)findViewById(R.id.app_bar);
@@ -123,36 +121,14 @@ public class StoreMapActivity extends WimsActivity {
         }
         transaction.add(R.id.storeShoppingList, fragment, "shoppingFragment");
         transaction.commit();
-        fingerprinter = new WifiFingerprinter(getApplicationContext());
-        final Button CommitButton = (Button) findViewById(R.id.commit);
-        CommitButton.setVisibility(View.INVISIBLE);
-        setupFingerPrintThread();
 
-        final Button FingerPrintPutton = (Button) findViewById(R.id.fingerprint);
-        FingerPrintPutton.setVisibility(View.INVISIBLE);
-
-        FingerPrintPutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if(fingerthread.getState() == Thread.State.NEW) {
-                    fingerthread.start();
-                }
-                isScanning = true;
-
-                /*Deletes the fingerprint view*/
-                fram.removeViewAt(2);
-                fingerpriting = false;
-                FingerPrintPutton.setVisibility(View.INVISIBLE);
-
-
-            }
-        });
         // Set variables for gestures
         Scale = new ScaleGestureDetector(this,new ScaleDetector());
 
-        // Instantiate the Volley request queue
+        // Instantiate the Volley getRequest queue
         rqueue = Volley.newRequestQueue(this);
+
+        requestMapData(store_id);
 
         // Adapter used for searching
         adapter = new ArrayAdapter<>(getApplicationContext(),
@@ -165,27 +141,25 @@ public class StoreMapActivity extends WimsActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                if(!createMapDataModePoints && !createMapDataModeNeighbors) {
-                    Scale.onTouchEvent(event);
-                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        xOnStart = event.getRawX();
-                        yOnStart = event.getRawY();
-                        posX = fram.getX();
-                        posY = fram.getY();
-                    }
-
-                    if (event.getAction() == MotionEvent.ACTION_MOVE) {
-
-                        float offsetX = xOnStart - event.getRawX();
-                        float offsetY = yOnStart - event.getRawY();
-                        fram.setX(posX - offsetX);
-                        fram.setY(posY - offsetY);
-
-                    }
-                    return true;
+                Scale.onTouchEvent(event);
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    xOnStart = event.getRawX();
+                    yOnStart = event.getRawY();
+                    posX = fram.getX();
+                    posY = fram.getY();
                 }
 
-                return false;
+                if (event.getAction() == MotionEvent.ACTION_MOVE) {
+
+                    float offsetX = xOnStart - event.getRawX();
+                    float offsetY = yOnStart - event.getRawY();
+                    fram.setX(posX - offsetX);
+                    fram.setY(posY - offsetY);
+
+                }
+                return true;
+
+
             }
         });
 
@@ -200,7 +174,7 @@ public class StoreMapActivity extends WimsActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView tes = (TextView) view;
-                search.setQuery(tes.getText(), false);
+                search.setText(tes.getText());
             }
         });
 
@@ -210,95 +184,6 @@ public class StoreMapActivity extends WimsActivity {
         mImageView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-
-                if (createMapDataModePoints) {
-
-                    int spotX;
-                    int spotY;
-
-                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        float x = event.getX() - v.getLeft();
-                        float y = event.getY() - v.getTop();
-
-                        int w = v.getMeasuredWidth();
-                        int h = v.getMeasuredHeight();
-
-                        Log.w("Billedeopløsning","X: "+fram.getChildAt(0).getMeasuredWidth() + "Y: " + fram.getChildAt(0).getMeasuredHeight());
-
-                        spotX = (int) (1312 / (float) w * x);
-                        spotY = (int) (2132 / (float) h * y);
-                        if (fram.getChildCount() == 1) {
-                            fram.addView(posfac.getPostitionOverlay(spotX, spotY));
-                            addPointIfNew(spotX, spotY, mapData);
-
-                        } else {
-                            if (addPointIfNew(spotX, spotY, mapData) && !fingerpriting) {
-                                ImageView temp = (ImageView) fram.getChildAt(1);
-                                fram.removeViewAt(1);
-                                fram.addView(posfac.getBitMapReDrawnSpot(temp, spotX, spotY));
-                            } else{
-                                if(fram.getChildCount() == 2){
-                                    currentWimsPoint = getWithin(spotX,spotY,mapData);
-                                    fram.addView(posfac.getPositionOfFingerPrintPoint((int)currentWimsPoint.x,(int)currentWimsPoint.y));
-                                    fingerpriting = true;
-                                    FingerPrintPutton.setVisibility(View.VISIBLE);
-                                } else
-                                {
-                                    fram.removeViewAt(2);
-                                    fingerpriting = false;
-                                    FingerPrintPutton.setVisibility(View.INVISIBLE);
-                                }
-
-                            }
-
-
-                        }
-
-                    }
-
-                } else if (createMapDataModeNeighbors && !fingerpriting) {
-
-
-                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        if (start) {
-                            float x = event.getX() - v.getLeft();
-                            float y = event.getY() - v.getTop();
-
-                            int w = v.getMeasuredWidth();
-                            int h = v.getMeasuredHeight();
-
-                            startX = (int) (1312 / (float) w * x);
-                            starty = (int) (2132 / (float) h * y);
-
-                            if(isWithin(startX, starty, mapData)) {
-                                start = !start;
-                            }
-                        } else {
-                            float x = event.getX() - v.getLeft();
-                            float y = event.getY() - v.getTop();
-
-                            int w = v.getMeasuredWidth();
-                            int h = v.getMeasuredHeight();
-
-                            endX = (int) (1312 / (float) w * x);
-                            endY = (int) (2132 / (float) h * y);
-
-
-                            if (isWithin(endX, endY, mapData)) {
-                                WimsPoints startpoint = getWithin(startX,starty, mapData);
-                                WimsPoints endpoint = getWithin(endX,endY, mapData);
-
-                                ImageView temp = (ImageView) fram.getChildAt(1);
-                                fram.removeViewAt(1);
-                                fram.addView(posfac.getBitMapReDrawnLine(temp,(int) startpoint.x, (int) startpoint.y, (int)endpoint.x, (int) endpoint.y));
-                                start = !start;
-                                setNeighbors(startX,starty,endX,endY, mapData);
-                            }
-
-                        }
-                    }
-
-                }
 
                 return false;
             }
@@ -314,57 +199,25 @@ public class StoreMapActivity extends WimsActivity {
         requestItemsOfStore(store_id);
 
         // Set the correct listeners on the search widget
-        search = (SearchView) findViewById(R.id.searchView);
-        search.setOnSearchClickListener(new View.OnClickListener() {
+        search = (EditText) findViewById(R.id.store_search_field);
+        search.addTextChangedListener(new TextWatcher() {
             @Override
-            public void onClick(View v) {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 listResults.setVisibility(View.VISIBLE);
             }
-        });
 
-
-
-
-        CommitButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                sendMapData(mapData);
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                putSuggestionsInList(s.toString());
             }
-        });
 
-        final Button EditButton = (Button) findViewById(R.id.testbut);
-        EditButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void afterTextChanged(Editable s) {
 
-                if (!createMapDataModePoints && !createMapDataModeNeighbors) {
-                    //DrawDataOnMap(mapData);
-                    createMapDataModeNeighbors = false;
-                    createMapDataModePoints = true;
-                    CommitButton.setVisibility(View.VISIBLE);
-                    EditButton.setText("Points");
-                } else if (createMapDataModePoints && !createMapDataModeNeighbors) {
-                    createMapDataModePoints = false;
-                    createMapDataModeNeighbors = true;
-                    EditButton.setText("Neighbors");
-                } else if (createMapDataModeNeighbors) {
-                    createMapDataModeNeighbors = false;
-                    createMapDataModePoints = false;
-                    CommitButton.setVisibility(View.INVISIBLE);
-                    EditButton.setText("Normal");
-                }
-
-            }
-        });
-
-        //Listeners on the search widget
-        search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
                 int[] res;
 
                 // Sees if the search Query is matching any products from the store
-                res = searchProductReturnCoordinates(products, query);
+                res = searchProductReturnCoordinates(products, s.toString());
 
                 // If the query matches a product, the resulting location is marked on the map
                 if (res[0] != 0) {
@@ -373,17 +226,8 @@ public class StoreMapActivity extends WimsActivity {
                     drawRoute(res);
 
                 }
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-
-                putSuggestionsInList(newText);
-                return false;
             }
         });
-
 
         // Gets the map corresponding to the store ID
         fram =(FrameLayout) findViewById(R.id.MapFrame);
@@ -399,7 +243,9 @@ public class StoreMapActivity extends WimsActivity {
         };
 
 
-        Button findMe = (Button) findViewById(R.id.findme);
+        WimsButton findMe = new WimsButton(getApplicationContext(), getResources().getDrawable(R.drawable.no_icon));
+        findMe.setId(R.id.wims_action_bar_transition_start);
+        addWimsButtonToActionBar(findMe, RIGHT);
         findMe.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -409,12 +255,25 @@ public class StoreMapActivity extends WimsActivity {
                     fram.removeViewAt(i);
                 }
 
-                WimsPoints location = new WimsPoints();
-                location = findNearestNeighbor(mapData);
+                WimsPoints location = findNearestNeighbor(mapData);
 
                 if(location != null)
                 fram.addView(posfac.getPositionOfFingerPrintPoint((int)location.x,(int)location.y));
-                else Toast.makeText(getApplicationContext(),"No locatioj found", Toast.LENGTH_SHORT).show();
+                else Toast.makeText(getApplicationContext(),"No location found", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+
+        WimsButton shoppingListButton = new WimsButton(getApplicationContext(), getResources().getDrawable(R.drawable.no_icon));
+
+        shoppingListButton.setVisibility(View.INVISIBLE);
+        shoppingListButton.setId(R.id.wims_action_bar_transition_storemap);
+        addWimsButtonToActionBar(shoppingListButton, RIGHT);
+
+        shoppingListButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
 
             }
         });
@@ -453,7 +312,6 @@ public class StoreMapActivity extends WimsActivity {
         isInFront = false;
     }
 
-
     @Override
     public void onBackPressed(){
         if(listResults.getVisibility() == View.VISIBLE){
@@ -464,9 +322,7 @@ public class StoreMapActivity extends WimsActivity {
 
     }
 
-
-    public void sendMapData(ArrayList<WimsPoints> mapData)
-    {
+    public void sendMapData(ArrayList<WimsPoints> mapData){
 
         JSONObject tosend = constructJson(mapData);
         Log.w("WIMS", tosend.toString());
@@ -562,7 +418,6 @@ public class StoreMapActivity extends WimsActivity {
         rqueue.add(jsObjRequest);
     }
 
-
     public void requestMapData(String storeID){
 
         String url = base_url + storeID +"/products";
@@ -600,7 +455,7 @@ public class StoreMapActivity extends WimsActivity {
         final String url = base_url + store_id +"/map";
         final ImageView mImageView = (ImageView) findViewById(R.id.storemap);
 
-        /*Generates the request along with a listener that is triggered when image is received*/
+        /*Generates the getRequest along with a listener that is triggered when image is received*/
         ImageRequest imagereq = new ImageRequest(url, new Response.Listener<Bitmap>() {
 
             @Override
@@ -618,7 +473,6 @@ public class StoreMapActivity extends WimsActivity {
 
         rqueue.add(imagereq);
     }
-
 
     /***
      * Gets the Item along with its location on the map
@@ -709,8 +563,6 @@ public class StoreMapActivity extends WimsActivity {
         return res;
     }
 
-
-
     /***
      * This class must be in here, for some reason.
      * Can't seperate it.
@@ -752,7 +604,6 @@ public class StoreMapActivity extends WimsActivity {
         }
     }
 
-
     /***
      * The function that draws the point on the map
      * @param x The X coordinate
@@ -772,13 +623,11 @@ public class StoreMapActivity extends WimsActivity {
 
     }
 
-
     /***
      * Function for filling the resultview with suggestions based on the text in the window
      * @param newtext the string that is compared with the product list
      */
-    public void putSuggestionsInList(String newtext)
-    {
+    public void putSuggestionsInList(String newtext){
         results.clear();
         String tempName="";
 
@@ -801,12 +650,12 @@ public class StoreMapActivity extends WimsActivity {
                 }
             }
         } else {
-            search.setQueryHint("No items found..");
+            search.setHint("No items found..");
         }
         adapter.notifyDataSetChanged();
     }
 
-    /***TODO
+    /**TODO
      * Make mapdata as a parameter
      */
     /****
@@ -847,7 +696,6 @@ public class StoreMapActivity extends WimsActivity {
         mapData.get(indexOfNeighbor).Neighbours.remove(itemToAdd);
         mapData.remove(itemToAdd);
     }
-
 
     /***
      * The main function used when drawing a route
@@ -922,7 +770,6 @@ public class StoreMapActivity extends WimsActivity {
         return pointArray.get(0);
     }
 
-
     /***
      * Function used to set the neighbor relationsship between two points
      * @param point1x x Coordinate of point1
@@ -941,7 +788,6 @@ public class StoreMapActivity extends WimsActivity {
         } else
             return false;
     }
-
 
     /***
      * Function that constructs a JSON array of points to insert into the server database
@@ -996,7 +842,6 @@ public class StoreMapActivity extends WimsActivity {
         return tosend;
 
     }
-
 
     /***
      * Function that adds neighbor relations to the JSON object after ID's have been added to each
@@ -1063,7 +908,6 @@ public class StoreMapActivity extends WimsActivity {
         return "";
     }
 
-
     /***
      * Function the takes the JSON object and deconstructs into a WimsPoints Array that are used
      * For pathfinding
@@ -1095,7 +939,6 @@ public class StoreMapActivity extends WimsActivity {
         }
         return mapdata;
     }
-
 
     /***
      * returns the index of the neighbor used for deconstructing the
@@ -1197,7 +1040,6 @@ public class StoreMapActivity extends WimsActivity {
 
     }
 
-
     /***
      * Used for drawing the acquired data from the server on the screen, so that it can be worked on further
      * @param data The array of wimspoints
@@ -1225,7 +1067,6 @@ public class StoreMapActivity extends WimsActivity {
 
 
     }
-
 
     /***
      * A simple nearest neighbor algorithm for positioning
@@ -1295,7 +1136,6 @@ public class StoreMapActivity extends WimsActivity {
 
 
     }
-
 
     /***
      *

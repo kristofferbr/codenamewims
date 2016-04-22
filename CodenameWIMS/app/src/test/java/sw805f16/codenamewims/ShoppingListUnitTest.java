@@ -56,7 +56,7 @@ public class ShoppingListUnitTest {
         itemList.add(firstLayout);
         itemList.add(secondLayout);
 
-        shoppingListAdapter = new ShoppingListAdapter(testFragment.getActivity().getApplicationContext(),
+        shoppingListAdapter = new ShoppingListAdapter(testFragment.getActivity(),
                 R.layout.simple_list_view, itemList);
     }
 

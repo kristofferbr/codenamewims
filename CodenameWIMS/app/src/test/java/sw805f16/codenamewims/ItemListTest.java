@@ -5,7 +5,6 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SearchView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,7 +17,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowListView;
 
 import static org.junit.Assert.assertNull;
-import static org.robolectric.Shadows.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.robolectric.Shadows.shadowOf;
@@ -52,7 +50,7 @@ public class ItemListTest {
         try{
             String jsonString=activity.getResources().getString(R.string.shop_json);
             JSONObject dummyJson=new JSONObject(jsonString);
-            JSONContainer.extractInformationFromJson(dummyJson);
+            JSONContainer.extractProductInformationFromJson(dummyJson);
         }
         catch(JSONException e){
             e.printStackTrace();

@@ -34,7 +34,7 @@ public class ShoppingItemActivity extends WimsActivity {
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_item_shopping_list);
+        setContentView(R.layout.activity_item_shopping_list);}
 
         // Get the bundle from the intent received.
         /*Bundle b = getIntent().getExtras();
@@ -101,6 +101,7 @@ public class ShoppingItemActivity extends WimsActivity {
         listItems();
     }
 
+
     /**
      * Get the index value of the element with the highest number in the ArrayList Ticked
      * @return interger value of the index with the highest value
@@ -133,7 +134,7 @@ public class ShoppingItemActivity extends WimsActivity {
             saveItemList(s);
             listItems();
         }
-        hideKeyboard();*/
+        hideKeyboard();
     }
 
     // Method for saving an item to local memory.
