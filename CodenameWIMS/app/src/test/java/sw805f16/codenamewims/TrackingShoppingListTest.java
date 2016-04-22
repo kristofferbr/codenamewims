@@ -1,6 +1,7 @@
 package sw805f16.codenamewims;
 
 import android.content.Intent;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,7 +36,7 @@ public class TrackingShoppingListTest {
     ShadowListView shadowItemList;
     ListView itemList;
     FrameLayout currentItem;
-    SearchView search;
+    EditText search;
     ShadowListView suggestionList;
 
     @Before
@@ -44,7 +45,7 @@ public class TrackingShoppingListTest {
         intent.putExtra("storeId", "56e6a28a28c3e3314a6849df");
         activity = Robolectric.buildActivity(StoreMapActivity.class).withIntent(intent).create().get();
         fragment = (ShoppingListFragment) activity.getFragmentManager().findFragmentByTag("shoppingFragment");
-        search = (SearchView) fragment.getView().findViewById(R.id.shopSearch);
+        search = (EditText) fragment.getView().findViewById(R.id.item_textfield);
         suggestionList = shadowOf((ListView) fragment.getView().findViewById(R.id.suggestions));
         shadowItemList = shadowOf((ListView) fragment.getView().findViewById(R.id.itemList));
         itemList = (ListView) fragment.getView().findViewById(R.id.itemList);
@@ -58,12 +59,12 @@ public class TrackingShoppingListTest {
             e.printStackTrace();
         }
 
-        search.setQuery("Milk", false);
+        search.setText((CharSequence)"Milk");
         suggestionList.populateItems();
         suggestionList.performItemClick(0);
         shadowItemList.populateItems();
 
-        search.setQuery("Ost", false);
+        search.setText((CharSequence) "Ost");
         suggestionList.populateItems();
         suggestionList.performItemClick(0);
         shadowItemList.populateItems();
@@ -105,7 +106,8 @@ public class TrackingShoppingListTest {
 
     @Test
     public void item_sorting_test() {
-        search.setQuery("Minced Beef", false);
+
+        search.setText((CharSequence)"Minced Beef");
         suggestionList.populateItems();
         suggestionList.performItemClick(0);
         shadowItemList.populateItems();

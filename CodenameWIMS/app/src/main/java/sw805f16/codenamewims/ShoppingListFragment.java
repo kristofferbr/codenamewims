@@ -3,23 +3,26 @@ package sw805f16.codenamewims;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.preference.PreferenceManager;
 import android.support.v4.view.GestureDetectorCompat;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
@@ -44,12 +47,12 @@ public class ShoppingListFragment extends Fragment {
     //These variables are for the suggestion list in the searchview
     private ArrayAdapter suggestionAdapter;
     private ListView suggestionListView;
-    private ArrayList<TextView> suggestionList;
+    private ArrayList<String> suggestionList;
 
     //These variables are for the items in the shopping list
     private ShoppingListAdapter itemAdapter;
     private ListView itemListView;
-    private ArrayList<LinearItemLayout> ItemList;
+    private ArrayList<LinearItemLayout> itemList;
     //This is a list of drawable ids for which mark the item should have
     private FrameLayout currentItem;
 
@@ -92,113 +95,62 @@ public class ShoppingListFragment extends Fragment {
         super.onCreateView(inflater,container,savedInstanceState);
 
 
+        View mView = inflater.inflate(R.layout.fragment_shopping_list, container, false);
         // Inflate the layout for this fragment
         //We put the inflated view in a local variable
-        View mView = inflater.inflate(R.layout.fragment_shopping_list, container, false);
-
-        //Then we initialize the view widgets
-        currentItem = (FrameLayout) mView.findViewById(R.id.currentItem);
-
-        SearchView searchView = (SearchView) mView.findViewById(R.id.shopSearch);
-
-        Button startScreenButton = (Button) mView.findViewById(R.id.startScreenButton);
-        Button storeMapButton = (Button) mView.findViewById(R.id.shopStoreButton);
-
+        itemList = new ArrayList<>();
+        itemAdapter = new ShoppingListAdapter(getActivity(),
+                R.layout.simple_list_view,
+                itemList);
         suggestionList = new ArrayList<>();
         suggestionAdapter = new ArrayAdapter(getActivity().getApplicationContext(),
                 R.layout.simple_list_view,
                 suggestionList);
-        suggestionListView = (ListView) mView.findViewById(R.id.suggestions);
-        suggestionListView.setAdapter(suggestionAdapter);
 
-        ItemList = new ArrayList<>();
-        itemAdapter = new ShoppingListAdapter(getActivity().getApplicationContext(),
-                R.layout.simple_list_view,
-                ItemList);
-        itemListView = (ListView) mView.findViewById(R.id.itemList);
-        itemListView.setAdapter(itemAdapter);
-
-        //If this method was called with the arguments from before we re-assign the views
         if (savedInstanceState != null) {
             loadFromSavedState(savedInstanceState);
         }
-        //The buttons are for transitioning to the MainActivity and StoreMapActivity, respectively
-        startScreenButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ShoppingListActivity parent = (ShoppingListActivity) getActivity();
 
-                //The actual transition is left to the activity
-                parent.transitionToStartScreen();
-            }
-        });
-        storeMapButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ShoppingListActivity parent = (ShoppingListActivity) getActivity();
-
-                parent.transitionToStoreMap();
-            }
-        });
-
-        //The on click listener for the suggestion list places the suggestion in the item list
-        suggestionListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //We pull the text view from the suggestion list and resize it
-                TextView tmpText = suggestionList.get(position);
-                tmpText.setWidth(R.dimen.list_item_width);
-                tmpText.setHeight(R.dimen.list_item_height);
-                LinearItemLayout tmpLayout = (LinearItemLayout) LinearItemLayout.inflate(getActivity().getApplicationContext(), R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
-                tmpLayout.addView(tmpText, 0);
-
-                tmpLayout.setStatus(ItemEnum.UNMARKED);
-                tmpLayout.setImageId(0);
-                //Then we add the layout to the item list, notify the adapter and sort the list
-                itemAdapter.add(tmpLayout);
-                // TODO: When we have positions, change this to that
-                sortItemListInAdapter(new WimsPoints(0, 0));
-                itemAdapter.notifyDataSetChanged();
-                suggestionListView.setVisibility(View.GONE);
-            }
-        });
-
-                    //When clicking an item in the item list view it should mark the items, if the user is in StoreMapActivity
-                    itemListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            if (getActivity() instanceof StoreMapActivity) {
-                                markUnmarkItemInAdapter(position, false);
-                            }
-                        }
-                    });
-                    //When the user performs a long press they indicate the item is skipped and receives an X next to it
-                    itemListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-                        @Override
-                        public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                            if (getActivity() instanceof StoreMapActivity) {
-                                markUnmarkItemInAdapter(position, true);
-                }
-                return false;
-            }
-        });
-        //Here we set the onTouchListener for the fling event. This is for removing items
-        itemListView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(v instanceof LinearItemLayout) {
-                    itemToDelete = itemAdapter.getPosition((LinearItemLayout)v);
-                }
-                detector.onTouchEvent(event);
-                return false;
-            }
-        });
+        initInterface(mView);
 
         //If the list of unmarked items is not empty and we are in StoreMapActivity we place the first
         //item FrameLayout
         if (getActivity() instanceof StoreMapActivity) {
-            sortItemListInAdapter(new WimsPoints(0,0));
+            sortItemListInAdapter(new WimsPoints(0, 0));
         }
+
+        //If this fragment was called with an ID then the storeId is set
+        if (getArguments() != null) {
+            String id = getArguments().getString("storeId");
+            if(id != null || !id.isEmpty()) {
+                setStoreId(id);
+            }
+            else
+                setStoreId("56e6a28a28c3e3314a6849df");
+        }
+        else
+            setStoreId("56e6a28a28c3e3314a6849df");
+
+        String url = "http://nielsema.ddns.net/sw8/api/store/" + storeId + "/products/";
+        RequestQueue queue = Volley.newRequestQueue(getActivity().getApplicationContext());
+
+        JSONContainer.request(queue, url);
+
+        //Then we return the view
+        return mView;
+    }
+
+    public void initInterface(View mView){
+        //Then we initialize the view widgets
+        currentItem = (FrameLayout) mView.findViewById(R.id.currentItem);
+
+        EditText searchView = (EditText) mView.findViewById(R.id.item_textfield);
+
+        itemListView = (ListView) mView.findViewById(R.id.itemList);
+        itemListView.setAdapter(itemAdapter);
+
+        suggestionListView = (ListView) mView.findViewById(R.id.suggestions);
+        suggestionListView.setAdapter(suggestionAdapter);
 
         //When clicking the item in the FrameLayout it should mark it like the item list
         currentItem.setOnClickListener(new View.OnClickListener() {
@@ -223,38 +175,68 @@ public class ShoppingListFragment extends Fragment {
             }
         });
 
-        //If this fragment was called with an ID then the storeId is set
-        if (getArguments() != null) {
-            String id = getArguments().getString("storeId");
-            if(id != null) {
-                setStoreId(id);
-            }
-        }
-
-        //If we are in the ShoppingListActivity we set the buttons to visible, otherwise they are gone
-        if (getActivity() instanceof ShoppingListActivity) {
-            startScreenButton.setVisibility(View.VISIBLE);
-            storeMapButton.setVisibility(View.VISIBLE);
-        }
-
         //The search view is only responsible for showing the suggestion list
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        searchView.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                populateSuggestionList(query);
-                return false;
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
                 suggestionListView.setVisibility(View.VISIBLE);
-                populateSuggestionList(newText);
-                return true;
+                suggestionListView.bringToFront();
+                populateSuggestionList(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                populateSuggestionList(s.toString());
             }
         });
 
-        //Then we return the view
-        return mView;
+        //The on click listener for the suggestion list places the suggestion in the item list
+
+
+        //When clicking an item in the item list view it should mark the items, if the user is in StoreMapActivity
+        itemListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (getActivity() instanceof StoreMapActivity) {
+                    markUnmarkItemInAdapter(position, false);
+                }
+            }
+        });
+        //When the user performs a long press they indicate the item is skipped and receives an X next to it
+        itemListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                if (getActivity() instanceof StoreMapActivity) {
+                    markUnmarkItemInAdapter(position, true);
+                }
+                return false;
+            }
+        });
+        //Here we set the onTouchListener for the fling event. This is for removing items
+        itemListView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(v instanceof LinearItemLayout) {
+                    itemToDelete = itemAdapter.getPosition((LinearItemLayout)v);
+                }
+                detector.onTouchEvent(event);
+                return false;
+            }
+        });
+        suggestionListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                addToItemList(position);
+                suggestionListView.setVisibility(View.GONE);
+            }
+        });
+        suggestionListView.bringToFront();
+
     }
 
     public void loadFromSavedState(Bundle savedInstanceState){
@@ -263,26 +245,29 @@ public class ShoppingListFragment extends Fragment {
         }
 
         ArrayList<String> stringItemList = savedInstanceState.getStringArrayList("itemList");
-        TextView savedTextView = new TextView(getActivity().getApplicationContext());
+        TextView savedTextView;
         Integer id;
         ItemEnum tmpEnum;
         ArrayList<Integer> itemImageIdList = savedInstanceState.getIntegerArrayList("markImages");
 
+        itemList.clear();
+
         //Here we pull the the list of unmarked items and refill the item list
         for (int i = 0; i < stringItemList.size();i++){
-            ItemList.clear();
-            savedTextView.setText(stringItemList.get(i));
 
             //Here we inflate a LinearLayout with a custom layout
             LinearItemLayout tmpLayout = new LinearItemLayout(getActivity().getApplicationContext(),
                     (ViewGroup) itemListView.getEmptyView());
+
+            savedTextView = (TextView) tmpLayout.findViewById(R.id.label);
+            savedTextView.setText(stringItemList.get(i));
+
             id = itemImageIdList.get(i);
             tmpLayout.setImageId(id);
             tmpEnum = (ItemEnum) savedInstanceState.getSerializable(stringItemList.get(i));
-            tmpLayout.addView(savedTextView, 0);
             tmpLayout.setStatus(tmpEnum);
             //Then we add the newly made layout to the item list
-            ItemList.add(tmpLayout);
+            itemList.add(tmpLayout);
         }
 
         //Lastly we pull the list of products at place it in the products variable
@@ -437,11 +422,8 @@ public class ShoppingListFragment extends Fragment {
         tmpList = SearchRanking.rankSearchResults(query, tmpList);
 
         for (String str : tmpList) {
-            //We set the text for the textviews to the strings in tmpList
-            tmpView.setText(str);
-
-            //We add the textviews to the suggestion list
-            suggestionList.add(tmpView);
+            //We add the string to the suggestion list
+            suggestionList.add(str);
         }
 
         //Then we notify the adapter that the list is modified
@@ -487,6 +469,22 @@ public class ShoppingListFragment extends Fragment {
         outState.putParcelableArrayList("products", JSONContainer.getProducts());
     }
 
+    /*public boolean saveShoppingList() {
+        FileOutputStream fos = getContext().openFileOutput("itemList", Context.MODE_PRIVATE);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(object);
+        oos.close();
+        fos.close();
+        SharedPreferences.Editor mEdit1 = sp.edit();
+        mEdit1.putInt("Shopping_List", shoppingArrayList.size());
+
+        for (int i = 0; i < shoppingArrayList.size(); i++) {
+            mEdit1.remove("Shopping_" + i);
+            mEdit1.putString("Shopping_" + i, shoppingArrayList.get(i).name);
+        }
+        return mEdit1.commit();
+    }*/
+
     /**
      * This method is used to remove an item from the item list
      */
@@ -531,6 +529,69 @@ public class ShoppingListFragment extends Fragment {
             //We call the remove method
             removeItemFromList();
             return false;
+        }
+    }
+
+    public boolean saveItemList() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences.Editor mEdit1 = sp.edit();
+        String title = "";
+        mEdit1.putInt("Item_List_" + title,  itemList.size());
+
+        for (int i = 0; i < itemList.size(); i++) {
+            mEdit1.remove("Item_List_" + title + i);
+            mEdit1.putString("Item_List_" + title + i, itemList.get(i).toString());
+        }
+        return mEdit1.commit();
+    }
+
+    public void addToItemList(String text){
+        LinearItemLayout tmpLayout = (LinearItemLayout) LinearItemLayout.inflate(getActivity().getApplicationContext(),
+                R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
+
+        //We pull the text view from the suggestion list and resize it
+        TextView tmpText = (TextView) tmpLayout.getChildAt(0);
+        tmpText.setText(text);
+
+        tmpLayout.setStatus(ItemEnum.UNMARKED);
+        tmpLayout.setImageId(0);
+        //Then we add the layout to the item list, notify the adapter and sort the list
+        itemAdapter.add(tmpLayout);
+        // TODO: When we have positions, change this to that
+        sortItemListInAdapter(new WimsPoints(0, 0));
+        itemAdapter.notifyDataSetChanged();
+    }
+
+    public void addToItemList(int position){
+        addToItemList(suggestionList.get(position));
+    }
+
+    // Method for saving an item and adding a name.
+    public void saveItemList(String name) {
+        addToItemList(name);
+        saveItemList();
+    }
+
+    // Method to load items from shopping list.
+    public void loadItemList(Context mContext)
+    {
+        SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(mContext);
+        String title = "";
+        itemList.clear();
+        int size = mSharedPreference1.getInt("Item_List_" + title, 0);
+
+        for(int i=0;i<size;i++)
+        {
+            addToItemList(mSharedPreference1.getString("Item_List_" + title + i, null));
+        }
+    }
+    // Method to hide keyboard.
+    private void hideKeyboard() {
+        // Check if no view has focus:
+        View view = getActivity().getCurrentFocus();
+        if (view != null) {
+            InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
     }
 }

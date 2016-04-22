@@ -37,7 +37,7 @@ public class ShoppingItemActivity extends WimsActivity {
         setContentView(R.layout.activity_item_shopping_list);
 
         // Get the bundle from the intent received.
-        Bundle b = getIntent().getExtras();
+        /*Bundle b = getIntent().getExtras();
 
         // Fetch the title of a shopping list and set the action bar title.
         title = b.getString("title");
@@ -133,7 +133,7 @@ public class ShoppingItemActivity extends WimsActivity {
             saveItemList(s);
             listItems();
         }
-        hideKeyboard();
+        hideKeyboard();*/
     }
 
     // Method for saving an item to local memory.

@@ -3,8 +3,8 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
-    <dimen name="list_item_width">100pt</dimen>
-    <dimen name="list_item_height">20pt</dimen>
+    <dimen name="list_item_width">100dp</dimen>
+    <dimen name="list_item_height">20dp</dimen>
 
-    <dimen name="checkmark_width">20pt</dimen>
+    <dimen name="checkmark_width">20dp</dimen>
 </resources>

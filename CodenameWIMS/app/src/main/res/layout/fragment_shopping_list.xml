@@ -2,44 +2,60 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/Indigo400"
     tools:context="sw805f16.codenamewims.ShoppingListFragment">
-
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-        <SearchView
-            android:layout_width="500px"
-            android:layout_height="wrap_content"
-            android:id="@+id/shopSearch"
-            android:layout_gravity="center_horizontal"/>
-
-        <ListView
-            android:layout_width="500px"
-            android:layout_height="600px"
-            android:id="@+id/suggestions"
-            android:visibility="invisible"
-            android:layout_gravity="center"/>
-    </RelativeLayout>
 
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/currentItem"/>
+        android:id="@+id/currentItem"
+        android:layout_marginTop="48dp"
+        android:background="@drawable/item_border"
+        android:clipChildren="true"/>
 
     <ListView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:id="@+id/itemList"
-        android:layout_below="@id/currentItem"/>
+        android:layout_below="@id/currentItem"
+        android:background="@drawable/rounded_edittext"/>
 
-    <Button
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/startScreenButton"
-        android:visibility="gone"/>
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/shopStoreButton"
-        android:visibility="gone"/>
+        android:id="@+id/shopping_search_bar">
+
+        <EditText
+            android:id="@+id/item_textfield"
+            android:layout_centerHorizontal="true"
+            android:layout_width="282dp"
+            android:layout_height="48dp"
+            android:background="@drawable/rounded_edittext"
+            android:hint="@string/add_item_dotdotdot"
+            android:textColorHint="@drawable/edittext_hint"
+            android:singleLine="true"
+            android:inputType="text"
+            android:imeOptions="actionDone"/>
+
+        <Button
+            android:id="@+id/item_add_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="@string/plus"
+            android:textColor="@color/White"
+            android:textSize="25sp"
+            android:layout_marginLeft="10dp"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/start_button"/>
+
+        <ListView
+            android:layout_width="282dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/item_textfield"
+            android:background="@color/White"
+            android:id="@+id/suggestions"
+            android:visibility="invisible"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center"/>
+    </RelativeLayout>
 </RelativeLayout>

@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 /**
  * Created by Kogni on 13-Apr-16.
@@ -43,6 +44,16 @@ public class LinearItemLayout extends LinearLayout {
 
     public void setStatus(ItemEnum status) {
         this.status = status;
+    }
+
+    public String getText(){
+        TextView text = (TextView) this.getChildAt(0);
+        return (String) text.getText();
+    }
+
+    public void setText(String text){
+        TextView textView = (TextView) this.getChildAt(0);
+        textView.setText(text);
     }
 }
 
