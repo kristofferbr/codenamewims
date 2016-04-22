@@ -157,7 +157,7 @@ public class ShoppingActivity extends WimsActivity {
      * Deletes a shopping list.
      * @param shoppingListAddress index location in ShoppingListArray of shopping list to be deleted
      */
-   public void deleteShoppingList(final int shoppingListAddress) {
+    public void deleteShoppingList(final int shoppingListAddress) {
 
         shoppingArrayList.remove(shoppingListAddress);
         saveShoppingList();

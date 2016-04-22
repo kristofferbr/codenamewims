@@ -12,28 +12,22 @@ import android.support.v4.view.GestureDetectorCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.GestureDetector;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 
@@ -58,7 +52,7 @@ public class ShoppingListFragment extends Fragment {
     //These variables are for the items in the shopping list
     private ShoppingListAdapter itemAdapter;
     private ListView itemListView;
-    private ArrayList<LinearItemLayout> ItemList;
+    private ArrayList<LinearItemLayout> itemList;
     //This is a list of drawable ids for which mark the item should have
     private FrameLayout currentItem;
 
@@ -104,10 +98,10 @@ public class ShoppingListFragment extends Fragment {
         View mView = inflater.inflate(R.layout.fragment_shopping_list, container, false);
         // Inflate the layout for this fragment
         //We put the inflated view in a local variable
-        ItemList = new ArrayList<>();
+        itemList = new ArrayList<>();
         itemAdapter = new ShoppingListAdapter(getActivity(),
                 R.layout.simple_list_view,
-                ItemList);
+                itemList);
         suggestionList = new ArrayList<>();
         suggestionAdapter = new ArrayAdapter(getActivity().getApplicationContext(),
                 R.layout.simple_list_view,
@@ -237,21 +231,7 @@ public class ShoppingListFragment extends Fragment {
         suggestionListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                LinearItemLayout tmpLayout = (LinearItemLayout) LinearItemLayout.inflate(getActivity().getApplicationContext(), R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
-
-                //We pull the text view from the suggestion list and resize it
-                TextView tmpText;
-                tmpText = (TextView) tmpLayout.getChildAt(0);
-                tmpText.setText(suggestionList.get(position));
-
-                tmpLayout.setStatus(ItemEnum.UNMARKED);
-                tmpLayout.setImageId(0);
-                //Then we add the layout to the item list, notify the adapter and sort the list
-                itemAdapter.add(tmpLayout);
-                // TODO: When we have positions, change this to that
-                sortItemListInAdapter(new WimsPoints(0, 0));
-                itemAdapter.notifyDataSetChanged();
+                addToItemList(position);
                 suggestionListView.setVisibility(View.GONE);
             }
         });
@@ -270,7 +250,7 @@ public class ShoppingListFragment extends Fragment {
         ItemEnum tmpEnum;
         ArrayList<Integer> itemImageIdList = savedInstanceState.getIntegerArrayList("markImages");
 
-        ItemList.clear();
+        itemList.clear();
 
         //Here we pull the the list of unmarked items and refill the item list
         for (int i = 0; i < stringItemList.size();i++){
@@ -287,7 +267,7 @@ public class ShoppingListFragment extends Fragment {
             tmpEnum = (ItemEnum) savedInstanceState.getSerializable(stringItemList.get(i));
             tmpLayout.setStatus(tmpEnum);
             //Then we add the newly made layout to the item list
-            ItemList.add(tmpLayout);
+            itemList.add(tmpLayout);
         }
 
         //Lastly we pull the list of products at place it in the products variable
@@ -549,6 +529,69 @@ public class ShoppingListFragment extends Fragment {
             //We call the remove method
             removeItemFromList();
             return false;
+        }
+    }
+
+    public boolean saveItemList() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences.Editor mEdit1 = sp.edit();
+        String title = "";
+        mEdit1.putInt("Item_List_" + title,  itemList.size());
+
+        for (int i = 0; i < itemList.size(); i++) {
+            mEdit1.remove("Item_List_" + title + i);
+            mEdit1.putString("Item_List_" + title + i, itemList.get(i).toString());
+        }
+        return mEdit1.commit();
+    }
+
+    public void addToItemList(String text){
+        LinearItemLayout tmpLayout = (LinearItemLayout) LinearItemLayout.inflate(getActivity().getApplicationContext(),
+                R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
+
+        //We pull the text view from the suggestion list and resize it
+        TextView tmpText = (TextView) tmpLayout.getChildAt(0);
+        tmpText.setText(text);
+
+        tmpLayout.setStatus(ItemEnum.UNMARKED);
+        tmpLayout.setImageId(0);
+        //Then we add the layout to the item list, notify the adapter and sort the list
+        itemAdapter.add(tmpLayout);
+        // TODO: When we have positions, change this to that
+        sortItemListInAdapter(new WimsPoints(0, 0));
+        itemAdapter.notifyDataSetChanged();
+    }
+
+    public void addToItemList(int position){
+        addToItemList(suggestionList.get(position));
+    }
+
+    // Method for saving an item and adding a name.
+    public void saveItemList(String name) {
+        addToItemList(name);
+        saveItemList();
+    }
+
+    // Method to load items from shopping list.
+    public void loadItemList(Context mContext)
+    {
+        SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(mContext);
+        String title = "";
+        itemList.clear();
+        int size = mSharedPreference1.getInt("Item_List_" + title, 0);
+
+        for(int i=0;i<size;i++)
+        {
+            addToItemList(mSharedPreference1.getString("Item_List_" + title + i, null));
+        }
+    }
+    // Method to hide keyboard.
+    private void hideKeyboard() {
+        // Check if no view has focus:
+        View view = getActivity().getCurrentFocus();
+        if (view != null) {
+            InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
     }
 }

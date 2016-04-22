@@ -64,7 +64,7 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
         LinearItemLayout rowView = (LinearItemLayout) inflater.inflate(R.layout.item_layout, null, true);
         rowView.setText(getItem(position).getText());
         if(getItem(position).getImageId() != 0) {
-            ImageView imageView = (ImageView) getItem(position).getChildAt(2);
+            ImageView imageView = (ImageView) getItem(position).getChildAt(1);
             imageView.setImageDrawable(context.getResources().getDrawable(getItem(position).getImageId()));
         }
         return rowView;

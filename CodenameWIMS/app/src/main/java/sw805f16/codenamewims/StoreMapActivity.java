@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-public class StoreMapActivity extends AppCompatActivity {
+public class StoreMapActivity extends WimsActivity {
 
 
     // URL til map /api/store/ID/map
