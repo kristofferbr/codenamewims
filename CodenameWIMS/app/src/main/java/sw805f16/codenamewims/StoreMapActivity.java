@@ -5,10 +5,11 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.graphics.Bitmap;
 
-import android.support.v7.app.ActionBar;import android.net.wifi.ScanResult;
+import android.net.wifi.ScanResult;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;import android.support.v7.app.AppCompatActivity;
+import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import android.support.v7.widget.Toolbar;
@@ -33,12 +34,12 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -47,16 +48,21 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class StoreMapActivity extends WimsActivity {
 
+    //TODO: Change this to better represent distance
+    private static final int maxDist = 25;
 
     // URL til map /api/store/ID/map
     public boolean isInFront = false;
     public boolean isScanning = false;
+    private boolean confident = false;
     public String store_id = "56e6a28a28c3e3314a6849df"; // The ID of føtex! :)
     public String base_url= "http://nielsema.ddns.net/sw8dev/api/store/";
     RequestQueue rqueue;
@@ -73,8 +79,10 @@ public class StoreMapActivity extends WimsActivity {
     float posX;
     float posY;
     ListView listResults;
-    final ArrayList<String> results = new ArrayList<>();
+    ArrayList<String> results = new ArrayList<>();
     ArrayAdapter<String> adapter;
+    private int maxDepth = 2;
+    HashMap<String, Double> marginalLikelihood = new HashMap<>();
 
     ArrayList<WimsPoints> mapData = new ArrayList<>();
     WimsPoints currentWimsPoint;
@@ -92,7 +100,6 @@ public class StoreMapActivity extends WimsActivity {
 
     /* Used for fingerprinting*/
     Thread fingerthread;
-    HashMap fingerPrint=new HashMap(3);
     WifiFingerprinter fingerprinter;
     static Handler mHandler;
 
@@ -111,9 +118,13 @@ public class StoreMapActivity extends WimsActivity {
         // Enable the Up button
         // ab.setDisplayHomeAsUpEnabled(true);
 
+
         if(getIntent().getStringExtra("storeId") != null) {
             this.store_id = getIntent().getStringExtra("storeId");
         }
+
+        //this.store_id = getIntent().getStringExtra("storeId");
+
         fragment = ShoppingListFragment.newInstance(store_id);
 
         FragmentManager manager = getFragmentManager();
@@ -126,7 +137,7 @@ public class StoreMapActivity extends WimsActivity {
         transaction.commit();
 
         // Set variables for gestures
-        Scale = new ScaleGestureDetector(this,new ScaleDetector());
+        Scale = new ScaleGestureDetector(this, new ScaleDetector());
 
         // Instantiate the Volley getRequest queue
         rqueue = Volley.newRequestQueue(this);
@@ -230,6 +241,16 @@ public class StoreMapActivity extends WimsActivity {
             }
         });
 
+        final Toast toast = Toast.makeText(StoreMapActivity.this, "", Toast.LENGTH_SHORT);
+
+        /*CommitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendMapData(mapData);
+                sendMarginalLikelihood();
+
+            }*/
+
         // Gets the map corresponding to the store ID
         fram =(FrameLayout) findViewById(R.id.MapFrame);
 
@@ -238,33 +259,17 @@ public class StoreMapActivity extends WimsActivity {
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message message) {
-                Toast.makeText(getApplicationContext(),"SCANNINGS COMPLETE",Toast.LENGTH_LONG).show();
-
+                toast.setText("SCANNING COMPLETE");
+                if (toast.getView().getWindowVisibility() == View.VISIBLE) {
+                    toast.cancel();
+                }
+                toast.show();
             }
         };
-
 
         WimsButton findMe = new WimsButton(getApplicationContext(), getResources().getDrawable(R.drawable.no_icon));
         findMe.setId(R.id.wims_action_bar_transition_start);
         addWimsButtonToActionBar(findMe, RIGHT);
-        findMe.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int count = fram.getChildCount() - 1;
-                for (int i = count; i > 0; i--) {
-                    fram.removeViewAt(i);
-                }
-
-                WimsPoints location = findNearestNeighbor(mapData);
-
-                if (location != null)
-                    fram.addView(posfac.getPositionOfFingerPrintPoint((int) location.x, (int) location.y));
-                else
-                    Toast.makeText(getApplicationContext(), "No location found", Toast.LENGTH_SHORT).show();
-
-            }
-        });
-
 
         WimsButton shoppingListButton = new WimsButton(getApplicationContext(), getResources().getDrawable(R.drawable.no_icon));
 
@@ -276,10 +281,33 @@ public class StoreMapActivity extends WimsActivity {
             @Override
             public void onClick(View v){
 
+
+                ArrayList<ScanResult> scanResults = fingerprinter.getFingerPrint();
+                scanResults = filterScanByKStrongest(scanResults, 3);
+                WimsPoints location = positioningUser(scanResults, mapData);
+
+                if(location != null) {
+                    if (confident) {
+                        fram.addView(posfac.getPositionOfFingerPrintPoint((int) location.x, (int) location.y));
+                        currentWimsPoint = location;
+                        maxDepth = 2;
+                        confident = false;
+                    } else if (findPointInNeighborChain(location, currentWimsPoint, 0, maxDepth,
+                               new ArrayList<WimsPoints>(), new ArrayList<WimsPoints>(),
+                               new ArrayList<WimsPoints>())){
+                        fram.addView(posfac.getPositionOfFingerPrintPoint((int) location.x, (int) location.y));
+                        currentWimsPoint = location;
+                        maxDepth = 2;
+                    } else {
+                        maxDepth++;
+                    }
+                }
+                else {
+                    maxDepth++;
+                }
+
             }
         });
-
-
     }
 
     @Override
@@ -323,7 +351,109 @@ public class StoreMapActivity extends WimsActivity {
 
     }
 
-    public void sendMapData(ArrayList<WimsPoints> mapData){
+
+    public ArrayList<ScanResult> filterScanByKStrongest(ArrayList<ScanResult> results, int k) {
+        ArrayList<ScanResult> retArray = new ArrayList<>();
+        int highestLevel;
+        ScanResult highestResult = null;
+
+        for (int i = 0; i < k; i++) {
+            highestLevel = -100;
+            for (ScanResult res : results) {
+                if (res != null && res.level > highestLevel) {
+                    highestResult = res;
+                    highestLevel = res.level;
+                }
+            }
+            retArray.add(highestResult);
+            results.remove(highestResult);
+        }
+        return sortScanAlphabetically(retArray);
+    }
+
+    public ArrayList<ScanResult> sortScanAlphabetically(ArrayList<ScanResult> results) {
+        ArrayList<ScanResult> retList = new ArrayList<>();
+
+        ScanResult tmpRes;
+        while (!results.isEmpty()) {
+            tmpRes = results.get(0);
+            for (int i = 0; i < results.size(); i++) {
+                if (results.get(i).BSSID.compareTo(tmpRes.BSSID) > 0) {
+                    tmpRes = results.get(i);
+                }
+            }
+            retList.add(tmpRes);
+            results.remove(tmpRes);
+        }
+        return retList;
+    }
+
+    public ArrayList<String> sortStringAlphabetically(ArrayList<String> strs) {
+        ArrayList<String> retList = new ArrayList<>();
+
+        String tmpRes;
+        while (!strs.isEmpty()) {
+            tmpRes = strs.get(0);
+            for (int i = 0; i < strs.size(); i++) {
+                if (strs.get(i).compareTo(tmpRes) > 0) {
+                    tmpRes = strs.get(i);
+                }
+            }
+            retList.add(tmpRes);
+            strs.remove(tmpRes);
+        }
+        return retList;
+    }
+
+    public void sendMarginalLikelihood() {
+        computeMarginalLikelihood();
+        String url = base_url + store_id;
+        JSONArray tosend = null;
+        try {
+            tosend = wrapLikelihoodInJson(marginalLikelihood);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonArrayRequest jsObjRequest = new JsonArrayRequest
+                (Request.Method.PUT, url, tosend, new Response.Listener<JSONArray>() {
+
+                    @Override
+                    public void onResponse(JSONArray response) {
+
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+
+                    }
+                });
+
+        rqueue.add(jsObjRequest);
+    }
+
+    public JSONArray wrapLikelihoodInJson(HashMap<String, Double> marginalLikelihood) throws JSONException {
+        JSONArray array = new JSONArray();
+        JSONObject obj;
+
+        Iterator it = marginalLikelihood.entrySet().iterator();
+        Map.Entry pair;
+
+        while (it.hasNext()) {
+            pair = (Map.Entry) it.next();
+            obj  = new JSONObject();
+            obj.put("configuration", pair.getKey());
+            obj.put("likelihood", pair.getValue());
+            array.put(obj);
+        }
+
+        return array;
+    }
+
+    public void sendMapData(ArrayList<WimsPoints> mapData)
+    {
 
         JSONObject tosend = constructJson(mapData);
         Log.w("WIMS", tosend.toString());
@@ -787,6 +917,7 @@ public class StoreMapActivity extends WimsActivity {
         JSONObject Jsonpointdata;
         JSONArray neighbors;
         JSONArray fingerprint;
+        JSONArray probabilities;
 
 
         try {
@@ -796,24 +927,37 @@ public class StoreMapActivity extends WimsActivity {
                 Jsonpointdata = new JSONObject();
                 neighbors = new JSONArray();
                 fingerprint = new JSONArray();
+                probabilities = new JSONArray();
                 //Jsonpointdata.put("_id",i);
                 Jsonpointdata.put("x",point.get(i).x);
                 Jsonpointdata.put("y",point.get(i).y);
 
-
-                if(point.get(i).fingerprint != null) {
-                    Iterator it = point.get(i).fingerprint.entrySet().iterator();
-                    if (it.hasNext()) {
-                        while (it.hasNext()) {
-                            HashMap.Entry pair = (HashMap.Entry) it.next();
-                            JSONObject print = new JSONObject();
-                            print.put(pair.getKey().toString(), pair.getValue());
-                            fingerprint.put(print);
-                        }
+                Iterator it;
+                HashMap.Entry pair;
+                if(!point.get(i).fingerprint.isEmpty()) {
+                    it = point.get(i).fingerprint.entrySet().iterator();
+                    while (it.hasNext()) {
+                        pair = (HashMap.Entry) it.next();
+                        JSONObject print = new JSONObject();
+                        print.put("bssid", pair.getKey().toString());
+                        print.put("rssi", pair.getValue());
+                        fingerprint.put(print);
                     }
                 }
                 Jsonpointdata.put("neighbors",neighbors);
                 Jsonpointdata.put("fingerprint",fingerprint);
+
+                if (!point.get(i).getProbabilityDistribution().isEmpty()) {
+                    it = point.get(i).getProbabilityDistribution().entrySet().iterator();
+                    while (it.hasNext()) {
+                        JSONObject prob = new JSONObject();
+                        pair = (HashMap.Entry) it.next();
+                        prob.put("configuration", pair.getKey().toString());
+                        prob.put("probability", pair.getValue());
+                        probabilities.put(prob);
+                    }
+                }
+                Jsonpointdata.put("probabilities", probabilities);
                 pointArray.put(Jsonpointdata);
 
 
@@ -904,8 +1048,15 @@ public class StoreMapActivity extends WimsActivity {
 
         ArrayList<WimsPoints> mapdata = new ArrayList<>();
         try {
+            WimsPoints point;
             for (int i = 0; i < array.length(); i++) {
-                mapdata.add(new WimsPoints(array.getJSONObject(i).getInt("x"), array.getJSONObject(i).getInt("y")));
+                point = new WimsPoints(array.getJSONObject(i).getInt("x"), array.getJSONObject(i).getInt("y"));
+                JSONArray probability = array.getJSONObject(i).getJSONArray("probabilities");
+                for (int n = 0; n < probability.length(); n++) {
+                    point.setProbabilityDistributions(probability.getJSONObject(n).getString("configuration"),
+                                                     (float) probability.getJSONObject(n).getDouble("probability"));
+                }
+                mapdata.add(point);
             }
             for(int i = 0;i<array.length();i++ ){
                 // Get Neighbor data
@@ -971,51 +1122,59 @@ public class StoreMapActivity extends WimsActivity {
 
                 while(true) {
                     while (isScanning) {
-                        HashMap<String, ArrayList<Integer>> fingerPrintTemp = new HashMap<>(3);
-                        HashMap<String, Integer> finishedHashMap = new HashMap<>(3);
-                        ArrayList<Integer> temparray0 = new ArrayList<>();
-                        ArrayList<Integer> temparray1 = new ArrayList<>();
-                        ArrayList<Integer> temparray2 = new ArrayList<>();
+                        HashMap<String, ArrayList<Float>> fingerPrintTemp = new HashMap<>();
+                        HashMap<String, Float> finishedFingerprint = new HashMap<>();
+                        ArrayList<String> configuration = new ArrayList<>();
 
-                        ScanResult[] scanres;
+                        ArrayList<ScanResult> scanres;
                         scanres = fingerprinter.getFingerPrint();
 
-                        fingerPrintTemp.put(scanres[0].BSSID, temparray0);
-                        fingerPrintTemp.put(scanres[1].BSSID, temparray1);
-                        fingerPrintTemp.put(scanres[2].BSSID, temparray2);
-
-                        fingerPrintTemp.get(scanres[0].BSSID).add(scanres[0].level);
-                        fingerPrintTemp.get(scanres[1].BSSID).add(scanres[1].level);
-                        fingerPrintTemp.get(scanres[2].BSSID).add(scanres[2].level);
-
-                        for (int i = 0; i < 5; i++) {
+                        for (ScanResult res : scanres) {
+                            if (res != null) {
+                                fingerPrintTemp.put(res.BSSID, new ArrayList<Float>());
+                            }
+                        }
+                        int measurements;
+                        for (measurements = 0; measurements < 20; measurements++) {
                             try {
                                 Thread.sleep(1000);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
                             scanres = fingerprinter.getFingerPrint();
-
-                            for (int x = 0; x < scanres.length; x++) {
-                                if (fingerPrintTemp.containsKey(scanres[x].BSSID)) {
-                                    fingerPrintTemp.get(scanres[x].BSSID).add(scanres[x].level);
+                            for (ScanResult res : scanres) {
+                                if (res != null && fingerPrintTemp.containsKey(res.BSSID)) {
+                                    fingerPrintTemp.get(res.BSSID).add((float) res.level);
                                 }
                             }
+                            scanres = filterScanByKStrongest(scanres, 3);
+                            configuration.add(concatBSSIDs(scanres));
                         }
 
                         Iterator it = fingerPrintTemp.entrySet().iterator();
                         while (it.hasNext()) {
-                            int total = 0;
                             HashMap.Entry pair = (HashMap.Entry) it.next();
+                            float total = 0;
                             for (int y = 0; y < fingerPrintTemp.get(pair.getKey()).size(); y++) {
                                 total = total + fingerPrintTemp.get(pair.getKey()).get(y);
                             }
-
-                            finishedHashMap.put(pair.getKey().toString(), total / fingerPrintTemp.get(pair.getKey()).size());
+                            finishedFingerprint.put((String) pair.getKey(), (total / (float) fingerPrintTemp.get(pair.getKey()).size()));
                         }
 
-                        fingerPrint = finishedHashMap;
-                        currentWimsPoint.fingerprint = finishedHashMap;
+                        ArrayList<String> tmpList = new ArrayList<>();
+                        while (!configuration.isEmpty()) {
+                            tmpList.add(configuration.get(0));
+                            for (int n = 1; n < configuration.size(); n++) {
+                                if (configuration.get(n).equalsIgnoreCase(tmpList.get(0))) {
+                                    tmpList.add(configuration.get(n));
+                                }
+                            }
+                            currentWimsPoint.setProbabilityDistributions(tmpList.get(0), ((float) tmpList.size() / (float) measurements));
+                            configuration.removeAll(tmpList);
+                            tmpList.clear();
+                        }
+
+                        currentWimsPoint.fingerprint = finishedFingerprint;
                         Message message = mHandler.obtainMessage();
                         message.sendToTarget();
                         isScanning = false;
@@ -1024,6 +1183,21 @@ public class StoreMapActivity extends WimsActivity {
             }
         });
 
+    }
+    public String concatBSSIDs(ArrayList<ScanResult> results) {
+        String retString = "";
+        for (ScanResult res : results) {
+            retString = retString + res.BSSID;
+        }
+        return retString;
+    }
+
+    public String concatStrings(List<String> strs) {
+        String retString = "";
+        for (String res : strs) {
+            retString = retString + res;
+        }
+        return retString;
     }
 
     /***
@@ -1057,70 +1231,26 @@ public class StoreMapActivity extends WimsActivity {
     /***
      * A simple nearest neighbor algorithm for positioning
      * @param mapData The data of the map
-     * @return The point that the scan indicates is the nearest.
+     * @param k The number of neighbors we want to return
+     * @param scanResult The scan from where we want the nearest fingerprints
+     * @return The points that the scan indicates is the nearest.
      */
-    public WimsPoints findNearestNeighbor(ArrayList<WimsPoints> mapData){
+    public ArrayList<WimsPoints> kNearestNeighbor(ArrayList<WimsPoints> mapData, int k, ArrayList<ScanResult> scanResult){
 
-        ScanResult[] scanresult = fingerprinter.getFingerPrint();
+        ArrayList<WimsPoints> nearestNeighbors = new ArrayList<>();
 
-        WimsPoints three_hit_nearestLocation = null;
-        WimsPoints two_hit_nearestLocation = null;
-        WimsPoints one_hit_nearestLocation = null;
-        double three_hit_distance = Double.POSITIVE_INFINITY;
-        double two_hit_distance = Double.POSITIVE_INFINITY;;
-        double one_hit_distnace = Double.POSITIVE_INFINITY;;
-        double three_hit_tempdistance = 0;
-        double two_hit_tempdistance = 0;
-        double one_hit_tempdistance = 0;
-
-        for(int i = 0; i < mapData.size(); i++){
-            if(mapData.get(i).fingerprint != null){
-
-                if(mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) && mapData.get(i).fingerprint.containsKey(scanresult[1].BSSID) &&mapData.get(i).fingerprint.containsKey(scanresult[2].BSSID))
-                {
-                    three_hit_tempdistance = DistanceBetweenScanAndPoint(mapData.get(i),scanresult);
-                    if(three_hit_tempdistance < three_hit_distance){
-                        three_hit_distance = three_hit_tempdistance;
-                        three_hit_nearestLocation = mapData.get(i);
-                    }
-                } else if(mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) && mapData.get(i).fingerprint.containsKey(scanresult[1].BSSID) ||
-                        mapData.get(i).fingerprint.containsKey(scanresult[1].BSSID) && mapData.get(i).fingerprint.containsKey(scanresult[2].BSSID) ||
-                        mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) && mapData.get(i).fingerprint.containsKey(scanresult[2].BSSID))
-                {
-                    two_hit_tempdistance = DistanceBetweenScanAndPoint(mapData.get(i),scanresult);
-                    if(two_hit_tempdistance < two_hit_distance)
-                    {
-                        two_hit_distance = two_hit_tempdistance;
-                        two_hit_nearestLocation = mapData.get(i);
-                    }
-                } else if (mapData.get(i).fingerprint.containsKey(scanresult[0].BSSID) || mapData.get(i).fingerprint.containsKey(scanresult[1].BSSID) || mapData.get(i).fingerprint.containsKey(scanresult[2].BSSID)){
-
-                    one_hit_tempdistance = DistanceBetweenScanAndPoint(mapData.get(i),scanresult);
-
-                    if(one_hit_tempdistance < one_hit_distnace){
-                        one_hit_distnace = one_hit_tempdistance;
-                        one_hit_nearestLocation = mapData.get(i);
-                    }
-                }
+        int i = 0;
+        for (WimsPoints point : mapData) {
+            if (!point.fingerprint.isEmpty() && DistanceBetweenScanAndPoint(point, scanResult) <= maxDist) {
+                nearestNeighbors.add(point);
+                i++;
             }
-
+            if (i > k - 1) {
+                break;
+            }
         }
 
-        if(three_hit_nearestLocation != null)
-        {
-            return three_hit_nearestLocation;
-        }
-        else if(two_hit_nearestLocation != null)
-        {
-            return two_hit_nearestLocation;
-        }
-        else if( one_hit_nearestLocation != null)
-        {
-            return one_hit_nearestLocation;
-        }
-        else return null;
-
-
+        return nearestNeighbors;
     }
 
     /***
@@ -1129,20 +1259,149 @@ public class StoreMapActivity extends WimsActivity {
      * @param scanresult The scan that has been received
      * @return the distance between scan and point
      */
-    public double DistanceBetweenScanAndPoint(WimsPoints point, ScanResult[] scanresult){
+    public double DistanceBetweenScanAndPoint(WimsPoints point, ArrayList<ScanResult> scanresult){
 
-        double[] vec = {0,0,0};
+        ArrayList<Double> vec = new ArrayList<>();
         double distance = 0;
 
 
-        for(int i = 0; i <scanresult.length; i++){
-            if(point.fingerprint.containsKey(scanresult[i].BSSID))
-            vec[i] = Math.abs(scanresult[i].level - point.fingerprint.get(scanresult[i].BSSID));
-            else vec[i] = 0;
+        for(int i = 0; i <scanresult.size(); i++){
+            if(scanresult.get(i) != null && point.fingerprint.containsKey(scanresult.get(i).BSSID))
+            vec.add((double) Math.abs(scanresult.get(i).level - point.fingerprint.get(scanresult.get(i).BSSID)));
+            else vec.add(0.0);
         }
 
-        distance = Math.sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2] * vec[2]);
+        for (double d : vec) {
+            distance = distance + Math.pow(d, 2);
+        }
+
+        distance = Math.sqrt(distance);
+
+        point.setPriori(1/(distance+1));
 
         return distance;
+    }
+
+    public boolean findPointInNeighborChain(WimsPoints goal, WimsPoints current, int layer,
+                                            int maxDepth, ArrayList<WimsPoints> pointsInCurrentLayer,
+                                            ArrayList<WimsPoints> visited, ArrayList<WimsPoints> pointsInNextLayer) {
+        if (layer <= maxDepth) {
+            ArrayList<WimsPoints> neighbors = current.Neighbours;
+
+            if (!neighbors.isEmpty()) {
+                for (WimsPoints neighbor : neighbors) {
+                    if (visited.contains(neighbor)) {
+                        continue;
+                    }
+                    if (neighbor.equals(goal)) {
+                        return true;
+                    }
+                    pointsInNextLayer.add(neighbor);
+                    visited.add(neighbor);
+                }
+                if (!pointsInCurrentLayer.isEmpty()) {
+                    current = pointsInCurrentLayer.get(0);
+                    pointsInCurrentLayer.remove(0);
+                    return findPointInNeighborChain(goal, current, layer, maxDepth, pointsInCurrentLayer, visited, pointsInNextLayer);
+                } else {
+                    return findPointInNeighborChain(goal, current, layer + 1, maxDepth, pointsInNextLayer, visited, new ArrayList<WimsPoints>());
+                }
+            } else if (!pointsInCurrentLayer.isEmpty()){
+                current = pointsInCurrentLayer.get(0);
+                pointsInCurrentLayer.remove(0);
+                return findPointInNeighborChain(goal, current, layer, maxDepth, pointsInCurrentLayer, visited, pointsInNextLayer);
+            } else if (!pointsInNextLayer.isEmpty()){
+                current = pointsInNextLayer.get(0);
+                pointsInNextLayer.remove(0);
+                return findPointInNeighborChain(goal, current, layer + 1, maxDepth, pointsInNextLayer, visited, new ArrayList<WimsPoints>());
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    public void computeMarginalLikelihood() {
+        ArrayList<String> bssids = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.test_bssid)));
+        bssids = sortStringAlphabetically(bssids);
+
+        ArrayList<String> configurations = new ArrayList<>();
+        ArrayList<String> tmpConfig = new ArrayList<>();
+        String tmpBssid;
+
+        for (int i = 0; i < bssids.size() - 2; i++) {
+            tmpConfig.add(bssids.get(i));
+            for (int n = i+1; n < bssids.size() - 1; n++) {
+                tmpConfig.add(bssids.get(n));
+                for (int k = n+1; k < bssids.size(); k++) {
+                    tmpConfig.add(bssids.get(k));
+                    tmpBssid = concatStrings(tmpConfig);
+                    if (!configurations.contains(tmpBssid)) {
+                        configurations.add(tmpBssid);
+                    }
+                    tmpConfig.remove(2);
+                }
+                tmpConfig.remove(1);
+            }
+            tmpConfig.remove(0);
+        }
+
+        double likelihood = 0;
+        for (String str : configurations) {
+            for (int i = 0; i < mapData.size(); i++) {
+                if (mapData.get(i).getProbabilityDistribution().containsKey(str)) {
+                    likelihood += mapData.get(i).getProbabilityDistribution().get(str);
+                }
+            }
+            if (likelihood != 0) {
+                marginalLikelihood.put(str, (likelihood / mapData.size()));
+                likelihood = 0;
+            }
+        }
+    }
+
+    /**
+     * This algorithm returns the WimsPoint that the user is most likely closest to
+     * @param scanResults The last scan result
+     * @param mapData The list of WimsPoints in the map
+     * @return The point the user is most likely closest to
+     */
+    public WimsPoints positioningUser(ArrayList<ScanResult> scanResults, ArrayList<WimsPoints> mapData) {
+        ArrayList<WimsPoints> candidates = kNearestNeighbor(mapData, 10, scanResults);
+
+        ArrayList<Float> candidateLikelihood = new ArrayList<>();
+
+        String tmpKey = concatBSSIDs(scanResults);
+        double normaliser = marginalLikelihood.get(tmpKey) != 0 ? marginalLikelihood.get(tmpKey) : 1;
+        for (int i = 0; i < candidates.size(); i++) {
+            candidateLikelihood.add((float) 0);
+            if (candidates.get(i).getProbabilityDistribution().containsKey(tmpKey)) {
+                candidateLikelihood.set(i, candidates.get(i).getProbabilityDistribution().get(tmpKey));
+            }
+        }
+
+        double posterior;
+        double highestPosterior = 0;
+        WimsPoints returnPoint = new WimsPoints();
+
+        for (int i = 0; i < candidates.size(); i++) {
+            posterior = ((candidateLikelihood.get(i) * candidates.get(i).getPriori()) / normaliser);
+            if (posterior > highestPosterior) {
+                returnPoint = candidates.get(i);
+                highestPosterior = posterior;
+            }
+        }
+
+        if (highestPosterior != 0) {
+            if (highestPosterior > 0.8) {
+                confident = true;
+                return returnPoint;
+            } else {
+                return returnPoint;
+            }
+        } else {
+            return null;
+        }
     }
 }

@@ -51,7 +51,7 @@ public class CurrentItemTest {
         try{
            String jsonString=activity.getResources().getString(R.string.shop_json);
             JSONObject dummyJson=new JSONObject(jsonString);
-            JSONContainer.extractProductInformationFromJson(dummyJson);
+            JSONContainer.extractProductInformationFromJson(dummyJson, activity);
         }
         catch(JSONException e){
             e.printStackTrace();

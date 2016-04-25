@@ -6,18 +6,16 @@ import android.net.wifi.WifiManager;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Created by kbrod on 30/03/2016.
  * Class that is to be used to get a WIFI fingerprint
  */
 public class WifiFingerprinter{
-
-    WifiManager wifiM;
     Context context;
-    List<ScanResult> Scannings;
 
     public WifiFingerprinter(Context con){
 
@@ -27,51 +25,35 @@ public class WifiFingerprinter{
     }
 
 
-    public ScanResult[] getFingerPrint(){
+    public ArrayList<ScanResult> getFingerPrint(){
 
-        HashMap<String,Integer> fingerPrintHashMap = new HashMap<>(3);
-        ScanResult fingerPrint[] = new ScanResult[3];
-        ScanResult tempScan;
-        wifiM = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiM = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 
+        ArrayList<ScanResult> Scannings = new ArrayList<>();
 
+        if(wifiM.startScan()) {
 
-        if(wifiM.startScan()){
-
-            Scannings = wifiM.getScanResults();
-            fingerPrint[0] = Scannings.get(0);
-            fingerPrint[1] = Scannings.get(1);
-            fingerPrint[2] = Scannings.get(2);
-
-
-            for(int i = 3; i < Scannings.size() ; i++) {
-                tempScan = Scannings.get(i);
-                int n = 0;
-
-                for (ScanResult s : fingerPrint) {
-
-                    if (s.level < tempScan.level) {
-                        fingerPrint[n] = s;
-
-                    }
-                    n++;
-                }
-            }
-        }
-        else
-        {
-            Toast.makeText(context,"No results available", Toast.LENGTH_SHORT).show();
+            Scannings.addAll(wifiM.getScanResults());
+            Scannings = filterScanResults(Scannings);
+        } else {
+            Toast.makeText(context, "There were no wifi signals", Toast.LENGTH_SHORT).show();
             return null;
         }
 
-        fingerPrintHashMap.put(fingerPrint[0].BSSID, fingerPrint[0].level);
-        fingerPrintHashMap.put(fingerPrint[1].BSSID, fingerPrint[1].level);
-        fingerPrintHashMap.put(fingerPrint[2].BSSID, fingerPrint[2].level);
-
-
-        return fingerPrint;
+        return Scannings;
 
     }
 
 
+    public ArrayList<ScanResult> filterScanResults(ArrayList<ScanResult> in) {
+        //TODO: Change the resource later
+        List<String> filter = Arrays.asList(context.getResources().getStringArray(R.array.test_bssid));
+        ArrayList<ScanResult> tmpArray = new ArrayList<>();
+        for (ScanResult result : in) {
+            if (filter.contains(result.BSSID)) {
+                tmpArray.add(result);
+            }
+        }
+        return tmpArray;
+    }
 }

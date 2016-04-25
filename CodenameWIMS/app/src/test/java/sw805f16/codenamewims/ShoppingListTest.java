@@ -54,7 +54,7 @@ public class ShoppingListTest {
         try {
             dummyJson = new JSONObject(jsonString);
             //We extract the information from the JSONObject to fill the products HashMap
-            JSONContainer.extractProductInformationFromJson(dummyJson);
+            JSONContainer.extractProductInformationFromJson(dummyJson, testFragment.getContext());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -119,7 +119,7 @@ public class ShoppingListTest {
                     "  \"products\": []\n" +
                     "}";
                 JSONObject newJson = new JSONObject(newJsonString);
-            JSONContainer.extractProductInformationFromJson(newJson);
+            JSONContainer.extractProductInformationFromJson(newJson,testFragment.getContext());
         } catch (JSONException e) {
             e.printStackTrace();
         }
