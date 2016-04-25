@@ -35,7 +35,7 @@ import java.util.Map;
  *
  * */
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends WimsActivity {
 
     HashMap<String, String> stores = new HashMap<>();
     JSONArray json;
@@ -46,16 +46,12 @@ public class MainActivity extends AppCompatActivity {
     String storeId;
     boolean pickedSuggestion = false;
     Parcelable fragmentState;
-    private Toolbar toolbar;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // When refactoring, change to activity_start_screen layoutet.
-
-        toolbar = (Toolbar)findViewById(R.id.app_bar);
-        setSupportActionBar(toolbar);
 
         if (getIntent().getParcelableExtra("state") != null) {
             fragmentState = getIntent().getParcelableExtra("state");

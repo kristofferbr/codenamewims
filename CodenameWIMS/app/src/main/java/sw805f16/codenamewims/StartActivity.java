@@ -11,11 +11,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-<<<<<<< HEAD
-=======
+
 import android.os.Parcelable;
 import android.support.v7.widget.Toolbar;
->>>>>>> c4c25ebaf9ed746018640e03a2e19f3db87887b5
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -29,8 +27,6 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-<<<<<<< HEAD
-=======
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -45,7 +41,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
->>>>>>> c4c25ebaf9ed746018640e03a2e19f3db87887b5
 import java.util.zip.Inflater;
 
 
@@ -88,15 +83,13 @@ public class StartActivity extends Activity {
         chooseStoreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-<<<<<<< HEAD
                 open(v);
                 
                 //Replace with code
-                storeID = 1;            }
-=======
+                storeId = "1";
+
                 displayAlertDialog();
             }
->>>>>>> c4c25ebaf9ed746018640e03a2e19f3db87887b5
         });
 
         storemapButton.setOnClickListener(new View.OnClickListener() {
@@ -130,21 +123,21 @@ public class StartActivity extends Activity {
             }
         });
     }
-<<<<<<< HEAD
+
     public void open(View view){
-        Dialog dialog = new Dialog(this);
-        final LayoutInflater inflater = new LayoutInflater(this) {
-            @Override
-            public LayoutInflater cloneInContext(Context newContext) {
+            Dialog dialog=new Dialog(this);
+        final LayoutInflater inflater=new LayoutInflater(this){
+        @Override
+        public LayoutInflater cloneInContext(Context newContext){
 
 
-                return null;
-            }
+        return null;
+        }
         };
         dialog.setContentView(R.layout.dialog_choose_store);
 
         dialog.show();
-=======
+        }
 
     /**
      * This method is responsible for initializing the views on the
@@ -298,8 +291,9 @@ public class StartActivity extends Activity {
         AlertDialog.Builder ad = new AlertDialog.Builder(context);
         ad.setTitle(title);
         //ad.setMessage(message);
-        ad.setView(R.layout.dialog_choose_store); // This only support API 21 and up.
-
+        LayoutInflater inflater =(LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View v = inflater.inflate(R.layout.dialog_choose_store, null);
+        ad.setView(v);
 
         ad.setPositiveButton(
                 button1String,
@@ -321,7 +315,5 @@ public class StartActivity extends Activity {
 
         //
         ad.show();
-
->>>>>>> c4c25ebaf9ed746018640e03a2e19f3db87887b5
     }
 }
