@@ -36,6 +36,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -43,12 +44,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class StoreMapActivity extends AppCompatActivity {
 
@@ -77,7 +78,7 @@ public class StoreMapActivity extends AppCompatActivity {
     float posX;
     float posY;
     ListView listResults;
-    final ArrayList<String> results = new ArrayList<>();
+    ArrayList<String> results = new ArrayList<>();
     ArrayAdapter<String> adapter;
     private int maxDepth = 2;
     HashMap<String, Double> marginalLikelihood = new HashMap<>();
@@ -93,7 +94,6 @@ public class StoreMapActivity extends AppCompatActivity {
     int endY =0;
     boolean start = true;
     private Toolbar toolbar;
-
 
     ShoppingListFragment fragment;
 
@@ -329,12 +329,13 @@ public class StoreMapActivity extends AppCompatActivity {
         });
 
 
-
+        final Toast toast = Toast.makeText(StoreMapActivity.this, "", Toast.LENGTH_SHORT);
 
         CommitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendMapData(mapData);
+                sendMarginalLikelihood();
             }
         });
 
@@ -396,8 +397,6 @@ public class StoreMapActivity extends AppCompatActivity {
 
         getMapLayout();
 
-        final Toast toast = Toast.makeText(StoreMapActivity.this, "", Toast.LENGTH_SHORT);
-
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message message) {
@@ -409,7 +408,6 @@ public class StoreMapActivity extends AppCompatActivity {
             }
         };
 
-
         final Button findMe = (Button) findViewById(R.id.findme);
         findMe.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -419,7 +417,6 @@ public class StoreMapActivity extends AppCompatActivity {
                 {
                     fram.removeViewAt(i);
                 }
-                computeMarginalLikelihood();
                 ArrayList<ScanResult> scanResults = fingerprinter.getFingerPrint();
                 scanResults = filterScanByKStrongest(scanResults, 3);
                 WimsPoints location = positioningUser(scanResults, mapData);
@@ -525,13 +522,13 @@ public class StoreMapActivity extends AppCompatActivity {
         return retList;
     }
 
-    public List<String> sortStringAlphabetically(List<String> strs) {
-        List<String> retList = new ArrayList<>();
+    public ArrayList<String> sortStringAlphabetically(ArrayList<String> strs) {
+        ArrayList<String> retList = new ArrayList<>();
 
         String tmpRes;
-        while (!results.isEmpty()) {
+        while (!strs.isEmpty()) {
             tmpRes = strs.get(0);
-            for (int i = 0; i < results.size(); i++) {
+            for (int i = 0; i < strs.size(); i++) {
                 if (strs.get(i).compareTo(tmpRes) > 0) {
                     tmpRes = strs.get(i);
                 }
@@ -542,6 +539,52 @@ public class StoreMapActivity extends AppCompatActivity {
         return retList;
     }
 
+    public void sendMarginalLikelihood() {
+        computeMarginalLikelihood();
+        String url = base_url + store_id;
+        JSONArray tosend = null;
+        try {
+            tosend = wrapLikelihoodInJson(marginalLikelihood);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonArrayRequest jsObjRequest = new JsonArrayRequest
+                (Request.Method.PUT, url, tosend, new Response.Listener<JSONArray>() {
+
+                    @Override
+                    public void onResponse(JSONArray response) {
+
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+
+                    }
+                });
+
+        rqueue.add(jsObjRequest);
+    }
+
+    public JSONArray wrapLikelihoodInJson(HashMap<String, Double> marginalLikelihood) throws JSONException {
+        JSONArray array = new JSONArray();
+        JSONObject obj;
+
+        Iterator it = marginalLikelihood.entrySet().iterator();
+        Map.Entry pair;
+
+        while (it.hasNext()) {
+            pair = (Map.Entry) it.next();
+            obj  = new JSONObject();
+            obj.put("configuration", pair.getKey());
+            obj.put("likelihood", pair.getValue());
+            array.put(obj);
+        }
+
+        return array;
+    }
 
     public void sendMapData(ArrayList<WimsPoints> mapData)
     {
@@ -1446,7 +1489,7 @@ public class StoreMapActivity extends AppCompatActivity {
     }
 
     public void computeMarginalLikelihood() {
-        List<String> bssids = Arrays.asList(getResources().getStringArray(R.array.test_bssid));
+        ArrayList<String> bssids = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.test_bssid)));
         bssids = sortStringAlphabetically(bssids);
 
         ArrayList<String> configurations = new ArrayList<>();
@@ -1460,12 +1503,14 @@ public class StoreMapActivity extends AppCompatActivity {
                 for (int k = n+1; k < bssids.size(); k++) {
                     tmpConfig.add(bssids.get(k));
                     tmpBssid = concatStrings(tmpConfig);
-                    configurations.add(tmpBssid);
-                    tmpConfig.remove(k);
+                    if (!configurations.contains(tmpBssid)) {
+                        configurations.add(tmpBssid);
+                    }
+                    tmpConfig.remove(2);
                 }
-                tmpConfig.remove(n);
+                tmpConfig.remove(1);
             }
-            tmpConfig.remove(i);
+            tmpConfig.remove(0);
         }
 
         double likelihood = 0;
@@ -1475,7 +1520,10 @@ public class StoreMapActivity extends AppCompatActivity {
                     likelihood += mapData.get(i).getProbabilityDistribution().get(str);
                 }
             }
-            marginalLikelihood.put(str, (likelihood / mapData.size()));
+            if (likelihood != 0) {
+                marginalLikelihood.put(str, (likelihood / mapData.size()));
+                likelihood = 0;
+            }
         }
     }
 
