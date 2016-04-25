@@ -26,7 +26,120 @@
         \"description\": \"Netto – Derfor\",
         \"products\": []
         }]</string>
-    
+
+    <string name="global_json">
+                   [{
+                     \"_id\": \"1\",
+                     \"product\": {
+                       \"_id\": \"2\",
+                       \"name\": \"Milk\",
+                       \"description\": \"Put it on cereal, drink it, or take a bath. Do whatever you want with it, you baught it!\"
+                     },
+                     \"__v\": 0,
+                     \"location\": {
+                       \"x\": 250,
+                       \"y\": 18
+                     }
+                   },
+                   {
+                     \"_id\": \"3\",
+                     \"product\": {
+                       \"_id\": \"4\",
+                       \"name\": \"Minced Beef\",
+                       \"description\": \"Slaughtered cow cut into tiny pieces\"
+                     },
+                     \"__v\": 0,
+                     \"location\": {
+                       \"x\": 125,
+                       \"y\": 90
+                     }
+                   },
+                   {
+                     \"_id\": \"5\",
+                     \"product\": {
+                       \"_id\": \"6\",
+                       \"name\": \"Ost\",
+                       \"description\": \"Det lugter\",
+                       \"__v\": 0
+                     },
+                     \"__v\": 0,
+                     \"location\": {
+                       \"x\": 320,
+                       \"y\": 18
+                     }
+                   } ,
+                   {
+                     \"_id\": \"7\",
+                     \"product\": {
+                       \"_id\": \"8\",
+                       \"name\": \"Butter\",
+                       \"description\": \"For my Biscuit\",
+                       \"__v\": 0
+                     },
+                     \"__v\": 0,
+                     \"location\": {
+                       \"x\": 280,
+                       \"y\": 18
+                     }
+                   } ,
+                   {
+                     \"_id\": \"9\",
+                     \"product\": {
+                       \"_id\": \"10\",
+                       \"name\": \"Rye Bread\",
+                       \"description\": \" \",
+                       \"__v\": 0
+                     },
+                     \"__v\": 0,
+                     \"location\": {
+                       \"x\": 400,
+                       \"y\": 200
+                     }
+                   } ,
+                   {
+                     \"_id\": \"11\",
+                     \"product\": {
+                       \"_id\": \"12\",
+                       \"name\": \"Mackerel In Tomato\",
+                       \"description\": \"fisk i tomat\",
+                       \"__v\": 0
+                     },
+                     \"__v\": 0,
+                     \"location\": {
+                       \"x\": 250,
+                       \"y\": 100
+                     }
+                   },
+                   {
+                     \"_id\": \"13\",
+                     \"product\": {
+                       \"_id\": \"14\",
+                       \"name\": \"Liver Paste\",
+                       \"description\": \"Noget alle Danskere kan lide\",
+                       \"__v\": 0
+                     },
+                     \"__v\": 0,
+                     \"location\": {
+                       \"x\": 200,
+                       \"y\": 50
+                     }
+                   },
+                   {
+                     \"_id\": \"15\",
+                     \"product\": {
+                       \"_id\": \"16\",
+                       \"name\": \"Egg\",
+                       \"description\": \"Fra høns\",
+                       \"__v\": 0
+                     },
+                     \"__v\": 0,
+                     \"location\": {
+                       \"x\": 300,
+                       \"y\": 18
+                     }
+                   }]
+    </string>
+
     <string name="shop_json">
        { 
                  \"_id\": \"56e6a28a28c3e3314a6849df\", 

@@ -28,7 +28,7 @@ public abstract class SearchRanking {
         //Here we iterate through the search set
         for (int i = 0; i < searchSet.size(); i++) {
             key = searchSet.get(i);
-            ranks.put(key, levenshtein.similarity(query, key));
+            ranks.put(key, levenshtein.similarity(query.toLowerCase(), key.toLowerCase()));
         }
 
         double highest;

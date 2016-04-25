@@ -136,7 +136,7 @@ public class ShoppingListFragment extends Fragment {
         String url = "http://nielsema.ddns.net/sw8/api/store/" + storeId + "/products/";
         RequestQueue queue = Volley.newRequestQueue(getActivity().getApplicationContext());
 
-        JSONContainer.getRequest(queue, url);
+        JSONContainer.getRequest(queue, url, getActivity().getApplicationContext());
 
         //Then we return the view
         return mView;
@@ -193,7 +193,7 @@ public class ShoppingListFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                populateSuggestionList(s.toString());
+                //populateSuggestionList(s.toString());
             }
         });
 
@@ -330,7 +330,7 @@ public class ShoppingListFragment extends Fragment {
         String url = "http://nielsema.ddns.net/sw8/api/store/" + storeId + "/products/";
         RequestQueue queue = Volley.newRequestQueue(getActivity().getApplicationContext());
 
-        JSONContainer.getRequest(queue, url);
+        JSONContainer.getRequest(queue, url, getActivity().getApplicationContext());
     }
 
     /**
@@ -344,7 +344,7 @@ public class ShoppingListFragment extends Fragment {
             String url = "http://nielsema.ddns.net/sw8/api/store/" + id + "/products/";
             RequestQueue queue = Volley.newRequestQueue(getActivity().getApplicationContext());
 
-            JSONContainer.getRequest(queue, url);
+            JSONContainer.getRequest(queue, url, getActivity().getApplicationContext());
 
             LinearItemLayout item;
             TextView tmpText;

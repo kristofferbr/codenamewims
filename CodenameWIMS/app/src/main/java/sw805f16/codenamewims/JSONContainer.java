@@ -1,5 +1,7 @@
 package sw805f16.codenamewims;
 
+import android.content.Context;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -17,16 +19,47 @@ import java.util.ArrayList;
  */
 public final class JSONContainer {
     static ArrayList<WimsPoints> products = new ArrayList<>();
+    static JSONArray dummyJson;
+
+    public static void populateWithGlobalInformation(Context context){
+        String jsonString = context.getResources().getString(R.string.global_json);
+        String key = "";
+        WimsPoints wimsPoints;
+        int locX, locY;
+        try {
+            dummyJson = new JSONArray(jsonString);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        if(dummyJson != null){
+            try {
+                for (int i = 0; i < dummyJson.length(); i++) {
+                    //We pull the product name and the location from the JSONObject
+                    key = dummyJson.getJSONObject(i).getJSONObject("product").getString("name");
+                    locX = dummyJson.getJSONObject(i).getJSONObject("location").getInt("x");
+                    locY = dummyJson.getJSONObject(i).getJSONObject("location").getInt("y");
+                    //We create a new WimsPoint and set the product name
+                    wimsPoints = new WimsPoints(locX, locY);
+                    wimsPoints.setProductName(key);
+
+                    products.add(wimsPoints);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     /**
      * A method that extracts information from a json array and puts it in a hashmap
      * @param jsonObject The json array from the server
      */
-    public static void extractProductInformationFromJson(JSONObject jsonObject) {
+    public static void extractProductInformationFromJson(JSONObject jsonObject, Context context) {
+        JSONArray tmpArray;
+        //Because this method is only called when we have a new JSON object we clear products
+        products.clear();
+        populateWithGlobalInformation(context);
         try {
-            JSONArray tmpArray;
-            //Because this method is only called when we have a new JSON object we clear products
-            products.clear();
             String key = "";
             WimsPoints wimsPoints;
             int locX, locY;
@@ -51,12 +84,12 @@ public final class JSONContainer {
         }
     }
 
-    public static void getRequest(RequestQueue req, String url){
+    public static void getRequest(RequestQueue req, String url, final Context context){
 
         JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>(){
             @Override
             public void onResponse(JSONObject response) {
-                extractProductInformationFromJson(response);
+                extractProductInformationFromJson(response, context);
             }
         }, new Response.ErrorListener() {
             @Override

@@ -49,6 +49,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 public class StoreMapActivity extends WimsActivity {
 
@@ -57,7 +58,7 @@ public class StoreMapActivity extends WimsActivity {
     public boolean isInFront = false;
     public boolean isScanning = false;
     public String store_id = "56e6a28a28c3e3314a6849df"; // The ID of føtex! :)
-    public String base_url= "http://nielsema.ddns.net/sw8/api/store/";
+    public String base_url= "http://nielsema.ddns.net/sw8dev/api/store/";
     RequestQueue rqueue;
     float scale = 1;
     ScaleGestureDetector Scale;
@@ -110,7 +111,9 @@ public class StoreMapActivity extends WimsActivity {
         // Enable the Up button
         // ab.setDisplayHomeAsUpEnabled(true);
 
-        this.store_id = getIntent().getStringExtra("storeId");
+        if(getIntent().getStringExtra("storeId") != null) {
+            this.store_id = getIntent().getStringExtra("storeId");
+        }
         fragment = ShoppingListFragment.newInstance(store_id);
 
         FragmentManager manager = getFragmentManager();
@@ -129,6 +132,11 @@ public class StoreMapActivity extends WimsActivity {
         rqueue = Volley.newRequestQueue(this);
 
         requestMapData(store_id);
+
+
+        String url = "http://nielsema.ddns.net/sw8dev/api/store/" + store_id + "/products/";
+
+        JSONContainer.getRequest(rqueue, url, getApplicationContext());
 
         // Adapter used for searching
         adapter = new ArrayAdapter<>(getApplicationContext(),
@@ -164,8 +172,6 @@ public class StoreMapActivity extends WimsActivity {
         });
 
 
-
-
         //The listview in which the results from searches are submitted
         listResults = (ListView) findViewById(R.id.resultView);
         listResults.setAdapter(adapter);
@@ -178,8 +184,6 @@ public class StoreMapActivity extends WimsActivity {
             }
         });
 
-
-
         ImageView mImageView = (ImageView) findViewById(R.id.storemap);
         mImageView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -188,9 +192,6 @@ public class StoreMapActivity extends WimsActivity {
                 return false;
             }
         });
-
-
-
 
         // Instantiate the factory for generating overlays
         posfac = new PositionOverlayFactory(this);
@@ -214,10 +215,10 @@ public class StoreMapActivity extends WimsActivity {
             @Override
             public void afterTextChanged(Editable s) {
 
-                int[] res;
+                float[] res;
 
                 // Sees if the search Query is matching any products from the store
-                res = searchProductReturnCoordinates(products, s.toString());
+                res = searchProductReturnCoordinates(JSONContainer.getProducts(), s.toString());
 
                 // If the query matches a product, the resulting location is marked on the map
                 if (res[0] != 0) {
@@ -249,17 +250,17 @@ public class StoreMapActivity extends WimsActivity {
         findMe.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int count = fram.getChildCount()-1;
-                for(int i = count; i > 0; i--)
-                {
+                int count = fram.getChildCount() - 1;
+                for (int i = count; i > 0; i--) {
                     fram.removeViewAt(i);
                 }
 
                 WimsPoints location = findNearestNeighbor(mapData);
 
-                if(location != null)
-                fram.addView(posfac.getPositionOfFingerPrintPoint((int)location.x,(int)location.y));
-                else Toast.makeText(getApplicationContext(),"No location found", Toast.LENGTH_SHORT).show();
+                if (location != null)
+                    fram.addView(posfac.getPositionOfFingerPrintPoint((int) location.x, (int) location.y));
+                else
+                    Toast.makeText(getApplicationContext(), "No location found", Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -534,29 +535,19 @@ public class StoreMapActivity extends WimsActivity {
      * @param query The search query
      * @return Integer array where res[0] = x and res[1] = y
      */
-    public int[] searchProductReturnCoordinates(JSONArray product, String query) {
+    public float[] searchProductReturnCoordinates(List<WimsPoints> product, String query) {
 
-        JSONObject acpro;
-        JSONObject locatio;
-        int[] res = {0, 0};
+        float[] res = {0, 0};
 
-        for (int i = 0; i < product.length(); i++) {
+        for (int i = 0; i < product.size(); i++) {
 
-            try {
-                acpro = product.getJSONObject(i).getJSONObject("product");
-                String productq = acpro.getString("name");
+            String productq = JSONContainer.getProducts().get(i).getProductName();
 
-                if (query.equalsIgnoreCase(productq)) {
-                    locatio = product.getJSONObject(i).getJSONObject("location");
+            if (query.equalsIgnoreCase(productq)) {
 
-                    res[0] = locatio.getInt("x");
-                    res[1] = locatio.getInt("y");
-                    return res;
-                }
-
-
-            } catch (JSONException e) {
-                e.printStackTrace();
+                res[0] = JSONContainer.getProducts().get(i).x;
+                res[1] = JSONContainer.getProducts().get(i).y;
+                return res;
             }
 
         }
@@ -631,22 +622,16 @@ public class StoreMapActivity extends WimsActivity {
         results.clear();
         String tempName="";
 
-        if(products != null) {
+        if(JSONContainer.getProducts() != null) {
 
             if (!newtext.equals("")) {
 
-                for (int i = 0; i < products.length(); i++) {
+                for (int i = 0; i < JSONContainer.getProducts().size(); i++) {
 
-                    try {
-                        tempName = products.getJSONObject(i).getJSONObject("product").getString("name");
+                    tempName = JSONContainer.getProducts().get(i).getProductName();
 
-                        if (tempName.toLowerCase().contains(newtext.toLowerCase()) || tempName.equalsIgnoreCase(newtext))
-                            results.add(tempName);
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
+                    if (tempName.toLowerCase().contains(newtext.toLowerCase()) || tempName.equalsIgnoreCase(newtext))
+                        results.add(tempName);
                 }
             }
         } else {
@@ -703,7 +688,7 @@ public class StoreMapActivity extends WimsActivity {
      * i.e. the first point in the dataset
      * @param location int[0] = x, int[1] ) y
      */
-    public void drawRoute(int[] location){
+    public void drawRoute(float[] location){
 
         WimsPoints ItemToReach = new WimsPoints(location[0],location[1]);
 
