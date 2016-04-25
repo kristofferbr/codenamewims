@@ -6,45 +6,34 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="sw805f16.codenamewims.StoreMapActivity">
 
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/MapFrame"
+        android:layout_marginTop="80dp"
+        android:nestedScrollingEnabled="true"
+        android:focusable="true">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/storemap"
+            android:layout_gravity="center" />
+
+    </FrameLayout>
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:focusable="true">
 
-
-        <RelativeLayout
-            android:id="@+id/store_search_bar"
-            android:layout_width="match_parent"
-            android:layout_height="42dp"
-            android:background="@color/Indigo400">
-
-            <RelativeLayout
-                android:layout_centerHorizontal="true"
-                android:layout_width="300dp"
-                android:layout_height="match_parent">
-                <EditText
-                    android:id="@+id/store_search_field"
-                    android:layout_width="250dp"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/rounded_edittext"
-                    android:layout_margin="5dp"/>
-
-                <Button
-                    android:id="@+id/store_search_button"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:background="@drawable/search_icon"
-                    android:layout_margin="5dp"
-                    android:layout_toRightOf="@id/store_search_field"
-                    android:layout_toEndOf="@+id/store_search_field"/>
-            </RelativeLayout>
-        </RelativeLayout>
-
         <RelativeLayout
             android:id="@+id/store_shopping_list"
             android:layout_width="match_parent"
             android:layout_height="32dp"
-            android:layout_below="@id/store_search_bar"
+            android:layout_marginTop="48dp"
             android:background="@color/Indigo200">
 
             <TextView
@@ -62,30 +51,44 @@
                 android:text="Balloons"
                 android:layout_margin="5dp"/>
         </RelativeLayout>
+    </RelativeLayout>
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerHorizontal="true"
-            android:id="@+id/MapFrame"
-            android:layout_below="@id/store_shopping_list"
-            android:nestedScrollingEnabled="true"
-            android:focusable="true">
+    <RelativeLayout
+        android:id="@+id/store_search_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+            <EditText
+                android:id="@+id/store_search_field"
+                android:layout_centerHorizontal="true"
+                android:layout_width="282dp"
+                android:layout_height="48dp"
+                android:background="@drawable/rounded_edittext"
+                android:hint="@string/add_item_dotdotdot"
+                android:textColorHint="@drawable/edittext_hint"
+                android:singleLine="true"
+                android:inputType="text"
+                android:imeOptions="actionDone"/>
 
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/storemap"
-                android:layout_gravity="center" />
+            <Button
+                android:id="@+id/item_add_btn"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:text="@string/plus"
+                android:textColor="@color/White"
+                android:textSize="25sp"
+                android:layout_marginLeft="10dp"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/start_button"/>
 
-        </FrameLayout>
-
-        <ListView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/resultView"
-            android:layout_below="@id/app_bar"
-            android:visibility="invisible" />
+            <ListView
+                android:layout_width="282dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/store_search_field"
+                android:background="@color/White"
+                android:id="@+id/resultView"
+                android:visibility="invisible"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center"/>
 
     </RelativeLayout>
 

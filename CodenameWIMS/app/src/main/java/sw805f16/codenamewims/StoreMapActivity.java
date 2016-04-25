@@ -650,36 +650,37 @@ public class StoreMapActivity extends WimsActivity {
     public void addItemToMapDataAndDrawRoute(WimsPoints itemToAdd){
 
         int indexOfNeighbor = 0;
-        float distance = itemToAdd.distance(mapData.get(0).x, mapData.get(0).y);
-        float tempDist;
+        if(!mapData.isEmpty()) {
+            float distance = itemToAdd.distance(mapData.get(0).x, mapData.get(0).y);
+            float tempDist;
 
 
+            for (int i = 1; i < mapData.size(); i++) {
+                tempDist = itemToAdd.distance(mapData.get(i).x, mapData.get(i).y);
 
-        for(int i = 1; i < mapData.size(); i++){
-            tempDist = itemToAdd.distance(mapData.get(i).x, mapData.get(i).y);
-
-            if(tempDist < distance){
-                indexOfNeighbor = i;
-                distance = tempDist;
+                if (tempDist < distance) {
+                    indexOfNeighbor = i;
+                    distance = tempDist;
+                }
             }
+
+            itemToAdd.Neighbours.add(mapData.get(indexOfNeighbor));
+            mapData.get(indexOfNeighbor).Neighbours.add(itemToAdd);
+            mapData.add(itemToAdd);
+
+
+            if (fram.getChildCount() == 1) {
+                fram.addView(posfac.getRouteBetweenTwoPoints(mapData.get(0), itemToAdd));
+
+            } else {
+                fram.removeViewAt(1);
+                fram.addView(posfac.getRouteBetweenTwoPoints(mapData.get(0), itemToAdd));
+            }
+
+            itemToAdd.Neighbours.remove(mapData.get(indexOfNeighbor));
+            mapData.get(indexOfNeighbor).Neighbours.remove(itemToAdd);
+            mapData.remove(itemToAdd);
         }
-
-        itemToAdd.Neighbours.add(mapData.get(indexOfNeighbor));
-        mapData.get(indexOfNeighbor).Neighbours.add(itemToAdd);
-        mapData.add(itemToAdd);
-
-
-        if (fram.getChildCount() == 1) {
-            fram.addView(posfac.getRouteBetweenTwoPoints(mapData.get(0), itemToAdd));
-
-        } else {
-            fram.removeViewAt(1);
-            fram.addView(posfac.getRouteBetweenTwoPoints(mapData.get(0), itemToAdd));
-        }
-
-        itemToAdd.Neighbours.remove(mapData.get(indexOfNeighbor));
-        mapData.get(indexOfNeighbor).Neighbours.remove(itemToAdd);
-        mapData.remove(itemToAdd);
     }
 
     /***
