@@ -9,4 +9,9 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
+
+    <style name="DialogTheme" parent="AppTheme.Base">
+        <item name="android:windowBackground">@color/Indigo400</item>
+        <item name="android:colorBackground">@color/Indigo200</item>
+    </style>
 </resources>
