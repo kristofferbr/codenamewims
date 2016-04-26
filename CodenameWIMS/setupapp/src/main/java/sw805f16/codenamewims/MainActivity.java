@@ -21,6 +21,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -29,41 +30,44 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    public boolean createMapDataModePoints = false;
-    public boolean createMapDataModeNeighbors = false;
-    public boolean fingerpriting = false;
-    public boolean isScanning = false;
-    public String store_id = "56e6a28a28c3e3314a6849df"; // The ID of føtex! :)
-    public String base_url= "http://nielsema.ddns.net/sw8/api/store/";
-    RequestQueue rqueue;
-    float scale = 1;
-    ScaleGestureDetector Scale;
-    PositionOverlayFactory posfac;
+    private boolean createMapDataModePoints = false;
+    private boolean createMapDataModeNeighbors = false;
+    private boolean fingerpriting = false;
+    private boolean isScanning = false;
+    private String store_id = "56e6a28a28c3e3314a6849df"; // The ID of føtex! :)
+    private String base_url= "http://nielsema.ddns.net/sw8/api/store/";
+    private RequestQueue rqueue;
+    private float scale = 1;
+    private ScaleGestureDetector Scale;
+    private PositionOverlayFactory posfac;
     // Variables for dragging
-    FrameLayout fram;
-    float xOnStart = 0;
-    float yOnStart = 0;
-    float posX;
-    float posY;
+    private FrameLayout fram;
+    private float xOnStart = 0;
+    private float yOnStart = 0;
+    private float posX;
+    private float posY;
+    private HashMap<String, Double> marginalLikelihood = new HashMap<>();
 
-    ArrayList<WimsPoints> mapData = new ArrayList<>();
-    WimsPoints currentWimsPoint;
+    private ArrayList<WimsPoints> mapData = new ArrayList<>();
+    private WimsPoints currentWimsPoint;
 
-    int startX=0;
-    int starty=0;
-    int endX =0;
-    int endY =0;
-    boolean start = true;
+    private int startX=0;
+    private int starty=0;
+    private int endX =0;
+    private int endY =0;
+    private boolean start = true;
 
-    Thread fingerthread;
-    HashMap fingerPrint=new HashMap(3);
-    WifiFingerprinter fingerprinter;
-    static Handler mHandler;
+    private Thread fingerthread;
+    private WifiFingerprinter fingerprinter;
+    private static Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -276,6 +280,106 @@ public class MainActivity extends AppCompatActivity {
 
             }
         };
+    }
+
+    public ArrayList<ScanResult> filterScanByKStrongest(ArrayList<ScanResult> results, int k) {
+        ArrayList<ScanResult> retArray = new ArrayList<>();
+        int highestLevel;
+        ScanResult highestResult = null;
+
+        for (int i = 0; i < k; i++) {
+            highestLevel = -100;
+            for (ScanResult res : results) {
+                if (res != null && res.level > highestLevel) {
+                    highestResult = res;
+                    highestLevel = res.level;
+                }
+            }
+            retArray.add(highestResult);
+            results.remove(highestResult);
+        }
+        return sortScanAlphabetically(retArray);
+    }
+
+    public ArrayList<ScanResult> sortScanAlphabetically(ArrayList<ScanResult> results) {
+        ArrayList<ScanResult> retList = new ArrayList<>();
+
+        ScanResult tmpRes;
+        while (!results.isEmpty()) {
+            tmpRes = results.get(0);
+            for (int i = 0; i < results.size(); i++) {
+                if (results.get(i).BSSID.compareTo(tmpRes.BSSID) > 0) {
+                    tmpRes = results.get(i);
+                }
+            }
+            retList.add(tmpRes);
+            results.remove(tmpRes);
+        }
+        return retList;
+    }
+
+    public ArrayList<String> sortStringAlphabetically(ArrayList<String> strs) {
+        ArrayList<String> retList = new ArrayList<>();
+
+        String tmpRes;
+        while (!strs.isEmpty()) {
+            tmpRes = strs.get(0);
+            for (int i = 0; i < strs.size(); i++) {
+                if (strs.get(i).compareTo(tmpRes) > 0) {
+                    tmpRes = strs.get(i);
+                }
+            }
+            retList.add(tmpRes);
+            strs.remove(tmpRes);
+        }
+        return retList;
+    }
+
+    public void sendMarginalLikelihood() {
+        computeMarginalLikelihood();
+        String url = base_url + store_id;
+        JSONArray tosend = null;
+        try {
+            tosend = wrapLikelihoodInJson(marginalLikelihood);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonArrayRequest jsObjRequest = new JsonArrayRequest
+                (Request.Method.PUT, url, tosend, new Response.Listener<JSONArray>() {
+
+                    @Override
+                    public void onResponse(JSONArray response) {
+
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+
+                    }
+                });
+
+        rqueue.add(jsObjRequest);
+    }
+
+    public JSONArray wrapLikelihoodInJson(HashMap<String, Double> marginalLikelihood) throws JSONException {
+        JSONArray array = new JSONArray();
+        JSONObject obj;
+
+        Iterator it = marginalLikelihood.entrySet().iterator();
+        Map.Entry pair;
+
+        while (it.hasNext()) {
+            pair = (Map.Entry) it.next();
+            obj  = new JSONObject();
+            obj.put("configuration", pair.getKey());
+            obj.put("likelihood", pair.getValue());
+            array.put(obj);
+        }
+
+        return array;
     }
 
     public void sendMapData(ArrayList<WimsPoints> mapData)
@@ -600,6 +704,22 @@ public class MainActivity extends AppCompatActivity {
         rqueue.add(imagereq);
     }
 
+    public String concatBSSIDs(ArrayList<ScanResult> results) {
+        String retString = "";
+        for (ScanResult res : results) {
+            retString = retString + res.BSSID;
+        }
+        return retString;
+    }
+
+    public String concatStrings(List<String> strs) {
+        String retString = "";
+        for (String res : strs) {
+            retString = retString + res;
+        }
+        return retString;
+    }
+
     /***
      * Used for setting up the thread for fingerprinting
      */
@@ -611,51 +731,59 @@ public class MainActivity extends AppCompatActivity {
 
                 while(true) {
                     while (isScanning) {
-                        HashMap<String, ArrayList<Integer>> fingerPrintTemp = new HashMap<>(3);
-                        HashMap<String, Integer> finishedHashMap = new HashMap<>(3);
-                        ArrayList<Integer> temparray0 = new ArrayList<>();
-                        ArrayList<Integer> temparray1 = new ArrayList<>();
-                        ArrayList<Integer> temparray2 = new ArrayList<>();
+                        HashMap<String, ArrayList<Float>> fingerPrintTemp = new HashMap<>();
+                        HashMap<String, Float> finishedFingerprint = new HashMap<>();
+                        ArrayList<String> configuration = new ArrayList<>();
 
-                        ScanResult[] scanres;
+                        ArrayList<ScanResult> scanres;
                         scanres = fingerprinter.getFingerPrint();
 
-                        fingerPrintTemp.put(scanres[0].BSSID, temparray0);
-                        fingerPrintTemp.put(scanres[1].BSSID, temparray1);
-                        fingerPrintTemp.put(scanres[2].BSSID, temparray2);
-
-                        fingerPrintTemp.get(scanres[0].BSSID).add(scanres[0].level);
-                        fingerPrintTemp.get(scanres[1].BSSID).add(scanres[1].level);
-                        fingerPrintTemp.get(scanres[2].BSSID).add(scanres[2].level);
-
-                        for (int i = 0; i < 5; i++) {
+                        for (ScanResult res : scanres) {
+                            if (res != null) {
+                                fingerPrintTemp.put(res.BSSID, new ArrayList<Float>());
+                            }
+                        }
+                        int measurements;
+                        for (measurements = 0; measurements < 20; measurements++) {
                             try {
                                 Thread.sleep(1000);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
                             scanres = fingerprinter.getFingerPrint();
-
-                            for (int x = 0; x < scanres.length; x++) {
-                                if (fingerPrintTemp.containsKey(scanres[x].BSSID)) {
-                                    fingerPrintTemp.get(scanres[x].BSSID).add(scanres[x].level);
+                            for (ScanResult res : scanres) {
+                                if (res != null && fingerPrintTemp.containsKey(res.BSSID)) {
+                                    fingerPrintTemp.get(res.BSSID).add((float) res.level);
                                 }
                             }
+                            scanres = filterScanByKStrongest(scanres, 3);
+                            configuration.add(concatBSSIDs(scanres));
                         }
 
                         Iterator it = fingerPrintTemp.entrySet().iterator();
                         while (it.hasNext()) {
-                            int total = 0;
                             HashMap.Entry pair = (HashMap.Entry) it.next();
+                            float total = 0;
                             for (int y = 0; y < fingerPrintTemp.get(pair.getKey()).size(); y++) {
                                 total = total + fingerPrintTemp.get(pair.getKey()).get(y);
                             }
-
-                            finishedHashMap.put(pair.getKey().toString(), total / fingerPrintTemp.get(pair.getKey()).size());
+                            finishedFingerprint.put((String) pair.getKey(), (total / (float) fingerPrintTemp.get(pair.getKey()).size()));
                         }
 
-                        fingerPrint = finishedHashMap;
-                        currentWimsPoint.fingerprint = finishedHashMap;
+                        ArrayList<String> tmpList = new ArrayList<>();
+                        while (!configuration.isEmpty()) {
+                            tmpList.add(configuration.get(0));
+                            for (int n = 1; n < configuration.size(); n++) {
+                                if (configuration.get(n).equalsIgnoreCase(tmpList.get(0))) {
+                                    tmpList.add(configuration.get(n));
+                                }
+                            }
+                            currentWimsPoint.setProbabilityDistributions(tmpList.get(0), ((float) tmpList.size() / (float) measurements));
+                            configuration.removeAll(tmpList);
+                            tmpList.clear();
+                        }
+
+                        currentWimsPoint.fingerprint = finishedFingerprint;
                         Message message = mHandler.obtainMessage();
                         message.sendToTarget();
                         isScanning = false;
@@ -663,6 +791,46 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+    }
+
+    public void computeMarginalLikelihood() {
+        ArrayList<String> bssids = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.test_bssid)));
+        bssids = sortStringAlphabetically(bssids);
+
+        ArrayList<String> configurations = new ArrayList<>();
+        ArrayList<String> tmpConfig = new ArrayList<>();
+        String tmpBssid;
+
+        for (int i = 0; i < bssids.size() - 2; i++) {
+            tmpConfig.add(bssids.get(i));
+            for (int n = i+1; n < bssids.size() - 1; n++) {
+                tmpConfig.add(bssids.get(n));
+                for (int k = n+1; k < bssids.size(); k++) {
+                    tmpConfig.add(bssids.get(k));
+                    tmpBssid = concatStrings(tmpConfig);
+                    if (!configurations.contains(tmpBssid)) {
+                        configurations.add(tmpBssid);
+                    }
+                    tmpConfig.remove(2);
+                }
+                tmpConfig.remove(1);
+            }
+            tmpConfig.remove(0);
+        }
+
+        double likelihood = 0;
+        for (String str : configurations) {
+            for (int i = 0; i < mapData.size(); i++) {
+                if (mapData.get(i).getProbabilityDistribution().containsKey(str)) {
+                    likelihood += mapData.get(i).getProbabilityDistribution().get(str);
+                }
+            }
+            if (likelihood != 0) {
+                marginalLikelihood.put(str, (likelihood / mapData.size()));
+                likelihood = 0;
+            }
+        }
     }
 
     /***

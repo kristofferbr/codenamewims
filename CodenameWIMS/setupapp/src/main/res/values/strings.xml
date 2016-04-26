@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">SetUpApp</string>
+
+    <string-array name="test_bssid">
+        <item>fc:5b:39:87:28:72</item>
+        <item>fc:5b:39:94:a7:8d</item>
+        <item>fc:5b:39:94:a7:82</item>
+        <item>fc:5b:39:94:a9:00</item>
+        <item>fc:5b:39:87:28:7d</item>
+        <item>fc:5b:39:94:a9:0f</item>
+        <item>fc:5b:39:94:a7:f2</item>
+        <item>fc:5b:39:94:a7:fd</item>
+        <item>fc:5b:39:87:27:e2</item>
+    </string-array>
 </resources>
