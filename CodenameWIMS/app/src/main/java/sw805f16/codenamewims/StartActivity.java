@@ -81,17 +81,29 @@ public class StartActivity extends Activity {
         ImageButton settingsButton = (ImageButton) findViewById(R.id.startSettingsBtn);
         Button exitButton = (Button) findViewById(R.id.startExitBtn);
         Button chooseStoreButton = (Button) findViewById(R.id.startChooseStoreBtn);
+        final EditText chooseStore = (EditText) findViewById(R.id.chooseStore);
 
+        chooseStore.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                populateSuggestionList(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
 
         chooseStoreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                open(v);
-                
-                //Replace with code
-                storeId = "1";
-
-                displayAlertDialog();
+                setStoreId(chooseStore.getText().toString());
             }
         });
 
@@ -126,21 +138,6 @@ public class StartActivity extends Activity {
             }
         });
     }
-
-    public void open(View view){
-            Dialog dialog=new Dialog(this);
-        final LayoutInflater inflater=new LayoutInflater(this){
-        @Override
-        public LayoutInflater cloneInContext(Context newContext){
-
-
-        return null;
-        }
-        };
-        dialog.setContentView(R.layout.dialog_choose_store);
-
-        dialog.show();
-        }
 
     /**
      * This method is responsible for initializing the views on the
@@ -228,40 +225,18 @@ public class StartActivity extends Activity {
         adapter.notifyDataSetChanged();
     }
 
-    private void displayAlertDialog() {
+    private void setStoreId(String key){
+        String value = "";
+        if (pickedSuggestion || stores.containsKey(key.toLowerCase())) {
+            TextView titleText = (TextView) findViewById(R.id.title);
+            titleText.setText(SearchRanking.capitaliseFirstLetters(key));
+            //The search field is emptied
+            searchView.setText("");
+            storeId = stores.get(key);
+        } else {
+            Toast.makeText(StartActivity.this, "No match for: " + key + ". Please pick a suggestion or search for another store", Toast.LENGTH_SHORT).show();
+            populateSuggestionList(key);
+        }
 
-        Context context = StartActivity.this;
-        String title = "Choose Store";
-        String message = "You are likely to be eaten by a Grue.";
-        String button1String = "Choose";
-        String button2String = "Cancel";
-
-        AlertDialog.Builder ad = new AlertDialog.Builder(context);
-        ad.setTitle(title);
-        //ad.setMessage(message);
-        LayoutInflater inflater =(LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View v = inflater.inflate(R.layout.dialog_choose_store, null);
-        ad.setView(v);
-
-        ad.setPositiveButton(
-                button1String,
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int arg1) {
-                        Toast.makeText(StartActivity.this, "Positive Click", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
-
-        ad.setNegativeButton(
-                button2String,
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int arg1) {
-                        //Toast.makeText(StartActivity.this, "Negative Click!", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
-
-        //
-        ad.show();
     }
 }

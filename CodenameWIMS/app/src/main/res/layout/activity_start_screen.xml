@@ -10,7 +10,7 @@
         android:layout_height="140dp"
         android:src="@drawable/logo_trans"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="55dp"/>
+        android:layout_marginTop="15dp"/>
 
     <Button
         android:id="@+id/startChooseStoreBtn"
@@ -23,13 +23,39 @@
         android:textColor="@color/White"
         android:layout_below="@id/start_logo"/>
 
+    <RelativeLayout
+        android:id="@+id/store_search"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:layout_below="@id/startChooseStoreBtn">
+
+        <EditText
+            android:id="@+id/chooseStore"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/rounded_edittext"
+            android:textColor="@color/Black"/>
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/chooseStore"
+            android:background="@color/White"
+            android:id="@+id/resultView"
+            android:visibility="invisible"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center"/>
+
+    </RelativeLayout>
     <Button
         android:id="@+id/startStoreBtn"
         android:layout_width="125dp"
         android:layout_height="60dp"
         android:text="Store"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="58dp"
         android:background="@drawable/start_button"
         android:textColor="@color/White"
         android:layout_below="@id/startChooseStoreBtn"/>

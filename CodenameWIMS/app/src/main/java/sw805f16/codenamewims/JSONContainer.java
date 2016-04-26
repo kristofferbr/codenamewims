@@ -88,15 +88,44 @@ public final class JSONContainer {
         }
     }
 
+    public static void getGlobalStoreInformationFromJson(Context context) {
+        String jsonString = context.getResources().getString(R.string.store_json);
+        JSONObject tmpObject;
+        String key = "";
+        JSONArray storeJson = new JSONArray();
+
+        try {
+            storeJson = new JSONArray(jsonString);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+
+            //Here we loop over the json objects in the json array
+            for (int i = 0; i < storeJson.length(); i++) {
+                tmpObject = storeJson.getJSONObject(i);
+                //We extract the storename and the id and place them in a HasMap
+                key = SearchRanking.removeSpecialCharacters(tmpObject.getString("name")).toLowerCase();
+                stores.put(key, tmpObject.getString("_id"));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * A method that extracts information from a json array and puts it in a hashmap
      * @param jsonArray The json array from the server
      */
-    public static void extractStoreInformationFromJson(JSONArray jsonArray) {
+    public static void extractStoreInformationFromJson(JSONArray jsonArray, Context context) {
+        //Because this method is only called when we have a new JSON array we clear stores
+        stores.clear();
+
+        getGlobalStoreInformationFromJson(context);
+
         try {
             JSONObject tmpObject;
-            //Because this method is only called when we have a new JSON array we clear stores
-            stores.clear();
+
             String key = "";
 
             //Here we loop over the json objects in the json array
@@ -138,7 +167,7 @@ public final class JSONContainer {
         JsonArrayRequest jsonRequest = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                extractStoreInformationFromJson(response);
+                extractStoreInformationFromJson(response, context);
             }
         }, new Response.ErrorListener() {
             @Override
