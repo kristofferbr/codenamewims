@@ -81,9 +81,9 @@ public class StartActivity extends Activity {
         ImageButton settingsButton = (ImageButton) findViewById(R.id.startSettingsBtn);
         Button exitButton = (Button) findViewById(R.id.startExitBtn);
         Button chooseStoreButton = (Button) findViewById(R.id.startChooseStoreBtn);
-        final EditText chooseStore = (EditText) findViewById(R.id.chooseStore);
+        searchView = (EditText) findViewById(R.id.chooseStore);
 
-        chooseStore.addTextChangedListener(new TextWatcher() {
+        searchView.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -91,6 +91,7 @@ public class StartActivity extends Activity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                searchResults.setVisibility(View.VISIBLE);
                 populateSuggestionList(s.toString());
             }
 
@@ -103,14 +104,15 @@ public class StartActivity extends Activity {
         chooseStoreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setStoreId(chooseStore.getText().toString());
+                setStoreId(searchView.getText().toString());
             }
         });
 
         storemapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), StoreActivity.class);
+                Intent intent = new Intent(getApplicationContext(), StoreMapActivity.class);
+                intent.putExtra("storeId", storeId);
                 startActivity(intent);
 
             }
@@ -120,6 +122,7 @@ public class StartActivity extends Activity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), ShoppingActivity.class);
+                intent.putExtra("storeId", storeId);
                 startActivity(intent);
             }
         });
@@ -144,11 +147,8 @@ public class StartActivity extends Activity {
      * user interface
      */
     public void initializeViews() {
-        LayoutInflater inflater = LayoutInflater.from(this);
-        LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.dialog_choose_store, null, false);
 
-        searchView = (EditText) layout.findViewById(R.id.dialog_search);
-        searchResults = (ListView) layout.findViewById(R.id.dialog_query_results);
+        searchResults = (ListView) findViewById(R.id.storeResultView);
         resultList = new ArrayList<>();
         //Here we set up the adapter for the results listview
         adapter = new ArrayAdapter<>(getApplicationContext(),
@@ -165,35 +165,7 @@ public class StartActivity extends Activity {
                 pickedSuggestion = true;
                 //We set the query to the text in the item and submit it
                 searchView.setText(text.getText().toString());
-                //searchResults.setVisibility(View.INVISIBLE);
-            }
-        });
-
-        //When searching we display a listview of suggestions
-        searchView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                searchResults.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                populateSuggestionList(s.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-                if (pickedSuggestion || stores.containsKey(s.toString().toLowerCase())) {
-                    TextView titleText = (TextView) findViewById(R.id.title);
-                    titleText.setText(SearchRanking.capitaliseFirstLetters(s.toString()));
-                    //The search field is emptied
-                    searchView.setText("");
-                    storeId = stores.get(s.toString());
-                } else {
-                    Toast.makeText(StartActivity.this, "No match for: " + s + ". Please pick a suggestion or search for another store", Toast.LENGTH_SHORT).show();
-                    populateSuggestionList(s.toString());
-                }
+                searchResults.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -227,15 +199,14 @@ public class StartActivity extends Activity {
 
     private void setStoreId(String key){
         String value = "";
-        if (pickedSuggestion || stores.containsKey(key.toLowerCase())) {
-            TextView titleText = (TextView) findViewById(R.id.title);
-            titleText.setText(SearchRanking.capitaliseFirstLetters(key));
+        if (pickedSuggestion || JSONContainer.getStores().containsKey(key.toString().toLowerCase())) {
             //The search field is emptied
             searchView.setText("");
-            storeId = stores.get(key);
+            storeId = JSONContainer.getStores().get(key.toString());
+            searchResults.setVisibility(View.VISIBLE);
         } else {
             Toast.makeText(StartActivity.this, "No match for: " + key + ". Please pick a suggestion or search for another store", Toast.LENGTH_SHORT).show();
-            populateSuggestionList(key);
+            populateSuggestionList(key.toString());
         }
 
     }

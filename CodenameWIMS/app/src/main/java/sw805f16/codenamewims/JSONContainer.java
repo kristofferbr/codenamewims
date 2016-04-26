@@ -172,6 +172,7 @@ public final class JSONContainer {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                getGlobalStoreInformationFromJson(context);
                 Toast.makeText(context, "Could not retrieve data from the server", Toast.LENGTH_SHORT).show();
             }
         });
