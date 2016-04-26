@@ -203,14 +203,6 @@ public class StoreMapActivity extends WimsActivity {
             }
         });
 
-        /*CommitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendMapData(mapData);
-                sendMarginalLikelihood();
-
-            }*/
-
         // Gets the map corresponding to the store ID
         fram =(FrameLayout) findViewById(R.id.MapFrame);
 
@@ -239,6 +231,8 @@ public class StoreMapActivity extends WimsActivity {
         }
 
     }
+
+
 
     public String getStore_id() {
         return store_id;
