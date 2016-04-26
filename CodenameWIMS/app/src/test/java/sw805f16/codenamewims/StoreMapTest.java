@@ -33,7 +33,6 @@ public class StoreMapTest {
         // Given that I am a user
         // And i Have chosen a store
         StoreMapActivity storemap = Robolectric.setupActivity(StoreMapActivity.class);
-        storemap.store_id = "et id";
         // I want to be able to see the map of the store
         ImageView map = (ImageView) storemap.findViewById(R.id.storemap);
         // And then I want to be able to drag and zoom in the map
