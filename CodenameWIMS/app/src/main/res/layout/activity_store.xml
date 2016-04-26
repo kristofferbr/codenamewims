@@ -93,7 +93,6 @@
     </RelativeLayout>
 
     <FrameLayout
-        android:layout_below="@id/app_bar"
         android:layout_width="240dp"
         android:layout_height="match_parent"
         android:id="@+id/storeShoppingList"

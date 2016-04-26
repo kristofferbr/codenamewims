@@ -81,33 +81,10 @@ public class ShoppingListActivity extends WimsActivity {
     }
 
     /**
-     * Inflate the menu
-     * @param menu main_menu
-     * @return true if successful
-     */
-    @Override
-    public boolean onCreateOptionsMenu (Menu menu) {
-        //inflate the menu: this adds items to the action bar if it is present
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        //Handle
-        int id = item.getItemId();
-
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * This method responsible for the transition between this activity and {@link MainActivity}
+     * This method responsible for the transition between this activity and {@link StartActivity}
      */
     public void transitionToStartScreen() {
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        Intent intent = new Intent(getApplicationContext(), StartActivity.class);
         //We save the state of the fragment and put it in the intent
         Parcelable state = getFragmentManager().saveFragmentInstanceState(fragment);
         intent.putExtra("state", state);

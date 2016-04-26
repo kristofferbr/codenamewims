@@ -9,7 +9,6 @@ import android.net.wifi.ScanResult;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import android.support.v7.widget.Toolbar;
@@ -24,13 +23,11 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -139,7 +136,7 @@ public class StoreMapActivity extends WimsActivity {
         // Set variables for gestures
         Scale = new ScaleGestureDetector(this, new ScaleDetector());
 
-        // Instantiate the Volley getRequest queue
+        // Instantiate the Volley requestProducts queue
         rqueue = Volley.newRequestQueue(this);
 
         requestMapData(store_id);
@@ -147,7 +144,7 @@ public class StoreMapActivity extends WimsActivity {
 
         String url = "http://nielsema.ddns.net/sw8dev/api/store/" + store_id + "/products/";
 
-        JSONContainer.getRequest(rqueue, url, getApplicationContext());
+        JSONContainer.requestProducts(rqueue, url, getApplicationContext());
 
         // Adapter used for searching
         adapter = new ArrayAdapter<>(getApplicationContext(),
@@ -308,24 +305,6 @@ public class StoreMapActivity extends WimsActivity {
 
             }
         });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu (Menu menu) {
-        //inflate the menu: this adds items to the action bar if it is present
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        //Handle
-        int id = item.getItemId();
-
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -586,7 +565,7 @@ public class StoreMapActivity extends WimsActivity {
         final String url = base_url + store_id +"/map";
         final ImageView mImageView = (ImageView) findViewById(R.id.storemap);
 
-        /*Generates the getRequest along with a listener that is triggered when image is received*/
+        /*Generates the requestProducts along with a listener that is triggered when image is received*/
         ImageRequest imagereq = new ImageRequest(url, new Response.Listener<Bitmap>() {
 
             @Override

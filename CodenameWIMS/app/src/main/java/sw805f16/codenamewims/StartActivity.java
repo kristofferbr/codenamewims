@@ -14,12 +14,15 @@ import android.os.Bundle;
 
 import android.os.Parcelable;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -48,7 +51,7 @@ public class StartActivity extends Activity {
 
     HashMap<String, String> stores = new HashMap<>();
     JSONArray json;
-    SearchView searchView;
+    EditText searchView;
     ListView searchResults;
     ArrayList<String> resultList;
     ArrayAdapter adapter;
@@ -67,9 +70,9 @@ public class StartActivity extends Activity {
 
         //We make a request to the server and receives the list of stores
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://nielsema.ddns.net/sw8/api/store/";
+        String url = "http://nielsema.ddns.net/sw8dev/api/store/";
 
-        request(queue, url);
+        JSONContainer.requestStores(queue, url, getApplicationContext());
 
         initializeViews();
 
@@ -147,7 +150,7 @@ public class StartActivity extends Activity {
         LayoutInflater inflater = LayoutInflater.from(this);
         LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.dialog_choose_store, null, false);
 
-        searchView = (SearchView) layout.findViewById(R.id.dialog_search);
+        searchView = (EditText) layout.findViewById(R.id.dialog_search);
         searchResults = (ListView) layout.findViewById(R.id.dialog_query_results);
         resultList = new ArrayList<>();
         //Here we set up the adapter for the results listview
@@ -164,51 +167,50 @@ public class StartActivity extends Activity {
                 //If the user has clicked the suggestion item this bool is flipped
                 pickedSuggestion = true;
                 //We set the query to the text in the item and submit it
-                searchView.setQuery(text.getText().toString(), true);
+                searchView.setText(text.getText().toString());
                 //searchResults.setVisibility(View.INVISIBLE);
             }
         });
 
         //When searching we display a listview of suggestions
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        searchView.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                //If the submit butten is pressed using the listview's onItemClick() method the title is set
-                //If it is not the listview is populated like with onQueryTextChange()
-                if (pickedSuggestion || stores.containsKey(query.toLowerCase())) {
-                    TextView titleText = (TextView) findViewById(R.id.title);
-                    titleText.setText(SearchRanking.capitaliseFirstLetters(query));
-                    //The search field is emptied
-                    searchView.setQuery("", false);
-                    storeId = stores.get(query);
-                } else {
-                    Toast.makeText(StartActivity.this, "No match for: " + query + ". Please pick a suggestion or search for another store", Toast.LENGTH_SHORT).show();
-                    populateSuggestionList(query);
-                }
-                return false;
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                searchResults.setVisibility(View.VISIBLE);
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                //Each time the query text is modified the list of suggestions is updated
-                populateSuggestionList(newText);
-                searchResults.setVisibility(View.VISIBLE);
-                return false;
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                populateSuggestionList(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+                if (pickedSuggestion || stores.containsKey(s.toString().toLowerCase())) {
+                    TextView titleText = (TextView) findViewById(R.id.title);
+                    titleText.setText(SearchRanking.capitaliseFirstLetters(s.toString()));
+                    //The search field is emptied
+                    searchView.setText("");
+                    storeId = stores.get(s.toString());
+                } else {
+                    Toast.makeText(StartActivity.this, "No match for: " + s + ". Please pick a suggestion or search for another store", Toast.LENGTH_SHORT).show();
+                    populateSuggestionList(s.toString());
+                }
             }
         });
-
     }
 
-        /**
-         * This method populates the listview with suggestions
-         * @param query The query from which to populate after
-         */
+    /**
+     * This method populates the listview with suggestions
+     * @param query The query from which to populate after
+     */
     private void populateSuggestionList(String query) {
         String key = "";
         //We need to clear the list, otherwise the suggestion list explodes
         resultList.clear();
         //We make an iterator and iterate over the stores hashmap
-        Iterator it = stores.entrySet().iterator();
+        Iterator it = JSONContainer.getStores().entrySet().iterator();
         Map.Entry pair;
 
         while (it.hasNext()) {
@@ -224,60 +226,6 @@ public class StartActivity extends Activity {
 
         //Then we notify the adapter that the list is modified
         adapter.notifyDataSetChanged();
-    }
-
-    /**
-     * This method is used by the test classes to evaluate the stores hashmap
-     * @return The stores HashMap of this instance
-     */
-    public HashMap<String, String> getStores() {
-        return stores;
-    }
-
-
-    /**
-     * A method that extracts information from a json array and puts it in a hashmap
-     * @param jsonArray The json array from the server
-     */
-    public void extractStoreInformationFromJson(JSONArray jsonArray) {
-        try {
-            JSONObject tmpObject;
-            //Because this method is only called when we have a new JSON array we clear stores
-            stores.clear();
-            String key = "";
-
-            //Here we loop over the json objects in the json array
-            for (int i = 0; i < jsonArray.length(); i++) {
-                tmpObject = jsonArray.getJSONObject(i);
-                //We extract the storename and the id and place them in a HasMap
-                key = SearchRanking.removeSpecialCharacters(tmpObject.getString("name")).toLowerCase();
-                stores.put(key, tmpObject.getString("_id"));
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /****
-     * The function that performs a request against our server
-     * @param req The queue to add the request
-     * @param url The url to request
-     */
-    private void request(RequestQueue req, String url){
-
-        JsonArrayRequest jsonRequest = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
-            @Override
-            public void onResponse(JSONArray response) {
-                extractStoreInformationFromJson(response);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(StartActivity.this, "Could not retrieve data from the server", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        req.add(jsonRequest);
     }
 
     private void displayAlertDialog() {

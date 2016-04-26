@@ -2,6 +2,7 @@ package sw805f16.codenamewims;
 import android.content.Intent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -34,14 +35,14 @@ import static org.robolectric.Shadows.*;
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, shadows = OutlineShadow.class)
 public class ChoosingaStoreTest {
-    MainActivity main;
-    SearchView search;
+    StartActivity main;
+    EditText search;
     JSONArray dummyJson;
 
     @Before
     public void setup() {
-        main = Robolectric.setupActivity(MainActivity.class);
-        search = (SearchView) main.findViewById(R.id.search);
+        main = Robolectric.setupActivity(StartActivity.class);
+        search = (EditText) main.findViewById(R.id.search);
 
         //This is a JSON array, in string format, we want to extract information from
         String jsonString = main.getResources().getString(R.string.store_json);
@@ -60,9 +61,9 @@ public class ChoosingaStoreTest {
         // Given I am a user
         // When I am at the home screen
         // And I search for the name of a store
-        main.extractStoreInformationFromJson(dummyJson);
+        JSONContainer.extractStoreInformationFromJson(dummyJson);
         //We search for føtex
-        search.setQuery("Føtex", false);
+        search.setText("Føtex");
 
         // Then I retreive a list of candidates to choose from
 
@@ -86,19 +87,19 @@ public class ChoosingaStoreTest {
         TextView testText = (TextView) main.findViewById(R.id.title);
         assertThat(testText.getText().toString(), is("Føtex"));
         assertThat(results.getVisibility(), is(View.INVISIBLE));
-        assertThat(search.getQuery().toString(), is(""));
+        assertThat(search.getText().toString(), is(""));
 
         testText.setText("");
-        search.setQuery("Føtex", true);
+        search.setText("Føtex");
         assertThat(testText.getText().toString(), is("Føtex"));
     }
 
     @Test
     public void extract_information_from_json_test() throws Exception {
         //The string is passed to the method
-        main.extractStoreInformationFromJson(dummyJson);
+        JSONContainer.extractStoreInformationFromJson(dummyJson);
 
-        HashMap<String, String> testMap = main.getStores();
+        HashMap<String, String> testMap = JSONContainer.getStores();
         //Here we assert whether it has extracted the name correctly and whether it is the right id
         assertTrue(testMap.containsKey("føtex"));
         assertTrue(testMap.get("føtex").equals("56e6a28a28c3e3314a6849df"));
@@ -107,9 +108,9 @@ public class ChoosingaStoreTest {
     @Test
     public void search_result_ranking() throws Exception {
         //We pass the json array to the extract method
-        main.extractStoreInformationFromJson(dummyJson);
+        JSONContainer.extractStoreInformationFromJson(dummyJson);
         //We make an iterator to go through the stores HashMap in MainActvity
-        Iterator testIt = main.getStores().entrySet().iterator();
+        Iterator testIt = JSONContainer.getStores().entrySet().iterator();
         ArrayList<String> testValues = new ArrayList<>();
         Map.Entry pair;
         //We extract the keys and put them in the test array
@@ -142,11 +143,11 @@ public class ChoosingaStoreTest {
 
     @Test
     public void change_from_start_to_storemap() throws Exception {
-        main.extractStoreInformationFromJson(dummyJson);
-        Button testButton = (Button) main.findViewById(R.id.storemapbutton);
+        JSONContainer.extractStoreInformationFromJson(dummyJson);
+        Button testButton = (Button) main.findViewById(R.id.startStoreBtn);
 
         //We search for føtex and submit the search
-        search.setQuery("føtex", true);
+        search.setText("føtex");
         //We click the button and assert whether it starts the right activity
         testButton.performClick();
         //We peek at the next activity that starts from main
@@ -158,11 +159,11 @@ public class ChoosingaStoreTest {
 
     @Test
     public void change_from_start_to_shopping_list() throws Exception {
-        main.extractStoreInformationFromJson(dummyJson);
-        Button testButton = (Button) main.findViewById(R.id.shoppingListButton);
+        JSONContainer.extractStoreInformationFromJson(dummyJson);
+        Button testButton = (Button) main.findViewById(R.id.startShoppingBtn);
 
         //We search for føtex and submit the search
-        search.setQuery("føtex", true);
+        search.setText("føtex");
         //We click the button and assert whether it starts the right activity
         testButton.performClick();
         //We peek at the next activity that starts from main
