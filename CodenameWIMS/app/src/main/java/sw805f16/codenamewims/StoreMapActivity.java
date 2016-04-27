@@ -7,7 +7,11 @@ import android.graphics.Bitmap;
 
 import android.net.wifi.ScanResult;
 import android.os.Bundle;
+import android.os.Handler;
 
+import android.os.Looper;
+import android.os.Message;
+import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MotionEvent;
@@ -71,6 +75,10 @@ public class StoreMapActivity extends WimsActivity {
 
     private ArrayList<WimsPoints> mapData = new ArrayList<>();
     private WimsPoints currentWimsPoint;
+
+    private Thread scanningthread;
+    private WifiFingerprinter fingerprinter = new WifiFingerprinter(this);
+    private boolean scan = true;
 
     ShoppingListFragment fragment;
 
@@ -207,11 +215,37 @@ public class StoreMapActivity extends WimsActivity {
         fram =(FrameLayout) findViewById(R.id.MapFrame);
 
         getMapLayout();
+
+        positioningThread();
+
+        if (scanningthread.getState() == Thread.State.NEW) {
+            scanningthread.start();
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer);
+        drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {}
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                scan = false;
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                scan = true;
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {}
+        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        scan = true;
         isInFront = true;
 
     }
@@ -219,6 +253,7 @@ public class StoreMapActivity extends WimsActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        scan = false;
         isInFront = false;
     }
 
@@ -232,7 +267,65 @@ public class StoreMapActivity extends WimsActivity {
 
     }
 
+    public void positioningThread() {
 
+        scanningthread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    while (scan) {
+                        ArrayList<ScanResult> scanRes = fingerprinter.getFingerPrint();
+                        scanRes = filterScanByKStrongest(scanRes, 3);
+                        final WimsPoints location = positioningUser(scanRes, mapData);
+
+                        if (location != null) {
+                            if (confident) {
+                                fram.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (fram.getChildCount() < 3) {
+                                            fram.addView(posfac.getPositionOfFingerPrintPoint((int) location.x, (int) location.y));
+                                        } else {
+                                            fram.removeViewAt(2);
+                                            fram.addView(posfac.getPositionOfFingerPrintPoint((int) location.x, (int) location.y));
+                                        }
+                                        currentWimsPoint = location;
+                                        maxDepth = 2;
+                                        confident = false;
+                                    }
+                                });
+                            } else if (findPointInNeighborChain(location, currentWimsPoint, 0, maxDepth,
+                                    new ArrayList<WimsPoints>(), new ArrayList<WimsPoints>(),
+                                    new ArrayList<WimsPoints>())) {
+                                fram.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (fram.getChildCount() < 3) {
+                                            fram.addView(posfac.getPositionOfFingerPrintPoint((int) location.x, (int) location.y));
+                                        } else {
+                                            fram.removeViewAt(2);
+                                            fram.addView(posfac.getPositionOfFingerPrintPoint((int) location.x, (int) location.y));
+                                        }
+                                        currentWimsPoint = location;
+                                        maxDepth = 2;
+                                    }
+                                });
+                            } else {
+                                maxDepth++;
+                            }
+                        } else {
+                            maxDepth++;
+                        }
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        });
+    }
 
     public String getStore_id() {
         return store_id;
@@ -695,7 +788,12 @@ public class StoreMapActivity extends WimsActivity {
         ArrayList<Float> candidateLikelihood = new ArrayList<>();
 
         String tmpKey = concatBSSIDs(scanResults);
-        double normaliser = marginalLikelihood.get(tmpKey) != 0 ? marginalLikelihood.get(tmpKey) : 1;
+        double normaliser;
+        if (marginalLikelihood.isEmpty()) {
+            normaliser = 1;
+        } else {
+            normaliser = marginalLikelihood.get(tmpKey);
+        }
         for (int i = 0; i < candidates.size(); i++) {
             candidateLikelihood.add((float) 0);
             if (candidates.get(i).getProbabilityDistribution().containsKey(tmpKey)) {
