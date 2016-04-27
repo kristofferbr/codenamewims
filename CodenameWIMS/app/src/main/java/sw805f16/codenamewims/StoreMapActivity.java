@@ -238,6 +238,8 @@ public class StoreMapActivity extends WimsActivity {
 
     }
 
+
+
     public String getStore_id() {
         return store_id;
     }
