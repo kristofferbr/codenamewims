@@ -36,7 +36,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -200,6 +199,8 @@ public class StoreMapActivity extends WimsActivity {
                     drawRoute(res);
 
                 }
+
+                listResults.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -210,9 +211,6 @@ public class StoreMapActivity extends WimsActivity {
                 sendMarginalLikelihood();
 
             }*/
-
-        // Gets the map corresponding to the store ID
-        fram =(FrameLayout) findViewById(R.id.MapFrame);
 
         getMapLayout();
     }
@@ -317,20 +315,22 @@ public class StoreMapActivity extends WimsActivity {
         final ImageView mImageView = (ImageView) findViewById(R.id.storemap);
 
         /*Generates the requestProducts along with a listener that is triggered when image is received*/
-        ImageRequest imagereq = new ImageRequest(url, new Response.Listener<Bitmap>() {
+        ImageRequest imagereq = new ImageRequest(url,
+            new Response.Listener<Bitmap>() {
+                @Override
+                public void onResponse(Bitmap bitmap) {
+                    mImageView.setImageResource(R.drawable.foetexmap);
+                    //mImageView.setImageBitmap(bitmap);
+                }
+            }, 0, 0, null,
+            new Response.ErrorListener() {
+                public void onErrorResponse(VolleyError error) {
 
-            @Override
-            public void onResponse(Bitmap bitmap) {
-                mImageView.setImageBitmap(bitmap);
+                    mImageView.setImageResource(R.drawable.foetexmap);
+                    error.printStackTrace();
+                }
             }
-        }, 0, 0, null,
-                new Response.ErrorListener() {
-                    public void onErrorResponse(VolleyError error) {
-
-                        mImageView.setImageResource(R.drawable.prik);
-                        error.printStackTrace();
-                    }
-                });
+        );
 
         rqueue.add(imagereq);
     }

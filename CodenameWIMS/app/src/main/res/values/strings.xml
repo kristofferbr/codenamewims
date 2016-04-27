@@ -10,6 +10,7 @@
     <string name="shopping_list_activity">Shopping List</string>
     <string name="settings_activity">Settings</string>
     <string name="Please_enter_an_item_name">Please enter an item name.</string>
+
     <string name="store_json">[
         {\"_id\": \"56e6a28a28c3e3314a6849df\",
         \"name\": \"Føtex\",
@@ -187,6 +188,7 @@
                  ] 
                }
     </string>
+
     <string name="title_activity_settings">Settings</string>
 
     <!-- Strings related to Settings -->

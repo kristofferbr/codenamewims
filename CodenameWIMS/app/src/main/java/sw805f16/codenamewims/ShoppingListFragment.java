@@ -181,19 +181,20 @@ public class ShoppingListFragment extends Fragment {
         searchView.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
+                suggestionListView.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                suggestionListView.setVisibility(View.VISIBLE);
-                suggestionListView.bringToFront();
                 populateSuggestionList(s.toString());
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                //populateSuggestionList(s.toString());
+                if(JSONContainer.productsContainString(s.toString())){
+                    addToItemList(s.toString());
+                }
+                suggestionListView.setVisibility(View.VISIBLE);
             }
         });
 
@@ -535,7 +536,7 @@ public class ShoppingListFragment extends Fragment {
     }
 
     public boolean saveItemList() {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
         SharedPreferences.Editor mEdit1 = sp.edit();
         String title = "";
         mEdit1.putInt("Item_List_" + title,  itemList.size());
@@ -592,7 +593,7 @@ public class ShoppingListFragment extends Fragment {
         // Check if no view has focus:
         View view = getActivity().getCurrentFocus();
         if (view != null) {
-            InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
+            InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(getActivity().getApplicationContext().INPUT_METHOD_SERVICE);
             inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
     }
