@@ -300,6 +300,20 @@ public class ShoppingListFragment extends Fragment {
         itemAdapter.notifyDataSetChanged();
     }
 
+    public ArrayList<String> getItemList() {
+        ArrayList<String> returnList = new ArrayList<>();
+
+        if (itemAdapter != null) {
+            for (int i = 0; i < itemAdapter.getCount(); i++) {
+                if (itemAdapter.getItem(i).getStatus() == ItemEnum.UNMARKED) {
+                    returnList.add(itemAdapter.getItem(i).getText());
+                }
+            }
+        }
+
+        return returnList;
+    }
+
     /**
      * This method sorts the unmarked item list by nearest neighbor to a starting point
      * @param start The starting point for the sorting

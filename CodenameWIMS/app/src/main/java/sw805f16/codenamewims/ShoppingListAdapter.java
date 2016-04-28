@@ -137,14 +137,16 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
     public void sortItemList(WimsPoints start) {
         ArrayList<WimsPoints> tmpSet = new ArrayList<>();
         String text;
-        int index;
+        Integer index;
         //The first loop through the unmarked item list is to pull the text from the LinearLayouts
         for (int i = 0; i < getCount(); i++) {
             if (getItem(i).getStatus() == ItemEnum.UNMARKED) {
                 text = ((TextView) getItem(i).getChildAt(0)).getText().toString();
                 //We then find the index of the product with that name, in the products list
                 index = JSONContainer.indexOfProductWithName(text);
-                tmpSet.add(JSONContainer.getProducts().get(index));
+                if (index != null) {
+                    tmpSet.add(JSONContainer.getProducts().get(index));
+                }
             }
         }
         WimsPoints point;

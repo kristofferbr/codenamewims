@@ -7,10 +7,7 @@ import android.graphics.Bitmap;
 
 import android.net.wifi.ScanResult;
 import android.os.Bundle;
-import android.os.Handler;
 
-import android.os.Looper;
-import android.os.Message;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -73,11 +70,13 @@ public class StoreMapActivity extends WimsActivity {
     private HashMap<String, Double> marginalLikelihood = new HashMap<>();
 
     private ArrayList<WimsPoints> mapData = new ArrayList<>();
-    private WimsPoints currentWimsPoint;
+    private WimsPoints currentWimsPoint = new WimsPoints();
 
     private Thread scanningthread;
     private WifiFingerprinter fingerprinter = new WifiFingerprinter(this);
     private boolean scan = true;
+
+    private ArrayList<WimsPoints> items = new ArrayList<>();
 
     ShoppingListFragment fragment;
 
@@ -169,7 +168,19 @@ public class StoreMapActivity extends WimsActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView tes = (TextView) view;
-                search.setText(tes.getText());
+
+                float[] res;
+
+                // Sees if the search Query is matching any products from the store
+                res = searchProductReturnCoordinates(JSONContainer.getProducts(), tes.getText().toString());
+                // If the query matches a product, the resulting location is marked on the map
+                if (res.length != 0) {
+                    fragment.addToItemList(tes.getText().toString());
+                    getItemListAndDrawRoute();
+                }
+
+                listResults.setVisibility(View.INVISIBLE);
+                search.setText("");
             }
         });
 
@@ -194,21 +205,6 @@ public class StoreMapActivity extends WimsActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-
-                float[] res;
-
-                // Sees if the search Query is matching any products from the store
-                res = searchProductReturnCoordinates(JSONContainer.getProducts(), s.toString());
-
-                // If the query matches a product, the resulting location is marked on the map
-                if (res[0] != 0) {
-
-                    //DrawLocationOnMap(res[0], res[1]);
-                    drawRoute(res);
-
-                }
-
-                listResults.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -246,6 +242,8 @@ public class StoreMapActivity extends WimsActivity {
             @Override
             public void onDrawerStateChanged(int newState) {}
         });
+
+        getItemListAndDrawRoute();
     }
 
     @Override
@@ -270,7 +268,19 @@ public class StoreMapActivity extends WimsActivity {
         }else{
             super.onBackPressed();
         }
+    }
 
+    public void getItemListAndDrawRoute() {
+        ArrayList<WimsPoints> pointList = new ArrayList<>();
+        ArrayList<String> itemList = fragment.getItemList();
+        WimsPoints point;
+        for (String str : itemList) {
+            point = new WimsPoints(searchProductReturnCoordinates(JSONContainer.getProducts(), str)[0],
+                    searchProductReturnCoordinates(JSONContainer.getProducts(), str)[1]);
+            point.setProductName(str);
+            pointList.add(point);
+        }
+        drawRoute(pointList);
     }
 
     public void positioningThread() {
@@ -464,7 +474,7 @@ public class StoreMapActivity extends WimsActivity {
      *
      * @param product JSON array of products belonging to the store
      * @param query The search query
-     * @return Integer array where res[0] = x and res[1] = y
+     * @return Float array where res[0] = x and res[1] = y
      */
     public float[] searchProductReturnCoordinates(List<WimsPoints> product, String query) {
 
@@ -557,41 +567,43 @@ public class StoreMapActivity extends WimsActivity {
      */
     /****
      * Function used to add an item to the MapData for use of PathDrawing
-     * @param itemToAdd The point to add in the data
+     * @param itemsToAdd The points to add in the data
      */
-    public void addItemToMapDataAndDrawRoute(WimsPoints itemToAdd){
+    public void addItemsToMapDataAndDrawRoute(WimsPoints currentWimsPoint, ArrayList<WimsPoints> itemsToAdd){
 
-        int indexOfNeighbor = 0;
+        HashMap<WimsPoints, Integer> indexOfNeighbor = new HashMap<>();
         if(!mapData.isEmpty()) {
-            float distance = itemToAdd.distance(mapData.get(0).x, mapData.get(0).y);
-            float tempDist;
+            for (WimsPoints point : itemsToAdd) {
+                float distance = Float.POSITIVE_INFINITY;
+                float tempDist;
 
 
-            for (int i = 1; i < mapData.size(); i++) {
-                tempDist = itemToAdd.distance(mapData.get(i).x, mapData.get(i).y);
+                for (int i = 0; i < mapData.size(); i++) {
+                    tempDist = point.distance(mapData.get(i).x, mapData.get(i).y);
 
-                if (tempDist < distance) {
-                    indexOfNeighbor = i;
-                    distance = tempDist;
+                    if (tempDist < distance) {
+                        indexOfNeighbor.put(point, i);
+                        distance = tempDist;
+                    }
                 }
-            }
 
-            itemToAdd.Neighbours.add(mapData.get(indexOfNeighbor));
-            mapData.get(indexOfNeighbor).Neighbours.add(itemToAdd);
-            mapData.add(itemToAdd);
+                point.Neighbours.add(mapData.get(indexOfNeighbor.get(point)));
+                mapData.get(indexOfNeighbor.get(point)).Neighbours.add(point);
+                mapData.add(point);
+            }
 
 
             if (fram.getChildCount() == 1) {
-                fram.addView(posfac.getRouteBetweenTwoPoints(mapData.get(0), itemToAdd));
-
+                fram.addView(posfac.getRoute(currentWimsPoint, itemsToAdd));
             } else {
                 fram.removeViewAt(1);
-                fram.addView(posfac.getRouteBetweenTwoPoints(mapData.get(0), itemToAdd));
+                fram.addView(posfac.getRoute(currentWimsPoint, itemsToAdd), 1);
             }
 
-            itemToAdd.Neighbours.remove(mapData.get(indexOfNeighbor));
-            mapData.get(indexOfNeighbor).Neighbours.remove(itemToAdd);
-            mapData.remove(itemToAdd);
+            for (WimsPoints point : itemsToAdd) {
+                mapData.get(indexOfNeighbor.get(point)).Neighbours.remove(point);
+                mapData.remove(point);
+            }
         }
     }
 
@@ -599,13 +611,12 @@ public class StoreMapActivity extends WimsActivity {
      * The main function used when drawing a route
      * As of now the route is drawn from the entrance of the store
      * i.e. the first point in the dataset
-     * @param location int[0] = x, int[1] ) y
+     * @param locations int[0] = x, int[1] = y
      */
-    public void drawRoute(float[] location){
-
-        WimsPoints ItemToReach = new WimsPoints(location[0],location[1]);
-
-        addItemToMapDataAndDrawRoute(ItemToReach);
+    public void drawRoute(ArrayList<WimsPoints> locations){
+        scan = false;
+        addItemsToMapDataAndDrawRoute(currentWimsPoint, locations);
+        scan = true;
     }
 
     /***

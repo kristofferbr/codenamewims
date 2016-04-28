@@ -1,7 +1,13 @@
 package sw805f16.codenamewims;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+
+import java.util.ArrayList;
 
 /**
  * Created by kbrod on 02-03-2016.
@@ -9,6 +15,9 @@ import android.widget.ImageView;
  *
  */
 public class PositionOverlayFactory{
+    private static final int BITMAP_WIDTH = 1312;
+    private static final int BITMAP_HEIGHT = 2132;
+
     Context con;
     PositionOverlay pos;
 
@@ -24,8 +33,8 @@ public class PositionOverlayFactory{
         return pos.generateImageViewWithSpot(x, y);
     }
 
-    public ImageView getRouteBetweenTwoPoints(WimsPoints start, WimsPoints goal){
-        return pos.drawRoute(start, goal);
+    public ImageView getRoute(WimsPoints start, ArrayList<WimsPoints> intermediateGoals){
+        return pos.drawPath(start, intermediateGoals);
     }
 
     public ImageView getBitMapReDrawnSpot(ImageView view, int x, int y){

@@ -188,7 +188,7 @@ public final class JSONContainer {
     public static boolean productsContainString(String str) {
         //We loop through the products list to find a match
         for (int i = 0; i < products.size(); i++) {
-            if (products.get(i).getProductName().equalsIgnoreCase(str)) {
+            if (products.get(i).getProductName().contains(str)) {
                 return true;
             }
         }
@@ -203,7 +203,7 @@ public final class JSONContainer {
      */
     public static Integer indexOfProductWithName(String str) {
         for (int i = 0; i < products.size(); i++) {
-            if (products.get(i).getProductName().equalsIgnoreCase(str)) {
+            if (products.get(i).getProductName().contains(str)) {
                 return i;
             }
         }
