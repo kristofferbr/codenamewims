@@ -19,11 +19,13 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
@@ -56,6 +58,9 @@ public class ShoppingListFragment extends Fragment {
     //This is a list of drawable ids for which mark the item should have
     private FrameLayout currentItem;
 
+
+    private EditText searchView;
+    private Button addItemBtn;
     //These variables are for controlling which items should be deleted
     private int itemToDelete = 0;
 
@@ -96,6 +101,7 @@ public class ShoppingListFragment extends Fragment {
 
 
         View mView = inflater.inflate(R.layout.fragment_shopping_list, container, false);
+
         // Inflate the layout for this fragment
         //We put the inflated view in a local variable
         itemList = new ArrayList<>();
@@ -146,7 +152,9 @@ public class ShoppingListFragment extends Fragment {
         //Then we initialize the view widgets
         currentItem = (FrameLayout) mView.findViewById(R.id.currentItem);
 
-        EditText searchView = (EditText) mView.findViewById(R.id.item_textfield);
+        searchView = (EditText) mView.findViewById(R.id.item_textfield);
+
+        addItemBtn = (Button) mView.findViewById((R.id.item_add_btn));
 
         itemListView = (ListView) mView.findViewById(R.id.itemList);
         itemListView.setAdapter(itemAdapter);
@@ -191,10 +199,21 @@ public class ShoppingListFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if(JSONContainer.productsContainString(s.toString())){
-                    addToItemList(s.toString());
+            }
+        });
+
+        addItemBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (JSONContainer.productsContainString(searchView.getText().toString())) {
+                    addToItemList(searchView.getText().toString());
                 }
-                suggestionListView.setVisibility(View.VISIBLE);
+                else{
+                    Toast.makeText(getActivity().getApplicationContext(),
+                            "\"" + searchView.getText().toString() + "\" was not found.", Toast.LENGTH_SHORT);
+                }
+                hideKeyboard(v);
+                suggestionListView.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -217,7 +236,7 @@ public class ShoppingListFragment extends Fragment {
                 if (getActivity() instanceof StoreMapActivity) {
                     markUnmarkItemInAdapter(position, true);
                 }
-                return false;
+                return true;
             }
         });
         //Here we set the onTouchListener for the fling event. This is for removing items
@@ -235,6 +254,7 @@ public class ShoppingListFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 addToItemList(position);
+                searchView.setText("");
                 suggestionListView.setVisibility(View.GONE);
             }
         });
@@ -320,7 +340,7 @@ public class ShoppingListFragment extends Fragment {
         itemAdapter.markUnmarkItem(position, longC);
         itemAdapter.getItem(0).setVisibility(View.GONE);
         currentItem.addView(itemAdapter.getItem(0));
-        itemAdapter.notifyDataSetChanged();
+        //itemAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -539,7 +559,7 @@ public class ShoppingListFragment extends Fragment {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
         SharedPreferences.Editor mEdit1 = sp.edit();
         String title = "";
-        mEdit1.putInt("Item_List_" + title,  itemList.size());
+        mEdit1.putInt("Item_List_" + title, itemList.size());
 
         for (int i = 0; i < itemList.size(); i++) {
             mEdit1.remove("Item_List_" + title + i);
@@ -557,7 +577,9 @@ public class ShoppingListFragment extends Fragment {
         tmpText.setText(text);
 
         tmpLayout.setStatus(ItemEnum.UNMARKED);
-        tmpLayout.setImageId(0);
+        if(getActivity() instanceof StoreMapActivity){
+            tmpLayout.setImageId(0);
+        }
         //Then we add the layout to the item list, notify the adapter and sort the list
         itemAdapter.add(tmpLayout);
         // TODO: When we have positions, change this to that
@@ -589,9 +611,8 @@ public class ShoppingListFragment extends Fragment {
         }
     }
     // Method to hide keyboard.
-    private void hideKeyboard() {
+    private void hideKeyboard(View view) {
         // Check if no view has focus:
-        View view = getActivity().getCurrentFocus();
         if (view != null) {
             InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(getActivity().getApplicationContext().INPUT_METHOD_SERVICE);
             inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);

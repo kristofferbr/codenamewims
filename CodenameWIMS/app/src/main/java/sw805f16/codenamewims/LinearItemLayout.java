@@ -5,13 +5,18 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * Created by Kogni on 13-Apr-16.
  */
-public class LinearItemLayout extends LinearLayout {
+public class LinearItemLayout extends RelativeLayout implements Comparator {
     private Integer imageId = null;
     private ItemEnum status;
 
@@ -35,11 +40,28 @@ public class LinearItemLayout extends LinearLayout {
     }
 
     public void setImageId(Integer imageId) {
-        this.imageId = imageId;
+        if(imageId != 0) {
+            this.imageId = imageId;
+            ImageView mark = (ImageView) getChildAt(1);
+            mark.setImageDrawable(getContext().getResources().getDrawable(imageId));
+            removeView(mark);
+            addView(mark, 1);
+        }
+        else{
+            this.imageId = imageId;
+            ImageView mark = (ImageView) getChildAt(1);
+            mark.setImageDrawable(null);
+            removeView(mark);
+            addView(mark, 1);
+        }
     }
 
     public ItemEnum getStatus() {
         return status;
+    }
+
+    public int getStatusInt(){
+        return status.getMark();
     }
 
     public void setStatus(ItemEnum status) {
@@ -54,6 +76,14 @@ public class LinearItemLayout extends LinearLayout {
     public void setText(String text){
         TextView textView = (TextView) this.getChildAt(0);
         textView.setText(text);
+    }
+
+    @Override
+    public int compare(Object obj1, Object obj2) {
+        LinearItemLayout lhs = (LinearItemLayout)obj1;
+        LinearItemLayout rhs = (LinearItemLayout)obj2;
+
+        return lhs.getStatusInt() - rhs.getStatusInt();
     }
 }
 

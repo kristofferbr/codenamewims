@@ -19,6 +19,8 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -64,13 +66,14 @@ public class StartActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_screen); // When refactoring, change to activity_start_screen layoutet.
 
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         if (getIntent().getParcelableExtra("state") != null) {
             fragmentState = getIntent().getParcelableExtra("state");
         }
 
         //We make a request to the server and receives the list of stores
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://nielsema.ddns.net/sw8dev/api/store/";
+        String url = "http://nielsema.ddns.net/sw8/api/store/";
 
         JSONContainer.requestStores(queue, url, getApplicationContext());
 
@@ -208,6 +211,9 @@ public class StartActivity extends Activity {
             Toast.makeText(StartActivity.this, "No match for: " + key + ". Please pick a suggestion or search for another store", Toast.LENGTH_SHORT).show();
             populateSuggestionList(key.toString());
         }
-
+    }
+    public static void hideSoftKeyboard(Activity activity) {
+        InputMethodManager inputMethodManager = (InputMethodManager)  activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
     }
 }
