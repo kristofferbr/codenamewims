@@ -111,7 +111,37 @@ public class PositionOverlay {
         return overlay;
     }
 
-    public ImageView drawRoute(WimsPoints StartPoint, WimsPoints EndPoint){
+    public ImageView drawPath(WimsPoints start, ArrayList<WimsPoints> goals) {
+        /*The bitmap on which the point is drawn*/
+        emptyBit = Bitmap.createBitmap(BITMAP_WIDTH,BITMAP_HEIGHT, Bitmap.Config.ARGB_8888);
+
+        /*Make the canvas draw on the bitmap*/
+        Canvas can = new Canvas(emptyBit);
+
+        /*Is set to transparrent so the view below is visible*/
+        can.drawColor(Color.TRANSPARENT);
+
+         /*The imageview is Instantiated*/
+        overlay = new ImageView(con);
+
+        while(!goals.isEmpty()) {
+            findPath(start, goals.get(0));
+            start = goals.get(0);
+            goals.remove(0);
+        }
+
+        constructPath(start, can);
+
+        ViewGroup.LayoutParams param = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        overlay.setLayoutParams(param);
+
+        /*The bitmap is added to the Imageview*/
+        overlay.setImageBitmap(emptyBit);
+
+        return overlay;
+    }
+
+    private void findPath(WimsPoints StartPoint, WimsPoints EndPoint){
 
         /*Start Values */
         ArrayList<WimsPoints> closedSet = new ArrayList<>();
@@ -125,24 +155,11 @@ public class PositionOverlay {
         StartPoint.gscore = 0;
         StartPoint.fscore = EndPoint.distance(StartPoint.x, StartPoint.y);
 
-         /*The bitmap on which the point is drawn*/
-        emptyBit = Bitmap.createBitmap(BITMAP_WIDTH,BITMAP_HEIGHT,Bitmap.Config.ARGB_8888);
-
-        /*Make the canvas draw on the bitmap*/
-        Canvas can = new Canvas(emptyBit);
-
-        /*Is set to transparrent so the view below is visible*/
-        can.drawColor(Color.TRANSPARENT);
-
-         /*The imageview is Instantiated*/
-        overlay = new ImageView(con);
-
 
         while(!openSet.isEmpty()){
             current = getPointwithLowestScore(openSet, EndPoint);
 
             if(current == EndPoint){
-                constructPath(current,can);
                 break;
             }
             openSet.remove(current);
@@ -163,23 +180,8 @@ public class PositionOverlay {
                     current.Neighbours.get(i).fscore = temp_score +
                                                        current.Neighbours.get(i).distance(EndPoint.x, EndPoint.y);
                 }
-
-
             }
-
-
         }
-
-        ViewGroup.LayoutParams param = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        overlay.setLayoutParams(param);
-
-        /*The bitmap is added to the Imageview*/
-        overlay.setImageBitmap(emptyBit);
-
-        /*Returns the Imageview*/
-        return overlay;
-
-
     }
 
 

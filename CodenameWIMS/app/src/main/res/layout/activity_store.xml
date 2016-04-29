@@ -4,7 +4,8 @@
     android:layout_height="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="sw805f16.codenamewims.StoreMapActivity">
+    tools:context="sw805f16.codenamewims.StoreMapActivity"
+    android:id="@+id/drawer">
 
 
     <FrameLayout

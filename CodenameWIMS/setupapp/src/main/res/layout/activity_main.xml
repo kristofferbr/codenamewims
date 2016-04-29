@@ -10,46 +10,52 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:focusable="true">
 
-        <FrameLayout
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/MapFrame"
+        android:nestedScrollingEnabled="true"
+        android:focusable="true">
+
+        <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_centerHorizontal="true"
-            android:id="@+id/MapFrame"
-            android:nestedScrollingEnabled="true"
-            android:focusable="true">
+            android:id="@+id/storemap"
+            android:layout_gravity="center" />
 
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/storemap"
-                android:layout_gravity="center" />
+    </FrameLayout>
 
-        </FrameLayout>
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Normal"
+        android:id="@+id/testbut"/>
 
-        <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Normal"
-            android:id="@+id/testbut"/>
+    <EditText
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/choose_store"
+        android:layout_toRightOf="@+id/testbut"/>
 
-        <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="commit data"
-            android:id="@+id/commit"
-            android:layout_below="@+id/testbut"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
-        <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fingerprint"
-            android:id="@+id/fingerprint"
-            android:layout_below="@+id/commit"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="commit data"
+        android:id="@+id/commit"
+        android:layout_below="@+id/testbut"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fingerprint"
+        android:id="@+id/fingerprint"
+        android:layout_below="@+id/commit"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     </RelativeLayout>

@@ -5,6 +5,7 @@ import android.net.wifi.ScanResult;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean createMapDataModeNeighbors = false;
     private boolean fingerpriting = false;
     private boolean isScanning = false;
-    private String store_id = "56e6a28a28c3e3314a6849df"; // The ID of føtex! :)
+    private String store_id;
     private String base_url= "http://nielsema.ddns.net/sw8/api/store/";
     private RequestQueue rqueue;
     private float scale = 1;
