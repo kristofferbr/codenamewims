@@ -16,7 +16,10 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+
+import java.util.Collections;
 import java.util.List;
+import java.util.TreeSet;
 
 /**
  * Created by Kogni on 06-Apr-16.
@@ -25,12 +28,15 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
 
     private final Activity context;
 
+    private ArrayList<LinearItemLayout> objectList;
+
     /*public ShoppingListAdapter(Context context, @LayoutRes int resource, @NonNull List<LinearItemLayout> objects) {
         super(context, resource, objects);
     }*/
 
     public ShoppingListAdapter(Activity context, @LayoutRes int resource, @NonNull List<LinearItemLayout> objects) {
         super(context, resource, objects);
+        this.objectList = new ArrayList<>(objects);
         this.context = context;
     }
 
@@ -51,10 +57,7 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
 
     public void editItemEnum(int i, ItemEnum status) {
         LinearItemLayout tempPair1 = getItem(i);
-        LinearItemLayout edittedPair = tempPair1;
-        remove(tempPair1);
-        edittedPair.setStatus(status);
-        insert(edittedPair, i);
+        tempPair1.setStatus(status);
     }
 
     @Override
@@ -63,10 +66,12 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
         LayoutInflater inflater = context.getLayoutInflater();
         LinearItemLayout rowView = (LinearItemLayout) inflater.inflate(R.layout.item_layout, null, true);
         rowView.setText(getItem(position).getText());
-        if(getItem(position).getImageId() != 0) {
+        rowView.setImageId(getItem(position).getImageId());
+        if(getItem(position).getImageId() != 0){
             ImageView imageView = (ImageView) getItem(position).getChildAt(1);
-            imageView.setImageDrawable(context.getResources().getDrawable(getItem(position).getImageId()));
+            imageView.setVisibility(View.VISIBLE);
         }
+
         return rowView;
     }
 
@@ -77,22 +82,19 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
      * @param longClick True if the method is called from a long click, False if it should be marked as put in the basket
      */
     public void markUnmarkItem(int position, boolean longClick) {
-        LinearItemLayout item = getItem(position);
-        ImageView mark = (ImageView) item.getChildAt(1);
+        LinearItemLayout item =  getItem(position);
+        ItemEnum marking = ItemEnum.MARKED;
         //First, we determine what the current status of the item is
         //If the item is set to checkmark, we either want to change it to skip or unmark it
 
         if (item.getImageId() != null && item.getImageId() == R.drawable.checkmark) {
             //If the item was longClicked, we change the drawable to skip
             if (longClick) {
-                mark.setImageDrawable(getContext().getResources().getDrawable(R.drawable.skip));
                 item.setImageId(R.drawable.skip);
             }
             //If the item was not longClicked we set it to UNMARKED.
             else {
-                //Because this is called with a normal click the checkmark is removed
-                mark.setImageDrawable(null);
-                editItemEnum(position, ItemEnum.UNMARKED);
+                marking = ItemEnum.UNMARKED;
                 //We also remove the drawable reference
                 item.setImageId(0);
                 //After adding it the item to the unmarked list we sort the list
@@ -103,38 +105,52 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
         else if (item.getImageId() != null && item.getImageId() == R.drawable.skip) {
             //If a long click was performed we unmark the item
             if (longClick) {
-                mark.setImageDrawable(null);
-                editItemEnum(position, ItemEnum.UNMARKED);
+                marking = ItemEnum.UNMARKED;
                 item.setImageId(0);
                 // TODO: When we have positions, change this to that
             }
             //If a normal click is performed, we checkmark the item
             else {
                 //When the user clicks a skipped item with a normal click, the drawable is replaced with a checkmark
-                mark.setImageDrawable(getContext().getResources().getDrawable(R.drawable.checkmark));
                 item.setImageId(R.drawable.checkmark);
             }
             //If the item isnt set to any drawable, we either want to set it to skip or checkmark
         } else {
             //If a long click is performed, the item is set to skip
             if (longClick) {
-                mark.setImageDrawable(getContext().getResources().getDrawable(R.drawable.skip));
                 item.setImageId(R.drawable.skip);
 
             }
             //Otherwise, we place the checkmark drawable
             else {
-                mark.setImageDrawable(getContext().getResources().getDrawable(R.drawable.checkmark));
                 item.setImageId(R.drawable.checkmark);
             }
-            editItemEnum(position, ItemEnum.MARKED);
+            marking = ItemEnum.MARKED;
         }
-
+        editItemEnum(position, marking);
         sortItemList(new WimsPoints(0, 0));
 
     }
 
     public void sortItemList(WimsPoints start) {
+
+        this.sort(new LinearItemLayoutStatusComparator());
+
+        ArrayList<LinearItemLayout>  unmarkedList = new ArrayList<>();
+        for(int i = 0; i<this.getCount(); i++){
+            if(getItem(i).getStatus() == ItemEnum.UNMARKED){
+                unmarkedList.add(getItem(i));
+                remove(getItem(i));
+            }
+        }
+
+        Collections.sort(unmarkedList, new LinearItemLayoutNameComparator());
+
+        for(int i = 0; i < unmarkedList.size(); i++){
+            insert(unmarkedList.get(i),i);
+        }
+
+        /*
         ArrayList<WimsPoints> tmpSet = new ArrayList<>();
         String text;
         Integer index;
@@ -176,9 +192,7 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
                     }
                 }
             }
-        }
-
-        //We then set the visibility of the top item to GONE
+        }*/
     }
 
     /**

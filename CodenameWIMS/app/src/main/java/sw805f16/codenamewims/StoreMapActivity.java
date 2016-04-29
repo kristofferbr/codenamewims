@@ -1,5 +1,6 @@
 package sw805f16.codenamewims;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -15,8 +16,11 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -49,7 +53,7 @@ public class StoreMapActivity extends WimsActivity {
     private boolean isInFront = false;
     private boolean confident = false;
     private String store_id = "56e6a28a28c3e3314a6849df"; // The ID of føtex! :)
-    private String base_url= "http://nielsema.ddns.net/sw8dev/api/store/";
+    private String base_url= "http://nielsema.ddns.net/sw8/api/store/";
     private RequestQueue rqueue;
     private float scale = 1;
     private ScaleGestureDetector Scale;
@@ -85,22 +89,11 @@ public class StoreMapActivity extends WimsActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_store);
 
-        // my_child_toolbar is defined in the layout file
-        // toolbar = (Toolbar)findViewById(R.id.app_bar);
-        //setSupportActionBar(toolbar);
-
-        // Get a support ActionBar corresponding to this toolbar
-        //ActionBar ab = getSupportActionBar();
-
-        // Enable the Up button
-        // ab.setDisplayHomeAsUpEnabled(true);
-
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         if(getIntent().getStringExtra("storeId") != null) {
             this.store_id = getIntent().getStringExtra("storeId");
         }
-
-        //this.store_id = getIntent().getStringExtra("storeId");
 
         fragment = ShoppingListFragment.newInstance(store_id);
 
@@ -121,8 +114,7 @@ public class StoreMapActivity extends WimsActivity {
 
         requestMapData(store_id);
 
-
-        String url = "http://nielsema.ddns.net/sw8dev/api/store/" + store_id + "/products/";
+        String url = "http://nielsema.ddns.net/sw8/api/store/" + store_id + "/products/";
 
         JSONContainer.requestProducts(rqueue, url, getApplicationContext());
 
@@ -168,7 +160,6 @@ public class StoreMapActivity extends WimsActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView tes = (TextView) view;
-
                 float[] res;
 
                 // Sees if the search Query is matching any products from the store
@@ -205,16 +196,20 @@ public class StoreMapActivity extends WimsActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
+
             }
         });
 
-        /*CommitButton.setOnClickListener(new View.OnClickListener() {
+        Button itemAddBtn = (Button) findViewById(R.id.item_add_btn);
+
+        itemAddBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendMapData(mapData);
-                sendMarginalLikelihood();
-
-            }*/
+                getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+                verifyInput(search.getText().toString());
+                listResults.setVisibility(View.INVISIBLE);
+            }
+        });
 
         getMapLayout();
 
@@ -244,6 +239,19 @@ public class StoreMapActivity extends WimsActivity {
         });
 
         getItemListAndDrawRoute();
+    }
+
+
+    private void verifyInput(String s) {
+        float[] res;
+
+        // Sees if the search Query is matching any products from the store
+        res = searchProductReturnCoordinates(JSONContainer.getProducts(), s);
+        // If the query matches a product, the resulting location is marked on the map
+        if (res.length != 0) {
+            fragment.addToItemList(s);
+            getItemListAndDrawRoute();
+        }
     }
 
     @Override
@@ -396,6 +404,11 @@ public class StoreMapActivity extends WimsActivity {
                             JSONArray points = response.getJSONArray("ops");
                             mapData = deConstructJSON(points);
 
+                            //introduced for testing purposes
+                            String jsonString = getApplicationContext().getResources().getString(R.string.global_json);
+                            JSONArray staticpoints = new JSONArray(jsonString);
+                            mapData = deConstructJSON(staticpoints);
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -404,7 +417,14 @@ public class StoreMapActivity extends WimsActivity {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
+                        try{
+                            String jsonString = getApplicationContext().getResources().getString(R.string.global_json);
+                            JSONArray staticpoints = new JSONArray(jsonString);
+                            mapData = deConstructJSON(staticpoints);
+                        }
+                        catch(JSONException e){
+                            e.printStackTrace();
+                        }
 
                     }
                 });
@@ -474,6 +494,7 @@ public class StoreMapActivity extends WimsActivity {
      *
      * @param product JSON array of products belonging to the store
      * @param query The search query
+     * @return Integer array where res[0] = x and res[1] = y
      * @return Float array where res[0] = x and res[1] = y
      */
     public float[] searchProductReturnCoordinates(List<WimsPoints> product, String query) {
@@ -570,7 +591,6 @@ public class StoreMapActivity extends WimsActivity {
      * @param itemsToAdd The points to add in the data
      */
     public void addItemsToMapDataAndDrawRoute(WimsPoints currentWimsPoint, ArrayList<WimsPoints> itemsToAdd){
-
         HashMap<WimsPoints, Integer> indexOfNeighbor = new HashMap<>();
         if(!mapData.isEmpty()) {
             for (WimsPoints point : itemsToAdd) {
@@ -652,6 +672,9 @@ public class StoreMapActivity extends WimsActivity {
         catch (JSONException e){
             e.printStackTrace();
         }
+        if(mapdata.isEmpty()){
+            mapdata.add(new WimsPoints(90, 1000));
+        }
         return mapdata;
     }
 
@@ -666,19 +689,14 @@ public class StoreMapActivity extends WimsActivity {
 
         try {
             for (int i = 0; i < jsonArray.length(); i++) {
-
                 if (id.equals(jsonArray.getJSONObject(i).getString("_id"))) {
-
                     for(int x = 0; x<mapdata.size(); x++){
-
                         if(jsonArray.getJSONObject(i).getInt("x") == mapdata.get(x).x
                                 && jsonArray.getJSONObject(i).getInt("y") == mapdata.get(x).y ){
                             return x;
                         }
-
                     }
                 }
-
             }
         } catch (JSONException e)
         {

@@ -822,13 +822,14 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(Bitmap bitmap) {
-                mImageView.setImageBitmap(bitmap);
+                //mImageView.setImageBitmap(bitmap);
+                mImageView.setImageResource(R.drawable.foetexmap);
             }
         }, 0, 0, null,
                 new Response.ErrorListener() {
                     public void onErrorResponse(VolleyError error) {
 
-                        mImageView.setImageResource(R.drawable.prik);
+                        mImageView.setImageResource(R.drawable.foetexmap);
                         error.printStackTrace();
                     }
                 });

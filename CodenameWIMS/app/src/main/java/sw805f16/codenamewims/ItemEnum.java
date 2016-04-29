@@ -4,7 +4,17 @@ package sw805f16.codenamewims;
  * Created by Kogni on 06-Apr-16.
  */
 public enum ItemEnum {
-    UNMARKED, MARKED, UNAVAILABLE;
+    UNMARKED(1), MARKED(2), UNAVAILABLE(3);
+
+    private final int mark;
+
+    ItemEnum (int mark){
+        this.mark = mark;
+    }
+
+    public int getMark(){
+        return mark;
+    }
 
     public ItemEnum changeStatus(boolean longclicked){
         ItemEnum test = this;
