@@ -203,7 +203,7 @@
     </string>
 
     <string name="point_json">
-    { "points": [
+    [
         {"_id":"571e29db708e9601be158580","x":748,"y":91,"__v":1,"fingerprint":[{"ssid":"nostrum","strength":16637},{"ssid":"et","strength":86226},
             {"ssid":"reiciendis","strength":20742},{"ssid":"est","strength":27493},{"ssid":"qui","strength":14218},{"ssid":"voluptatem","strength":26429},
             {"ssid":"ut","strength":71931},{"ssid":"eveniet","strength":56014},{"ssid":"deserunt","strength":53384},{"ssid":"sequi","strength":34850}],
@@ -211,9 +211,8 @@
         {"_id":"571e29db708e9601be158585","x":689,"y":84,"__v":1,"fingerprint":[{"ssid":"commodi","strength":87430},{"ssid":"et","strength":34714},{"ssid":"sint","strength":67626},{"ssid":"repellat","strength":68760},{"ssid":"dignissimos","strength":35707},{"ssid":"doloribus","strength":3333},{"ssid":"sint","strength":60294},{"ssid":"est","strength":24315},{"ssid":"consequatur","strength":63435},{"ssid":"nihil","strength":29255}],"neighbors":["571e29db708e9601be158580","571e29db708e9601be15858a","571e29db708e9601be158774","571e29db708e9601be158779","571e29db708e9601be15877d"]},
         {"_id":"571e29db708e9601be15858a","x":611,"y":85,"__v":1,"fingerprint":[{"ssid":"voluptas","strength":6167},{"ssid":"velit","strength":94551},{"ssid":"accusantium","strength":95099},{"ssid":"aspernatur","strength":27713},{"ssid":"vel","strength":93603},{"ssid":"porro","strength":34813},{"ssid":"sint","strength":57559},{"ssid":"et","strength":80894},{"ssid":"similique","strength":35519},{"ssid":"velit","strength":77098}],"neighbors":["571e29db708e9601be158585","571e29db708e9601be15858e","571e29db708e9601be158779","571e29db708e9601be15877d","571e29db708e9601be158782"]},
         {"_id":"571e29db708e9601be15858e","x":380,"y":250,"__v":1,"fingerprint":[{"ssid":"illum","strength":57918},{"ssid":"et","strength":12340},{"ssid":"illum","strength":29013},{"ssid":"vero","strength":81938},{"ssid":"molestiae","strength":21236},{"ssid":"sunt","strength":41680},{"ssid":"ex","strength":41864},{"ssid":"nesciunt","strength":46262},{"ssid":"in","strength":73740},{"ssid":"magnam","strength":69861}],"neighbors":["571e29db708e9601be15858a","571e29db708e9601be158593","571e29db708e9601be15877d","571e29db708e9601be158782","571e29db708e9601be158787"]},
-        {"_id":"571e29db708e9601be158593","x":406,"y":456,"__v":1,"fingerprint":[{"ssid":"earum","strength":559},{"ssid":"sunt","strength":64912},{"ssid":"laudantium","strength":62355},{"ssid":"in","strength":33218},{"ssid":"voluptas","strength":4947},{"ssid":"quas","strength":28168},{"ssid":"aut","strength":66060},{"ssid":"quo","strength":25230},{"ssid":"numquam","strength":9349},{"ssid":"laboriosam","strength":48200}],"neighbors":["571e29db708e9601be15858e","571e29db708e9601be158599","571e29db708e9601be158782","571e29db708e9601be158787","571e29db708e9601be15878c"]},
-
-        ]}
+        {"_id":"571e29db708e9601be158593","x":406,"y":456,"__v":1,"fingerprint":[{"ssid":"earum","strength":559},{"ssid":"sunt","strength":64912},{"ssid":"laudantium","strength":62355},{"ssid":"in","strength":33218},{"ssid":"voluptas","strength":4947},{"ssid":"quas","strength":28168},{"ssid":"aut","strength":66060},{"ssid":"quo","strength":25230},{"ssid":"numquam","strength":9349},{"ssid":"laboriosam","strength":48200}],"neighbors":["571e29db708e9601be15858e","571e29db708e9601be158599","571e29db708e9601be158782","571e29db708e9601be158787","571e29db708e9601be15878c"]}
+        ]
     </string>
 
     <string name="title_activity_settings">Settings</string>
