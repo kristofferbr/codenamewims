@@ -176,6 +176,7 @@ public class StoreMapActivity extends WimsActivity {
                 if (res.length != 0) {
                     fragment.addToItemList(tes.getText().toString());
                     getItemListAndDrawRoute();
+                    fragment.setListChanged(false);
                 }
 
                 listResults.setVisibility(View.INVISIBLE);
@@ -240,6 +241,10 @@ public class StoreMapActivity extends WimsActivity {
 
             @Override
             public void onDrawerClosed(View drawerView) {
+                if (fragment.isListChanged()) {
+                    getItemListAndDrawRoute();
+                    fragment.setListChanged(false);
+                }
                 scan = true;
             }
 
@@ -247,7 +252,9 @@ public class StoreMapActivity extends WimsActivity {
             public void onDrawerStateChanged(int newState) {}
         });
 
-        getItemListAndDrawRoute();
+        if (!fragment.getItemList().isEmpty()) {
+            getItemListAndDrawRoute();
+        }
     }
 
 

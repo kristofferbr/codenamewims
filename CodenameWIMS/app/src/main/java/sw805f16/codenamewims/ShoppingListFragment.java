@@ -67,6 +67,8 @@ public class ShoppingListFragment extends Fragment {
     //A gesture detector we use to detect fling gestures
     protected GestureDetectorCompat detector;
 
+    private boolean listChanged = false;
+
     public ShoppingListFragment() {
         // Required empty public constructor
     }
@@ -334,6 +336,13 @@ public class ShoppingListFragment extends Fragment {
         return returnList;
     }
 
+    public boolean isListChanged() {
+        return listChanged;
+    }
+    public void setListChanged(boolean value) {
+        listChanged = value;
+    }
+
     /**
      * This method sorts the unmarked item list by nearest neighbor to a starting point
      * @param start The starting point for the sorting
@@ -345,6 +354,7 @@ public class ShoppingListFragment extends Fragment {
             itemAdapter.sortItemList(start);
             itemAdapter.getItem(0).setVisibility(View.GONE);
             currentItem.addView(itemAdapter.getItem(0));
+            listChanged = true;
         }
     }
 
@@ -354,6 +364,7 @@ public class ShoppingListFragment extends Fragment {
         itemAdapter.markUnmarkItem(position, longC);
         itemAdapter.getItem(0).setVisibility(View.GONE);
         currentItem.addView(itemAdapter.getItem(0));
+        listChanged = true;
         //itemAdapter.notifyDataSetChanged();
     }
 
@@ -598,6 +609,9 @@ public class ShoppingListFragment extends Fragment {
         itemAdapter.add(tmpLayout);
         // TODO: When we have positions, change this to that
         sortItemListInAdapter(new WimsPoints(0, 0));
+        if (getActivity() instanceof StoreMapActivity) {
+            listChanged = true;
+        }
         itemAdapter.notifyDataSetChanged();
     }
 
