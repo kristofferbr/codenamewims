@@ -46,7 +46,7 @@ public class PositionOverlay {
      * @param positionY is the Y offset
      * @return Imageview with a point in the specified location
      */
-    public ImageView generateImageViewWithSpot(int positionX, int positionY)
+    public ImageView generateImageViewWithSpot(float positionX, float positionY)
     {
 
         /*The bitmap on which the point is drawn*/
@@ -59,7 +59,7 @@ public class PositionOverlay {
         can.drawColor(Color.TRANSPARENT);
 
         /*The point is drawn*/
-        can.drawCircle((float) positionX, (float) positionY, 5f, paints);
+        can.drawCircle( positionX, positionY, 5f, paints);
         //can.drawPoint((float) positionX, (float) positionY, paints);
 
         /*The imageview is Instantiated*/
@@ -206,7 +206,7 @@ public class PositionOverlay {
 
     }
 
-    public ImageView drawSpotOnSameBitmap(ImageView view, int positionX, int positionY){
+    public ImageView drawSpotOnSameBitmap(ImageView view, float positionX, float positionY){
         /*The bitmap on which the point is drawn*/
 
 
@@ -226,7 +226,7 @@ public class PositionOverlay {
 
 
         /*The point is drawn*/
-        can.drawCircle((float) positionX, (float) positionY, 5f, paints);
+        can.drawCircle( positionX, positionY, 5f, paints);
         //can.drawPoint((float) positionX, (float) positionY, paints);
 
         /*The imageview is Instantiated*/
@@ -237,8 +237,8 @@ public class PositionOverlay {
 
     }
 
-    public ImageView drawLineOnSameMap(ImageView view, int StartPositionX, int StartPositionY,
-                                       int EndPositionX, int EndPositionY){
+    public ImageView drawLineOnSameMap(ImageView view, float StartPositionX, float StartPositionY,
+                                       float EndPositionX, float EndPositionY){
         ImageView viewToReturn = new ImageView(con);
         viewToReturn.setLayoutParams(params);
         Bitmap temp_bitmap = ((BitmapDrawable)view.getDrawable()).getBitmap();

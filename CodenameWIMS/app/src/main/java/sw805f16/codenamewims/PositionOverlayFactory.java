@@ -34,7 +34,8 @@ public class PositionOverlayFactory{
     }
 
     public ImageView getRoute(WimsPoints start, ArrayList<WimsPoints> intermediateGoals){
-        return pos.drawPath(start, intermediateGoals);
+        ArrayList<WimsPoints> tmpList = new ArrayList<>(intermediateGoals);
+        return pos.drawPath(start, tmpList);
     }
 
     public ImageView getBitMapReDrawnSpot(ImageView view, int x, int y){

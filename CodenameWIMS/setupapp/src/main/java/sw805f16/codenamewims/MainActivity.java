@@ -8,13 +8,20 @@ import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -39,6 +46,8 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
+    private ArrayList<String> resultList = new ArrayList<>();
+    private ArrayAdapter adapter;
     private boolean createMapDataModePoints = false;
     private boolean createMapDataModeNeighbors = false;
     private boolean fingerpriting = false;
@@ -56,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
     private float posX;
     private float posY;
     private HashMap<String, Double> marginalLikelihood = new HashMap<>();
+    private EditText choose_store;
+    private ListView suggestionList;
 
     private ArrayList<WimsPoints> mapData = new ArrayList<>();
     private WimsPoints currentWimsPoint;
@@ -75,9 +86,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        rqueue = Volley.newRequestQueue(getApplicationContext());
+        JSONContainer.requestStores(rqueue, base_url, getApplicationContext());
+
         fingerprinter = new WifiFingerprinter(getApplicationContext());
-        final Button CommitButton = (Button) findViewById(R.id.commit);
-        CommitButton.setVisibility(View.INVISIBLE);
+        final Button commitButton = (Button) findViewById(R.id.commit);
+        commitButton.setVisibility(View.INVISIBLE);
+        final Button deleteButton = (Button) findViewById(R.id.delete);
+        deleteButton.setVisibility(View.INVISIBLE);
         setupFingerPrintThread();
 
         final Button fingerprintButton = (Button) findViewById(R.id.fingerprint);
@@ -98,6 +114,15 @@ public class MainActivity extends AppCompatActivity {
                 fingerprintButton.setVisibility(View.INVISIBLE);
 
 
+            }
+        });
+
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                removePoint();
+                deleteButton.setVisibility(View.INVISIBLE);
+                fingerprintButton.setVisibility(View.INVISIBLE);
             }
         });
         // Set variables for gestures
@@ -172,11 +197,13 @@ public class MainActivity extends AppCompatActivity {
                                     fram.addView(posfac.getPositionOfFingerPrintPoint((int)currentWimsPoint.x,(int)currentWimsPoint.y));
                                     fingerpriting = true;
                                     fingerprintButton.setVisibility(View.VISIBLE);
+                                    deleteButton.setVisibility(View.VISIBLE);
                                 } else
                                 {
                                     fram.removeViewAt(2);
                                     fingerpriting = false;
                                     fingerprintButton.setVisibility(View.INVISIBLE);
+                                    deleteButton.setVisibility(View.INVISIBLE);
                                 }
 
                             }
@@ -237,10 +264,11 @@ public class MainActivity extends AppCompatActivity {
         // Instantiate the factory for generating overlays
         posfac = new PositionOverlayFactory(this);
 
-        CommitButton.setOnClickListener(new View.OnClickListener() {
+        commitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendMapData(mapData);
+                sendMarginalLikelihood();
             }
         });
 
@@ -253,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
                     //DrawDataOnMap(mapData);
                     createMapDataModeNeighbors = false;
                     createMapDataModePoints = true;
-                    CommitButton.setVisibility(View.VISIBLE);
+                    commitButton.setVisibility(View.VISIBLE);
                     EditButton.setText("Points");
                 } else if (createMapDataModePoints && !createMapDataModeNeighbors) {
                     createMapDataModePoints = false;
@@ -262,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
                 } else if (createMapDataModeNeighbors) {
                     createMapDataModeNeighbors = false;
                     createMapDataModePoints = false;
-                    CommitButton.setVisibility(View.INVISIBLE);
+                    commitButton.setVisibility(View.INVISIBLE);
                     EditButton.setText("Normal");
                 }
 
@@ -272,8 +300,6 @@ public class MainActivity extends AppCompatActivity {
         // Gets the map corresponding to the store ID
         fram =(FrameLayout) findViewById(R.id.MapFrame);
 
-        getMapLayout();
-
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message message) {
@@ -281,6 +307,111 @@ public class MainActivity extends AppCompatActivity {
 
             }
         };
+
+        adapter = new ArrayAdapter(getApplicationContext(),
+                R.layout.simple_list_view,
+                resultList);
+
+        suggestionList = (ListView) findViewById(R.id.resultView);
+        suggestionList.setAdapter(adapter);
+        choose_store = (EditText) findViewById(R.id.choose_store);
+        choose_store.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                suggestionList.setVisibility(View.VISIBLE);
+                populateSuggestionList(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        suggestionList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView text = (TextView) view;
+                setStoreId(text.getText().toString());
+                suggestionList.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void removePoint() {
+        mapData.remove(currentWimsPoint);
+        for (WimsPoints point : mapData) {
+            if (point.Neighbours.contains(currentWimsPoint)) {
+                point.Neighbours.remove(currentWimsPoint);
+            }
+        }
+        removePointFromMap();
+        currentWimsPoint = new WimsPoints();
+    }
+
+    private void removePointFromMap() {
+        fram.removeViewAt(2);
+        fram.removeViewAt(1);
+        if (!mapData.isEmpty()) {
+            ImageView tmpImage = posfac.getPostitionOverlay(mapData.get(0).x, mapData.get(0).y);
+            if (mapData.size() > 1) {
+                for (int k = 1; k < mapData.size(); k++) {
+                    tmpImage = posfac.getBitMapReDrawnSpot(tmpImage, mapData.get(k).x, mapData.get(k).y);
+                }
+            }
+            int i = 0;
+            for (WimsPoints curr : mapData) {
+                for (int n = i + 1; n < mapData.size(); n++) {
+                    if (curr.Neighbours.contains(mapData.get(n))) {
+                        tmpImage = posfac.getBitMapReDrawnLine(tmpImage, curr.x, curr.y,
+                                mapData.get(n).x, mapData.get(n).y);
+                    }
+                }
+                i++;
+            }
+            fram.addView(tmpImage);
+        }
+    }
+
+    /**
+     * This method populates the listview with suggestions
+     * @param query The query from which to populate after
+     */
+    private void populateSuggestionList(String query) {
+        String key = "";
+        //We need to clear the list, otherwise the suggestion list explodes
+        resultList.clear();
+        //We make an iterator and iterate over the stores hashmap
+        Iterator it = JSONContainer.getStores().entrySet().iterator();
+        Map.Entry pair;
+
+        while (it.hasNext()) {
+            pair = (Map.Entry) it.next();
+            key = (String) pair.getKey();
+
+            resultList.add(key);
+
+        }
+
+        //After the immediate matches are added to the list it is sorted by rank
+        resultList = SearchRanking.rankSearchResults(query, resultList);
+
+        //Then we notify the adapter that the list is modified
+        adapter.notifyDataSetChanged();
+    }
+
+    private void setStoreId(String key){
+        if (JSONContainer.getStores().containsKey(key.toString().toLowerCase())) {
+            //The search field is emptied
+            choose_store.setText("");
+            store_id = JSONContainer.getStores().get(key.toString());
+            getMapLayout();
+        }
     }
 
     public ArrayList<ScanResult> filterScanByKStrongest(ArrayList<ScanResult> results, int k) {
@@ -649,8 +780,8 @@ public class MainActivity extends AppCompatActivity {
 
         for(int i = 0; i<pointArray.size();i++){
 
-            if(x < pointArray.get(i).x+25 && x > pointArray.get(i).x -25
-                    && y < pointArray.get(i).y+25 && y > pointArray.get(i).y - 25){
+            if(x < pointArray.get(i).x+50 && x > pointArray.get(i).x -50
+                    && y < pointArray.get(i).y+50 && y > pointArray.get(i).y - 50){
                 return pointArray.get(i);
             }
 

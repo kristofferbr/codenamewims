@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- Indigo 50 -->
+    <color name="colorAccent">#E8EAF6</color>
+    <!-- Indigo 200 -->
+    <color name="Indigo200">#9fa8da</color>
+    <!-- Indigo 300 -->
+    <color name="Indigo300">#7986cb</color>
+    <!-- Indigo 400 -->
+    <color name="Indigo400">#5c6bc0</color>
+    <!-- Indigo 500 -->
     <color name="colorPrimary">#3F51B5</color>
+    <!-- Indigo 700 -->
     <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+
+    <color name="White">#ffffff</color>
+
+    <color name="RoyalBlue">#4169e1</color>
+
+    <color name="Black">#000000</color>
 </resources>

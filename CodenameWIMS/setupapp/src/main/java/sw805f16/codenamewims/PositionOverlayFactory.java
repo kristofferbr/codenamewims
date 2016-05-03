@@ -19,7 +19,7 @@ public class PositionOverlayFactory{
     }
 
 
-    public ImageView getPostitionOverlay(int x, int y)
+    public ImageView getPostitionOverlay(float x, float y)
     {
         return pos.generateImageViewWithSpot(x, y);
     }
@@ -28,11 +28,11 @@ public class PositionOverlayFactory{
         return pos.drawRoute(start, goal);
     }
 
-    public ImageView getBitMapReDrawnSpot(ImageView view, int x, int y){
+    public ImageView getBitMapReDrawnSpot(ImageView view, float x, float y){
         return pos.drawSpotOnSameBitmap(view, x, y);
     }
 
-    public ImageView getBitMapReDrawnLine(ImageView view, int StartX, int StartY, int EndX, int EndY){
+    public ImageView getBitMapReDrawnLine(ImageView view, float StartX, float StartY, float EndX, float EndY){
         return pos.drawLineOnSameMap(view,StartX,StartY,EndX,EndY);
     }
 

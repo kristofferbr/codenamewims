@@ -80,8 +80,6 @@ public class StoreMapActivity extends WimsActivity {
     private WifiFingerprinter fingerprinter = new WifiFingerprinter(this);
     private boolean scan = true;
 
-    private ArrayList<WimsPoints> items = new ArrayList<>();
-
     ShoppingListFragment fragment;
 
     @Override
@@ -96,6 +94,15 @@ public class StoreMapActivity extends WimsActivity {
         }
 
         fragment = ShoppingListFragment.newInstance(store_id);
+
+        try {
+            String jsonString = getApplicationContext().getResources().getString(R.string.point_json);
+            JSONArray staticpoints = new JSONArray(jsonString);
+            mapData = deConstructJSON(staticpoints);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        currentWimsPoint = mapData.get(0);
 
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
@@ -159,6 +166,7 @@ public class StoreMapActivity extends WimsActivity {
         listResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                scan = false;
                 TextView tes = (TextView) view;
                 float[] res;
 
@@ -168,10 +176,12 @@ public class StoreMapActivity extends WimsActivity {
                 if (res.length != 0) {
                     fragment.addToItemList(tes.getText().toString());
                     getItemListAndDrawRoute();
+                    fragment.setListChanged(false);
                 }
 
                 listResults.setVisibility(View.INVISIBLE);
                 search.setText("");
+                scan = true;
             }
         });
 
@@ -231,6 +241,10 @@ public class StoreMapActivity extends WimsActivity {
 
             @Override
             public void onDrawerClosed(View drawerView) {
+                if (fragment.isListChanged()) {
+                    getItemListAndDrawRoute();
+                    fragment.setListChanged(false);
+                }
                 scan = true;
             }
 
@@ -238,7 +252,9 @@ public class StoreMapActivity extends WimsActivity {
             public void onDrawerStateChanged(int newState) {}
         });
 
-        getItemListAndDrawRoute();
+        if (!fragment.getItemList().isEmpty()) {
+            getItemListAndDrawRoute();
+        }
     }
 
 
@@ -358,18 +374,21 @@ public class StoreMapActivity extends WimsActivity {
     public ArrayList<ScanResult> filterScanByKStrongest(ArrayList<ScanResult> results, int k) {
         ArrayList<ScanResult> retArray = new ArrayList<>();
         int highestLevel;
-        ScanResult highestResult = null;
+        ScanResult highestResult;
 
         for (int i = 0; i < k; i++) {
             highestLevel = -100;
+            highestResult = null;
             for (ScanResult res : results) {
                 if (res != null && res.level > highestLevel) {
                     highestResult = res;
                     highestLevel = res.level;
                 }
             }
-            retArray.add(highestResult);
-            results.remove(highestResult);
+            if (highestResult != null) {
+                retArray.add(highestResult);
+                results.remove(highestResult);
+            }
         }
         return sortScanAlphabetically(retArray);
     }
@@ -621,7 +640,9 @@ public class StoreMapActivity extends WimsActivity {
             }
 
             for (WimsPoints point : itemsToAdd) {
-                mapData.get(indexOfNeighbor.get(point)).Neighbours.remove(point);
+                if (!(indexOfNeighbor.get(point) >= mapData.size())) {
+                    mapData.get(indexOfNeighbor.get(point)).Neighbours.remove(point);
+                }
                 mapData.remove(point);
             }
         }
@@ -652,11 +673,11 @@ public class StoreMapActivity extends WimsActivity {
             WimsPoints point;
             for (int i = 0; i < array.length(); i++) {
                 point = new WimsPoints(array.getJSONObject(i).getInt("x"), array.getJSONObject(i).getInt("y"));
-                JSONArray probability = array.getJSONObject(i).getJSONArray("probabilities");
+                /*JSONArray probability = array.getJSONObject(i).getJSONArray("probabilities");
                 for (int n = 0; n < probability.length(); n++) {
                     point.setProbabilityDistributions(probability.getJSONObject(n).getString("configuration"),
                                                      (float) probability.getJSONObject(n).getDouble("probability"));
-                }
+                }*/
                 mapdata.add(point);
             }
             for(int i = 0;i<array.length();i++ ){

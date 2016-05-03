@@ -150,7 +150,7 @@ public class PositionOverlay {
         WimsPoints cameFrom;
         WimsPoints current;
         float temp_score = 0;
-        StartPoint.Parent = null;
+        closedSet = addParentsToClosedSet(StartPoint);
 
         StartPoint.gscore = 0;
         StartPoint.fscore = EndPoint.distance(StartPoint.x, StartPoint.y);
@@ -184,6 +184,16 @@ public class PositionOverlay {
         }
     }
 
+    private ArrayList<WimsPoints> addParentsToClosedSet(WimsPoints point) {
+        ArrayList<WimsPoints> closedSet = new ArrayList<>();
+
+        while(point.Parent != null) {
+            closedSet.add(point.Parent);
+            point = point.Parent;
+        }
+        return closedSet;
+    }
+
 
     private WimsPoints getPointwithLowestScore(ArrayList<WimsPoints> Openset, WimsPoints endPoint){
 
@@ -204,8 +214,12 @@ public class PositionOverlay {
 
         if(point.Parent != null)
         {
+            if (point.Parent.Parent == null) {
+                paints.setColor(Color.RED);
+            }
             can.drawLine(point.x,point.y,point.Parent.x,point.Parent.y,paints);
             constructPath(point.Parent,can);
+            paints.setColor(Color.BLACK);
         }
 
     }
