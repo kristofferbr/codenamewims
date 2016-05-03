@@ -43,7 +43,7 @@ public class ShoppingListActivity extends WimsActivity {
         startScreenButton.setId(R.id.wims_action_bar_transition_start);
         addWimsButtonToActionBar(startScreenButton, RIGHT);
 
-        storeMapButton.setVisibility(View.INVISIBLE);
+        storeMapButton.setVisibility(View.VISIBLE);
         storeMapButton.setId(R.id.wims_action_bar_transition_storemap);
         addWimsButtonToActionBar(storeMapButton, RIGHT);
 

@@ -141,11 +141,11 @@ public class ShoppingItemActivity extends WimsActivity {
     public boolean saveItemList() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor mEdit1 = sp.edit();
-        mEdit1.putInt("Item_List_" + title, itemArrayList.size());
+        mEdit1.putInt("Item_List", itemArrayList.size());
 
         for (int i = 0; i < itemArrayList.size(); i++) {
-            mEdit1.remove("Item_List_" + title + i);
-            mEdit1.putString("Item_List_" + title + i, itemArrayList.get(i).toString());
+            mEdit1.remove("Item_List_" + i);
+            mEdit1.putString("Item_List_" +  i, itemArrayList.get(i).toString());
         }
         return mEdit1.commit();
     }

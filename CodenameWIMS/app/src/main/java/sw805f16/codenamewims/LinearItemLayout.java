@@ -40,7 +40,7 @@ public class LinearItemLayout extends RelativeLayout implements Comparator {
     }
 
     public void setImageId(Integer imageId) {
-        if(imageId != 0) {
+        if(imageId != null && imageId != 0) {
             this.imageId = imageId;
             ImageView mark = (ImageView) getChildAt(1);
             mark.setImageDrawable(getContext().getResources().getDrawable(imageId));
@@ -48,7 +48,7 @@ public class LinearItemLayout extends RelativeLayout implements Comparator {
             addView(mark, 1);
         }
         else{
-            this.imageId = imageId;
+            this.imageId = 0;
             ImageView mark = (ImageView) getChildAt(1);
             mark.setImageDrawable(null);
             removeView(mark);

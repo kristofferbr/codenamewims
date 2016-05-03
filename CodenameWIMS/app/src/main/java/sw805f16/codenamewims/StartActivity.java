@@ -124,7 +124,7 @@ public class StartActivity extends Activity {
         shoppingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), ShoppingActivity.class);
+                Intent intent = new Intent(getApplicationContext(), ShoppingListActivity.class);
                 intent.putExtra("storeId", storeId);
                 startActivity(intent);
             }

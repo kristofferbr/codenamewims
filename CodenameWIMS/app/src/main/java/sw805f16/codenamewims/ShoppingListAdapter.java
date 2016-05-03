@@ -27,6 +27,7 @@ import java.util.TreeSet;
 public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
 
     private final Activity context;
+    private WimsPoints currentStart = new WimsPoints(0,0);
 
     private ArrayList<LinearItemLayout> objectList;
 
@@ -128,36 +129,21 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
             marking = ItemEnum.MARKED;
         }
         editItemEnum(position, marking);
-        sortItemList(new WimsPoints(0, 0));
+        sortItemList(currentStart);
 
     }
 
     public void sortItemList(WimsPoints start) {
-
-        this.sort(new LinearItemLayoutStatusComparator());
-
-        ArrayList<LinearItemLayout>  unmarkedList = new ArrayList<>();
-        for(int i = 0; i<this.getCount(); i++){
-            if(getItem(i).getStatus() == ItemEnum.UNMARKED){
-                unmarkedList.add(getItem(i));
-                remove(getItem(i));
-            }
-        }
-
-        Collections.sort(unmarkedList, new LinearItemLayoutNameComparator());
-
-        for(int i = 0; i < unmarkedList.size(); i++){
-            insert(unmarkedList.get(i),i);
-        }
-
-        /*
         ArrayList<WimsPoints> tmpSet = new ArrayList<>();
+        ArrayList<WimsPoints> path = new ArrayList<>();
+        WimsPoints point;
         String text;
         Integer index;
+
         //The first loop through the unmarked item list is to pull the text from the LinearLayouts
         for (int i = 0; i < getCount(); i++) {
-            if (getItem(i).getStatus() == ItemEnum.UNMARKED) {
-                text = ((TextView) getItem(i).getChildAt(0)).getText().toString();
+            if (getItem(i).getStatus() != ItemEnum.UNAVAILABLE) {
+                text = getItem(i).getText();
                 //We then find the index of the product with that name, in the products list
                 index = JSONContainer.indexOfProductWithName(text);
                 if (index != null) {
@@ -165,34 +151,22 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
                 }
             }
         }
-        WimsPoints point;
-        LinearItemLayout tmpLayout;
-        //In the second loop we sort the list
+
+        path.add(start);
+
         for (int i = 0; i < getCount(); i++) {
-            if (getItem(i).getStatus() == ItemEnum.UNMARKED) {
+            if (getItem(i).getStatus() != ItemEnum.UNAVAILABLE && !tmpSet.isEmpty()) {
                 //First we find the nearest neighbor between the start and the WimsPoints in the tmpSet
                 point = nearestNeightbor(start, tmpSet);
                 //When the nearest neighbor is found the start is updated
                 start = point;
+                path.add(point);
                 //Then we remove the point from the tmpSet
                 tmpSet.remove(point);
-                //In the third loop we do the actual sorting, using point
-                for (int n = 0; n < getCount(); n++) {
-                    if (getItem(n).getStatus() == ItemEnum.UNMARKED) {
-                        text = ((TextView) getItem(n).getChildAt(0)).getText().toString();
-                        //We check if the item has the same name as point
-                        if (text.equalsIgnoreCase(point.getProductName())) {
-                            //If we have a match we remove the item and add it on the position i from the enclosing loop
-                            tmpLayout = getItem(n);
-                            remove(tmpLayout);
-                            insert(tmpLayout, i);
-                            //When the match is found we break the inner loop
-                            break;
-                        }
-                    }
-                }
             }
-        }*/
+        }
+
+        this.sort(new LinearItemLayoutStatusComparator(path));
     }
 
     /**
@@ -217,5 +191,16 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
         }
         //When we have found the nearest neighbor we return it
         return closestPoint;
+    }
+
+    public int getPositionByName(String name){
+        int position = 0;
+        for(int i = 0; i < getCount(); i++){
+            if(getItem(i).getText().equals(name)){
+                position = i;
+                break;
+            }
+        }
+        return position;
     }
 }

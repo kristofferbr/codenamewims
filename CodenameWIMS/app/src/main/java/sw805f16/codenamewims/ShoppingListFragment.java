@@ -144,6 +144,8 @@ public class ShoppingListFragment extends Fragment {
 
         JSONContainer.requestProducts(queue, url, getActivity().getApplicationContext());
 
+        loadItemList(getActivity().getApplicationContext());
+
         //Then we return the view
         return mView;
     }
@@ -180,6 +182,9 @@ public class ShoppingListFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 itemToDelete = 0;
+                if(v instanceof LinearItemLayout){
+                    itemToDelete = itemAdapter.getPositionByName(((LinearItemLayout) v).getText());
+                }
                 detector.onTouchEvent(event);
                 return false;
             }
@@ -206,7 +211,7 @@ public class ShoppingListFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (JSONContainer.productsContainString(searchView.getText().toString())) {
-                    addToItemList(searchView.getText().toString());
+                    saveItemList(searchView.getText().toString());
                 }
                 else{
                     Toast.makeText(getActivity().getApplicationContext(),
@@ -244,7 +249,7 @@ public class ShoppingListFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(v instanceof LinearItemLayout) {
-                    itemToDelete = itemAdapter.getPosition((LinearItemLayout)v);
+                    itemToDelete = itemAdapter.getPositionByName(((LinearItemLayout) v).getText());
                 }
                 detector.onTouchEvent(event);
                 return false;
@@ -254,6 +259,7 @@ public class ShoppingListFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 addToItemList(position);
+                saveItemList();
                 searchView.setText("");
                 suggestionListView.setVisibility(View.GONE);
             }
@@ -399,7 +405,7 @@ public class ShoppingListFragment extends Fragment {
                         item.setClickable(false);
                         item.setStatus(ItemEnum.UNAVAILABLE);
                         item.setImageId(R.drawable.grayout);
-                        itemAdapter.sortItemList(new WimsPoints(0, 0));
+                        itemAdapter.sortItemList(new WimsPoints(0,0));
                     }
                 }
                 else if (itemAdapter.getItem(i).getStatus() == ItemEnum.UNAVAILABLE){
@@ -479,6 +485,8 @@ public class ShoppingListFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
+        saveItemList();
+
         outState.putString("storeId", storeId);
 
         ArrayList<String> stringItemList = new ArrayList<>();
@@ -506,22 +514,6 @@ public class ShoppingListFragment extends Fragment {
         outState.putParcelableArrayList("products", JSONContainer.getProducts());
     }
 
-    /*public boolean saveShoppingList() {
-        FileOutputStream fos = getContext().openFileOutput("itemList", Context.MODE_PRIVATE);
-        ObjectOutputStream oos = new ObjectOutputStream(fos);
-        oos.writeObject(object);
-        oos.close();
-        fos.close();
-        SharedPreferences.Editor mEdit1 = sp.edit();
-        mEdit1.putInt("Shopping_List", shoppingArrayList.size());
-
-        for (int i = 0; i < shoppingArrayList.size(); i++) {
-            mEdit1.remove("Shopping_" + i);
-            mEdit1.putString("Shopping_" + i, shoppingArrayList.get(i).name);
-        }
-        return mEdit1.commit();
-    }*/
-
     /**
      * This method is used to remove an item from the item list
      */
@@ -544,6 +536,7 @@ public class ShoppingListFragment extends Fragment {
                         } else {
                             itemAdapter.remove(deletee);
                         }
+                        saveItemList();
                         //Lastly we notify the adapter
                         itemAdapter.notifyDataSetChanged();
                     }
@@ -569,31 +562,16 @@ public class ShoppingListFragment extends Fragment {
         }
     }
 
-    public boolean saveItemList() {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
-        SharedPreferences.Editor mEdit1 = sp.edit();
-        String title = "";
-        mEdit1.putInt("Item_List_" + title, itemList.size());
-
-        for (int i = 0; i < itemList.size(); i++) {
-            mEdit1.remove("Item_List_" + title + i);
-            mEdit1.putString("Item_List_" + title + i, itemList.get(i).toString());
-        }
-        return mEdit1.commit();
-    }
-
     public void addToItemList(String text){
         LinearItemLayout tmpLayout = (LinearItemLayout) LinearItemLayout.inflate(getActivity().getApplicationContext(),
                 R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
 
         //We pull the text view from the suggestion list and resize it
-        TextView tmpText = (TextView) tmpLayout.getChildAt(0);
-        tmpText.setText(text);
+        tmpLayout.setText(text);
 
         tmpLayout.setStatus(ItemEnum.UNMARKED);
-        if(getActivity() instanceof StoreMapActivity){
-            tmpLayout.setImageId(0);
-        }
+        tmpLayout.setImageId(0);
+
         //Then we add the layout to the item list, notify the adapter and sort the list
         itemAdapter.add(tmpLayout);
         // TODO: When we have positions, change this to that
@@ -601,8 +579,21 @@ public class ShoppingListFragment extends Fragment {
         itemAdapter.notifyDataSetChanged();
     }
 
-    public void addToItemList(int position){
+    public void addToItemList(int position) {
         addToItemList(suggestionList.get(position));
+    }
+
+    public boolean saveItemList() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+        SharedPreferences.Editor mEdit1 = sp.edit();
+        String title = "";
+        mEdit1.putInt("Item_List", itemList.size());
+
+        for (int i = 0; i < itemList.size(); i++) {
+            mEdit1.remove("Item_List_" + i);
+            mEdit1.putString("Item_List_" + i, itemList.get(i).getText());
+        }
+        return mEdit1.commit();
     }
 
     // Method for saving an item and adding a name.
@@ -617,11 +608,11 @@ public class ShoppingListFragment extends Fragment {
         SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(mContext);
         String title = "";
         itemList.clear();
-        int size = mSharedPreference1.getInt("Item_List_" + title, 0);
+        int size = mSharedPreference1.getInt("Item_List" , 0);
 
         for(int i=0;i<size;i++)
         {
-            addToItemList(mSharedPreference1.getString("Item_List_" + title + i, null));
+            addToItemList(mSharedPreference1.getString("Item_List_" + i, null));
         }
     }
     // Method to hide keyboard.
