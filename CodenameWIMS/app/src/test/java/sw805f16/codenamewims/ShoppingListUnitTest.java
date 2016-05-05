@@ -1,9 +1,6 @@
 package sw805f16.codenamewims;
 
-import android.util.Pair;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import org.junit.Before;
@@ -29,11 +26,11 @@ public class ShoppingListUnitTest {
     ShoppingListActivity shoppingListActivity;
     ItemEnum unmarked_item, marked_item, unavailable_item;
     ShoppingListAdapter shoppingListAdapter;
-    LinearItemLayout firstLayout;
-    LinearItemLayout secondLayout;
-    LinearItemLayout dummyLayout;
+    RelativeItemLayout firstLayout;
+    RelativeItemLayout secondLayout;
+    RelativeItemLayout dummyLayout;
     ListView itemListView;
-    ArrayList<LinearItemLayout> itemList = new ArrayList<>();
+    ArrayList<RelativeItemLayout> itemList = new ArrayList<>();
     ShoppingListFragment testFragment;
 
     @Before
@@ -47,9 +44,9 @@ public class ShoppingListUnitTest {
 
         itemListView = (ListView) testFragment.getView().findViewById(R.id.itemList);
 
-        firstLayout = new LinearItemLayout(testFragment.getActivity().getApplicationContext(),(ViewGroup) itemListView.getEmptyView());
-        secondLayout = new LinearItemLayout(testFragment.getActivity().getApplicationContext(),(ViewGroup) itemListView.getEmptyView());
-        dummyLayout = new LinearItemLayout(testFragment.getActivity().getApplicationContext(),(ViewGroup) itemListView.getEmptyView());
+        firstLayout = new RelativeItemLayout(testFragment.getActivity().getApplicationContext(),(ViewGroup) itemListView.getEmptyView());
+        secondLayout = new RelativeItemLayout(testFragment.getActivity().getApplicationContext(),(ViewGroup) itemListView.getEmptyView());
+        dummyLayout = new RelativeItemLayout(testFragment.getActivity().getApplicationContext(),(ViewGroup) itemListView.getEmptyView());
 
         firstLayout.setStatus(ItemEnum.MARKED);
         secondLayout.setStatus(ItemEnum.UNMARKED);
@@ -81,7 +78,7 @@ public class ShoppingListUnitTest {
         assertThat(shoppingListAdapter.getItem(1), is(firstLayout));
         assertThat(shoppingListAdapter.getCount(), is(2));
 
-        LinearItemLayout dummyItem = dummyLayout;
+        RelativeItemLayout dummyItem = dummyLayout;
         dummyLayout.setStatus(ItemEnum.UNAVAILABLE);
         shoppingListAdapter.add(dummyItem);
         shoppingListAdapter.add(dummyItem);

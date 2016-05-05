@@ -78,28 +78,28 @@ public class TrackingShoppingListTest {
         // When I am shopping
 
         // Then I want to indicate that I have put an item in my basket
-        LinearItemLayout item = (LinearItemLayout) currentItem.getChildAt(0);
+        RelativeItemLayout item = (RelativeItemLayout) currentItem.getChildAt(0);
         ImageView actual = (ImageView) item.getChildAt(1);
         fragment.markCurrentItem(false);
         assertThat(actual.getDrawable(), is(activity.getResources().getDrawable(R.drawable.checkmark)));
         // And then I want to indicate that i am skipping an Item because I do not want to buy it
-        item = (LinearItemLayout) currentItem.getChildAt(0);
+        item = (RelativeItemLayout) currentItem.getChildAt(0);
         actual = (ImageView) item.getChildAt(1);
         fragment.markCurrentItem(true);
         assertThat(actual.getDrawable(), is(activity.getResources().getDrawable(R.drawable.skip)));
         // Then I want to regret that I have skipped an item and unmark it
-        item = (LinearItemLayout) itemList.getItemAtPosition(1);
+        item = (RelativeItemLayout) itemList.getItemAtPosition(1);
         Integer id = item.getImageId();
         actual = (ImageView) item.getChildAt(1);
         fragment.markUnmarkItemInAdapter(1, true);
-        assertThat(((LinearItemLayout)itemList.getItemAtPosition(0)).getImageId().toString(), is("0"));
+        assertThat(((RelativeItemLayout)itemList.getItemAtPosition(0)).getImageId().toString(), is("0"));
         // When I accidentally mark an item as "put in basket"
         // Then I want to undo the action
-        item = (LinearItemLayout) itemList.getItemAtPosition(1);
+        item = (RelativeItemLayout) itemList.getItemAtPosition(1);
         id = item.getImageId();
         actual = (ImageView) item.getChildAt(1);
         fragment.markUnmarkItemInAdapter(1, false);
-        assertThat(((LinearItemLayout)itemList.getItemAtPosition(1)).getImageId().toString(), is("0"));
+        assertThat(((RelativeItemLayout)itemList.getItemAtPosition(1)).getImageId().toString(), is("0"));
     }
 
     @Test
@@ -111,13 +111,13 @@ public class TrackingShoppingListTest {
         shadowItemList.populateItems();
 
         fragment.sortItemListInAdapter(new WimsPoints(0, 0));
-        TextView actual = (TextView) ((LinearItemLayout) itemList.getItemAtPosition(0)).getChildAt(0);
+        TextView actual = (TextView) ((RelativeItemLayout) itemList.getItemAtPosition(0)).getChildAt(0);
         assertThat(actual.getText().toString(), is("Minced Beef"));
 
-        actual = (TextView) ((LinearItemLayout) itemList.getItemAtPosition(1)).getChildAt(0);
+        actual = (TextView) ((RelativeItemLayout) itemList.getItemAtPosition(1)).getChildAt(0);
         assertThat(actual.getText().toString(), is("Milk"));
 
-        actual = (TextView) ((LinearItemLayout) itemList.getItemAtPosition(2)).getChildAt(0);
+        actual = (TextView) ((RelativeItemLayout) itemList.getItemAtPosition(2)).getChildAt(0);
         assertThat(actual.getText().toString(), is("Ost"));
     }
 }

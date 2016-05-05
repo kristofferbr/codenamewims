@@ -70,14 +70,14 @@ public class CurrentItemTest {
 
     @Test
     public void currentItemMark(){
-        LinearItemLayout item = (LinearItemLayout) currentItem.getChildAt(0);
+        RelativeItemLayout item = (RelativeItemLayout) currentItem.getChildAt(0);
         ImageView actual = (ImageView) item.getChildAt(1);
         currentItem.performClick();
         assertThat(actual.getDrawable(), is(activity.getResources().getDrawable(R.drawable.checkmark)));
     }
 
     public void currentItemSkip(){
-        LinearItemLayout item = (LinearItemLayout) currentItem.getChildAt(0);
+        RelativeItemLayout item = (RelativeItemLayout) currentItem.getChildAt(0);
         ImageView actual = (ImageView) item.getChildAt(1);
         currentItem.performLongClick();
         assertThat(actual.getDrawable(), is(activity.getResources().getDrawable(R.drawable.skip)));

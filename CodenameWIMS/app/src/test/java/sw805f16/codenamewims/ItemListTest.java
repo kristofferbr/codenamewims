@@ -69,10 +69,10 @@ public class ItemListTest {
 
     @Test
     public void itemListMark(){
-        LinearItemLayout item = (LinearItemLayout) itemList.getItemAtPosition(0);
+        RelativeItemLayout item = (RelativeItemLayout) itemList.getItemAtPosition(0);
         Integer id = R.drawable.checkmark;
         ImageView actual = (ImageView) item.getChildAt(1);
         fragment.markUnmarkItemInAdapter(0, false);
-        assertThat(id.toString(), is(((LinearItemLayout) itemList.getItemAtPosition(0)).getImageId().toString()));
+        assertThat(id.toString(), is(((RelativeItemLayout) itemList.getItemAtPosition(0)).getImageId().toString()));
     }
 }

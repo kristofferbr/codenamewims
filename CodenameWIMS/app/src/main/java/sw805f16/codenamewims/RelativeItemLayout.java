@@ -1,36 +1,33 @@
 package sw805f16.codenamewims;
 
-import android.content.ClipData;
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import java.util.Collections;
 import java.util.Comparator;
 
 /**
  * Created by Kogni on 13-Apr-16.
  */
-public class LinearItemLayout extends RelativeLayout implements Comparator {
+public class RelativeItemLayout extends RelativeLayout implements Comparator {
     private Integer imageId = null;
     private ItemEnum status;
 
-    public LinearItemLayout(Context context){
+    public RelativeItemLayout(Context context){
         super(context);
     }
-    public LinearItemLayout(Context context, AttributeSet attrs){
+    public RelativeItemLayout(Context context, AttributeSet attrs){
         super(context,attrs);
     }
-    public LinearItemLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+    public RelativeItemLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
-    LinearItemLayout(Context context, ViewGroup viewGroup ){
+    RelativeItemLayout(Context context, ViewGroup viewGroup){
         super(context);
         LinearLayout.inflate(context, R.layout.item_layout, this);
     }
@@ -80,8 +77,8 @@ public class LinearItemLayout extends RelativeLayout implements Comparator {
 
     @Override
     public int compare(Object obj1, Object obj2) {
-        LinearItemLayout lhs = (LinearItemLayout)obj1;
-        LinearItemLayout rhs = (LinearItemLayout)obj2;
+        RelativeItemLayout lhs = (RelativeItemLayout)obj1;
+        RelativeItemLayout rhs = (RelativeItemLayout)obj2;
 
         return lhs.getStatusInt() - rhs.getStatusInt();
     }

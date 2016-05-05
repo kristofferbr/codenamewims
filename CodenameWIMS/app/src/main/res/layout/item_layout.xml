@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<sw805f16.codenamewims.LinearItemLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<sw805f16.codenamewims.RelativeItemLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/relativeItemLayout"
     android:layout_width="fill_parent"
     android:layout_height="@dimen/list_item_height">
@@ -19,4 +19,4 @@
         android:layout_centerVertical="true"
         android:layout_alignParentRight="true"/>
 
-</sw805f16.codenamewims.LinearItemLayout>
+</sw805f16.codenamewims.RelativeItemLayout>

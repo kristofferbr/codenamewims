@@ -1,41 +1,33 @@
 package sw805f16.codenamewims;
 
 import android.app.Activity;
-import android.content.Context;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import java.util.ArrayList;
-import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.TreeSet;
 
 /**
  * Created by Kogni on 06-Apr-16.
  */
-public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
+public class ShoppingListAdapter extends ArrayAdapter<RelativeItemLayout> {
 
     private final Activity context;
     private WimsPoints currentStart = new WimsPoints(0,0);
 
-    private ArrayList<LinearItemLayout> objectList;
+    private ArrayList<RelativeItemLayout> objectList;
 
     /*public ShoppingListAdapter(Context context, @LayoutRes int resource, @NonNull List<LinearItemLayout> objects) {
         super(context, resource, objects);
     }*/
 
-    public ShoppingListAdapter(Activity context, @LayoutRes int resource, @NonNull List<LinearItemLayout> objects) {
+    public ShoppingListAdapter(Activity context, @LayoutRes int resource, @NonNull List<RelativeItemLayout> objects) {
         super(context, resource, objects);
         this.objectList = new ArrayList<>(objects);
         this.context = context;
@@ -47,8 +39,8 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
     }*/
 
     public void swap(int i, int j) {
-        LinearItemLayout tempPair1 = getItem(i);
-        LinearItemLayout tempPair2 = getItem(j);
+        RelativeItemLayout tempPair1 = getItem(i);
+        RelativeItemLayout tempPair2 = getItem(j);
         remove(tempPair1);
         insert(tempPair2, i);
         remove(tempPair2);
@@ -57,7 +49,7 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
     }
 
     public void editItemEnum(int i, ItemEnum status) {
-        LinearItemLayout tempPair1 = getItem(i);
+        RelativeItemLayout tempPair1 = getItem(i);
         tempPair1.setStatus(status);
     }
 
@@ -65,7 +57,7 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
     public View getView(int position, View convertView, ViewGroup parent){
 
         LayoutInflater inflater = context.getLayoutInflater();
-        LinearItemLayout rowView = (LinearItemLayout) inflater.inflate(R.layout.item_layout, null, true);
+        RelativeItemLayout rowView = (RelativeItemLayout) inflater.inflate(R.layout.item_layout, null, true);
         rowView.setText(getItem(position).getText());
         rowView.setImageId(getItem(position).getImageId());
         if(getItem(position).getImageId() != 0){
@@ -83,7 +75,7 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
      * @param longClick True if the method is called from a long click, False if it should be marked as put in the basket
      */
     public void markUnmarkItem(int position, boolean longClick) {
-        LinearItemLayout item =  getItem(position);
+        RelativeItemLayout item =  getItem(position);
         ItemEnum marking = ItemEnum.MARKED;
         //First, we determine what the current status of the item is
         //If the item is set to checkmark, we either want to change it to skip or unmark it
@@ -166,7 +158,7 @@ public class ShoppingListAdapter extends ArrayAdapter<LinearItemLayout> {
             }
         }
 
-        this.sort(new LinearItemLayoutStatusComparator(path));
+        this.sort(new RelativeItemLayoutStatusComparator(path));
     }
 
     /**

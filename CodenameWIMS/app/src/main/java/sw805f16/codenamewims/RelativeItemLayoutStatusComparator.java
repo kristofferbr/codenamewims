@@ -6,14 +6,14 @@ import java.util.Comparator;
 /**
  * Created by Kogni on 29-Apr-16.
  */
-public class LinearItemLayoutStatusComparator implements Comparator <LinearItemLayout> {
+public class RelativeItemLayoutStatusComparator implements Comparator <RelativeItemLayout> {
     ArrayList<WimsPoints> compareList;
 
-    public LinearItemLayoutStatusComparator(ArrayList<WimsPoints> objects){
+    public RelativeItemLayoutStatusComparator(ArrayList<WimsPoints> objects){
         this.compareList = objects;
     }
 
-    public int compare(LinearItemLayout lhs, LinearItemLayout rhs){
+    public int compare(RelativeItemLayout lhs, RelativeItemLayout rhs){
         if(lhs.getStatusInt() - rhs.getStatusInt() == 0 && !compareList.isEmpty()){
             WimsPoints left = compareList.get(0);
             WimsPoints right = compareList.get(0);

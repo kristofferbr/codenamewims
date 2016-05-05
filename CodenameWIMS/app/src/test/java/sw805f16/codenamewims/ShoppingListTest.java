@@ -127,7 +127,7 @@ public class ShoppingListTest {
         //Then we set the store id to the new id
         testFragment.setStoreId("56e6a28a28c3e3314a6849e0");
 
-        LinearItemLayout actual = (LinearItemLayout) testList.getItemAtPosition(0);
+        RelativeItemLayout actual = (RelativeItemLayout) testList.getItemAtPosition(0);
         //Lastly we assert whether the background of the items have been grayed out
         assertThat(actual.getBackground(), is(shoppingListActivity.getResources().getDrawable(R.drawable.grayout)));
     }

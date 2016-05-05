@@ -54,7 +54,7 @@ public class ShoppingListFragment extends Fragment {
     //These variables are for the items in the shopping list
     private ShoppingListAdapter itemAdapter;
     private ListView itemListView;
-    private ArrayList<LinearItemLayout> itemList;
+    private ArrayList<RelativeItemLayout> itemList;
     //This is a list of drawable ids for which mark the item should have
     private FrameLayout currentItem;
 
@@ -184,8 +184,8 @@ public class ShoppingListFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 itemToDelete = 0;
-                if(v instanceof LinearItemLayout){
-                    itemToDelete = itemAdapter.getPositionByName(((LinearItemLayout) v).getText());
+                if(v instanceof RelativeItemLayout){
+                    itemToDelete = itemAdapter.getPositionByName(((RelativeItemLayout) v).getText());
                 }
                 detector.onTouchEvent(event);
                 return false;
@@ -209,6 +209,7 @@ public class ShoppingListFragment extends Fragment {
             }
         });
 
+        //An event triggered when addItemBtn is click. Checks whether the current string in the searchView is a product and adds it.
         addItemBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -223,9 +224,6 @@ public class ShoppingListFragment extends Fragment {
                 suggestionListView.setVisibility(View.INVISIBLE);
             }
         });
-
-        //The on click listener for the suggestion list places the suggestion in the item list
-
 
         //When clicking an item in the item list view it should mark the items, if the user is in StoreMapActivity
         itemListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -250,13 +248,15 @@ public class ShoppingListFragment extends Fragment {
         itemListView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(v instanceof LinearItemLayout) {
-                    itemToDelete = itemAdapter.getPositionByName(((LinearItemLayout) v).getText());
+                if(v instanceof RelativeItemLayout) {
+                    itemToDelete = itemAdapter.getPositionByName(((RelativeItemLayout) v).getText());
                 }
                 detector.onTouchEvent(event);
                 return false;
             }
         });
+
+        //The on click listener for the suggestion list places the suggestion in the item list
         suggestionListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -287,7 +287,7 @@ public class ShoppingListFragment extends Fragment {
         for (int i = 0; i < stringItemList.size();i++){
 
             //Here we inflate a LinearLayout with a custom layout
-            LinearItemLayout tmpLayout = new LinearItemLayout(getActivity().getApplicationContext(),
+            RelativeItemLayout tmpLayout = new RelativeItemLayout(getActivity().getApplicationContext(),
                     (ViewGroup) itemListView.getEmptyView());
 
             savedTextView = (TextView) tmpLayout.findViewById(R.id.label);
@@ -312,7 +312,7 @@ public class ShoppingListFragment extends Fragment {
      * @param longClick Whether this method is called from with a longclick
      */
     public void markCurrentItem(boolean longClick) {
-        LinearItemLayout item = (LinearItemLayout) currentItem.getChildAt(0);
+        RelativeItemLayout item = (RelativeItemLayout) currentItem.getChildAt(0);
         ImageView mark = (ImageView) item.getChildAt(1);
         //If longclick is false the drawable is a checkmark, otherwise the drawable is skip
         if (!longClick) {
@@ -398,7 +398,7 @@ public class ShoppingListFragment extends Fragment {
 
             JSONContainer.requestProducts(queue, url, getActivity().getApplicationContext());
 
-            LinearItemLayout item;
+            RelativeItemLayout item;
             TextView tmpText;
             //We run through the three sub lists to see if they are available
 
@@ -535,7 +535,7 @@ public class ShoppingListFragment extends Fragment {
                 .setPositiveButton(R.string.alert_pos_button, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        LinearItemLayout deletee = itemAdapter.getItem(itemToDelete);
+                        RelativeItemLayout deletee = itemAdapter.getItem(itemToDelete);
 
                         //If it is the first item, i.e. the currentItem layout we also clear the currentItem
                         if (itemToDelete == 0 && deletee.getStatus() == ItemEnum.UNMARKED) {
@@ -574,7 +574,7 @@ public class ShoppingListFragment extends Fragment {
     }
 
     public void addToItemList(String text){
-        LinearItemLayout tmpLayout = (LinearItemLayout) LinearItemLayout.inflate(getActivity().getApplicationContext(),
+        RelativeItemLayout tmpLayout = (RelativeItemLayout) RelativeItemLayout.inflate(getActivity().getApplicationContext(),
                 R.layout.item_layout, (ViewGroup) itemListView.getEmptyView());
 
         //We pull the text view from the suggestion list and resize it
