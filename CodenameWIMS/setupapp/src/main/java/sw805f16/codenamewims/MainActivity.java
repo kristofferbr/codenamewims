@@ -1,11 +1,11 @@
 package sw805f16.codenamewims;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.wifi.ScanResult;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -29,7 +29,6 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -37,6 +36,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -267,8 +272,13 @@ public class MainActivity extends AppCompatActivity {
         commitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendMapData(mapData);
-                sendMarginalLikelihood();
+                //sendMapData(mapData);
+                //prepMarginalLikelihood();
+                try {
+                    dumpJsonToFile(mapData);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -467,21 +477,23 @@ public class MainActivity extends AppCompatActivity {
         return retList;
     }
 
-    public void sendMarginalLikelihood() {
+    public void prepMarginalLikelihood() {
         computeMarginalLikelihood();
-        String url = base_url + store_id;
-        JSONArray tosend = null;
-        try {
-            tosend = wrapLikelihoodInJson(marginalLikelihood);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        final String url = base_url + store_id;
 
-        JsonArrayRequest jsObjRequest = new JsonArrayRequest
-                (Request.Method.PUT, url, tosend, new Response.Listener<JSONArray>() {
+
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
                     @Override
-                    public void onResponse(JSONArray response) {
+                    public void onResponse(JSONObject response) {
+                        JSONObject tosend;
+                        try {
+                            tosend = wrapLikelihoodInJson(marginalLikelihood, response);
+                            sendMarginalLikelihood(tosend, url);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
 
                     }
                 }, new Response.ErrorListener() {
@@ -496,7 +508,23 @@ public class MainActivity extends AppCompatActivity {
         rqueue.add(jsObjRequest);
     }
 
-    public JSONArray wrapLikelihoodInJson(HashMap<String, Double> marginalLikelihood) throws JSONException {
+    public void sendMarginalLikelihood(JSONObject obj, String url) {
+        JsonObjectRequest postObjReq = new JsonObjectRequest(Request.Method.PUT, url, obj, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+
+        rqueue.add(postObjReq);
+    }
+
+    public JSONObject wrapLikelihoodInJson(HashMap<String, Double> marginalLikelihood, JSONObject response) throws JSONException {
         JSONArray array = new JSONArray();
         JSONObject obj;
 
@@ -510,8 +538,8 @@ public class MainActivity extends AppCompatActivity {
             obj.put("likelihood", pair.getValue());
             array.put(obj);
         }
-
-        return array;
+        response.put("marginalLikelihood", array);
+        return response;
     }
 
     public void sendMapData(ArrayList<WimsPoints> mapData)
@@ -548,6 +576,29 @@ public class MainActivity extends AppCompatActivity {
         rqueue.add(jsObjRequest);
     }
 
+    public void dumpJsonToFile(ArrayList<WimsPoints> mapData) throws JSONException {
+        JSONObject pointDump = constructJson(mapData);
+        computeMarginalLikelihood();
+        JSONObject likelihoodDump = wrapLikelihoodInJson(marginalLikelihood, new JSONObject(getResources().getString(R.string.shop_json)));
+
+        try {
+            for (int i = 0; i < pointDump.getJSONArray("points").length(); i++) {
+                pointDump.getJSONArray("points").getJSONObject(i).put("_id", i);
+            }
+            pointDump = constructJSONaddNeighbors(pointDump.getJSONArray("points"), mapData);
+
+            FileOutputStream stream = openFileOutput("json_dump", Context.MODE_APPEND);
+            stream.write(pointDump.toString().getBytes());
+            stream.write("\n\n\n".getBytes());
+            stream.write(likelihoodDump.toString().getBytes());
+            stream.close();
+        } catch (JSONException je) {
+            je.printStackTrace();
+        } catch (IOException ie) {
+            ie.printStackTrace();
+        }
+    }
+
     /***
      * Function that constructs a JSON array of points to insert into the server database
      * @param point The array of points representing the map data.
@@ -560,6 +611,7 @@ public class MainActivity extends AppCompatActivity {
         JSONObject Jsonpointdata;
         JSONArray neighbors;
         JSONArray fingerprint;
+        JSONArray probDist;
 
 
         try {
@@ -569,6 +621,7 @@ public class MainActivity extends AppCompatActivity {
                 Jsonpointdata = new JSONObject();
                 neighbors = new JSONArray();
                 fingerprint = new JSONArray();
+                probDist = new JSONArray();
                 //Jsonpointdata.put("_id",i);
                 Jsonpointdata.put("x",point.get(i).x);
                 Jsonpointdata.put("y",point.get(i).y);
@@ -580,13 +633,27 @@ public class MainActivity extends AppCompatActivity {
                         while (it.hasNext()) {
                             HashMap.Entry pair = (HashMap.Entry) it.next();
                             JSONObject print = new JSONObject();
-                            print.put(pair.getKey().toString(), pair.getValue());
+                            print.put("bssid", pair.getKey().toString());
+                            print.put("rssi", pair.getValue());
                             fingerprint.put(print);
+                        }
+                    }
+                }
+                if(point.get(i).getProbabilityDistribution() != null) {
+                    Iterator it = point.get(i).getProbabilityDistribution().entrySet().iterator();
+                    if (it.hasNext()) {
+                        while (it.hasNext()) {
+                            HashMap.Entry pair = (HashMap.Entry) it.next();
+                            JSONObject probabilities = new JSONObject();
+                            probabilities.put("configuration", pair.getKey().toString());
+                            probabilities.put("probability", pair.getValue());
+                            probDist.put(probabilities);
                         }
                     }
                 }
                 Jsonpointdata.put("neighbors",neighbors);
                 Jsonpointdata.put("fingerprint",fingerprint);
+                Jsonpointdata.put("probabilities", probDist);
                 pointArray.put(Jsonpointdata);
 
 
