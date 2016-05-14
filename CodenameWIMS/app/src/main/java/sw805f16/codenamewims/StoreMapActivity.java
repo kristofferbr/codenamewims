@@ -111,7 +111,7 @@ public class StoreMapActivity extends WimsActivity {
         rqueue = Volley.newRequestQueue(this);
 
         requestMapData(store_id);
-        currentWimsPoint = mapData.get(0);
+
 
         String url = "http://nielsema.ddns.net/sw8/api/store/" + store_id + "/products/";
 
@@ -419,6 +419,9 @@ public class StoreMapActivity extends WimsActivity {
                             String jsonString = getApplicationContext().getResources().getString(R.string.point_json);
                             JSONArray staticpoints = new JSONArray(jsonString);
                             mapData = deConstructJSON(staticpoints);
+                            if(mapData.size() != 0) {
+                                currentWimsPoint = mapData.get(0);
+                            }
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -432,6 +435,9 @@ public class StoreMapActivity extends WimsActivity {
                             String jsonString = getApplicationContext().getResources().getString(R.string.point_json);
                             JSONArray staticpoints = new JSONArray(jsonString);
                             mapData = deConstructJSON(staticpoints);
+                            if(mapData.size() != 0) {
+                                currentWimsPoint = mapData.get(0);
+                            }
                         }
                         catch(JSONException e){
                             e.printStackTrace();
@@ -455,14 +461,14 @@ public class StoreMapActivity extends WimsActivity {
             new Response.Listener<Bitmap>() {
                 @Override
                 public void onResponse(Bitmap bitmap) {
-                    mImageView.setImageResource(R.drawable.foetexmap);
+                    mImageView.setImageResource(R.drawable.lane_audit_floorplan);
                     //mImageView.setImageBitmap(bitmap);
                 }
             }, 0, 0, null,
             new Response.ErrorListener() {
                 public void onErrorResponse(VolleyError error) {
 
-                    mImageView.setImageResource(R.drawable.foetexmap);
+                    mImageView.setImageResource(R.drawable.lane_audit_floorplan);
                     error.printStackTrace();
                 }
             }
