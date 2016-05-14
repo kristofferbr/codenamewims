@@ -184,7 +184,7 @@ public class ShoppingListFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 itemToDelete = 0;
-                if(v instanceof RelativeItemLayout){
+                if (v instanceof RelativeItemLayout) {
                     itemToDelete = itemAdapter.getPositionByName(((RelativeItemLayout) v).getText());
                 }
                 detector.onTouchEvent(event);
@@ -248,7 +248,7 @@ public class ShoppingListFragment extends Fragment {
         itemListView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(v instanceof RelativeItemLayout) {
+                if (v instanceof RelativeItemLayout) {
                     itemToDelete = itemAdapter.getPositionByName(((RelativeItemLayout) v).getText());
                 }
                 detector.onTouchEvent(event);
@@ -541,8 +541,10 @@ public class ShoppingListFragment extends Fragment {
                         if (itemToDelete == 0 && deletee.getStatus() == ItemEnum.UNMARKED) {
                             itemAdapter.remove(deletee);
                             currentItem.removeAllViewsInLayout();
-                            currentItem.addView(itemAdapter.getItem(0));
-                            itemAdapter.getItem(0).setVisibility(View.GONE);
+                            if (itemAdapter.getCount() != 0) {
+                                currentItem.addView(itemAdapter.getItem(0));
+                                itemAdapter.getItem(0).setVisibility(View.GONE);
+                            }
                         //If the item was not the first we simply remove it
                         } else {
                             itemAdapter.remove(deletee);
