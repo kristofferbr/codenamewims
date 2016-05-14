@@ -95,15 +95,6 @@ public class StoreMapActivity extends WimsActivity {
 
         fragment = ShoppingListFragment.newInstance(store_id);
 
-        try {
-            String jsonString = getApplicationContext().getResources().getString(R.string.point_json);
-            JSONArray staticpoints = new JSONArray(jsonString);
-            mapData = deConstructJSON(staticpoints);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        currentWimsPoint = mapData.get(0);
-
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         if (getIntent().getParcelableExtra("state") != null) {
@@ -120,6 +111,7 @@ public class StoreMapActivity extends WimsActivity {
         rqueue = Volley.newRequestQueue(this);
 
         requestMapData(store_id);
+        currentWimsPoint = mapData.get(0);
 
         String url = "http://nielsema.ddns.net/sw8/api/store/" + store_id + "/products/";
 
@@ -424,7 +416,7 @@ public class StoreMapActivity extends WimsActivity {
                             mapData = deConstructJSON(points);
 
                             //introduced for testing purposes
-                            String jsonString = getApplicationContext().getResources().getString(R.string.global_json);
+                            String jsonString = getApplicationContext().getResources().getString(R.string.point_json);
                             JSONArray staticpoints = new JSONArray(jsonString);
                             mapData = deConstructJSON(staticpoints);
 
@@ -437,7 +429,7 @@ public class StoreMapActivity extends WimsActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         try{
-                            String jsonString = getApplicationContext().getResources().getString(R.string.global_json);
+                            String jsonString = getApplicationContext().getResources().getString(R.string.point_json);
                             JSONArray staticpoints = new JSONArray(jsonString);
                             mapData = deConstructJSON(staticpoints);
                         }

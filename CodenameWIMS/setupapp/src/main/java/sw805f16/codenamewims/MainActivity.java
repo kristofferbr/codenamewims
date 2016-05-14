@@ -907,7 +907,7 @@ public class MainActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     public void onErrorResponse(VolleyError error) {
 
-                        mImageView.setImageResource(R.drawable.foetexmap);
+                        mImageView.setImageResource(R.drawable.lane_audit_floorplan_fingerprinting_version);
                         error.printStackTrace();
                     }
                 });
