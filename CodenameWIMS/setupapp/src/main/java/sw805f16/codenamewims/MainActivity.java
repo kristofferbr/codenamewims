@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
                 fram.removeViewAt(2);
                 fingerpriting = false;
                 fingerprintButton.setVisibility(View.INVISIBLE);
-
+                deleteButton.setVisibility(View.INVISIBLE);
 
             }
         });
@@ -194,7 +194,8 @@ public class MainActivity extends AppCompatActivity {
                             addPointIfNew(spotX, spotY, mapData);
 
                         } else {
-                            if (addPointIfNew(spotX, spotY, mapData) && !fingerpriting) {
+                            if (!isWithin(spotX, spotY, mapData) && !fingerpriting) {
+                                addPointIfNew(spotX, spotY, mapData);
                                 ImageView temp = (ImageView) fram.getChildAt(1);
                                 fram.removeViewAt(1);
                                 fram.addView(posfac.getBitMapReDrawnSpot(temp, spotX, spotY));
@@ -585,29 +586,32 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             for (int i = 0; i < pointDump.getJSONArray("points").length(); i++) {
-                pointDump.getJSONArray("points").getJSONObject(i).put("_id", i);
+                pointDump.getJSONArray("points").getJSONObject(i).put("_id", i+8);
             }
             pointDump = constructJSONaddNeighbors(pointDump.getJSONArray("points"), mapData);
 
-            /*
-            File file = new File(Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DCIM) + "/json_dump");
-            file.mkdirs();
-            OutputStreamWriter stream = new OutputStreamWriter(openFileOutput("json_dump", MODE_WORLD_WRITEABLE));
-            stream.write(pointDump.toString());
-            stream.write("\n\n\n");
-            stream.write(likelihoodDump.toString());
+            File directory = new File(Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DCIM).getAbsolutePath());
+            File file = new File(directory, "json_dump.txt");
+            file.getParentFile().mkdirs();
+            if (file.exists()) {
+                file.delete();
+                file = new File(directory, "json_dump.txt");
+            }
+            FileOutputStream stream = new FileOutputStream(file);
+            stream.write(pointDump.toString().getBytes());
+            stream.write("\n\n\n".getBytes());
+            stream.write(likelihoodDump.toString().getBytes());
             stream.flush();
             stream.close();
-            */
 
-            Log.e("point_json", pointDump.toString());
-            Log.e("likelihood_json", likelihoodDump.toString());
+            //Log.e("point_json", pointDump.toString());
+            //Log.e("likelihood_json", likelihoodDump.toString());
         } catch (JSONException je) {
             je.printStackTrace();
-        } /*catch (IOException ie) {
+        } catch (IOException ie) {
             ie.printStackTrace();
-        }*/
+        }
     }
 
     /***
@@ -837,8 +841,8 @@ public class MainActivity extends AppCompatActivity {
         boolean within = false;
         for(int i = 0; i<pointArray.size();i++){
 
-            if(x < pointArray.get(i).x+25 && x > pointArray.get(i).x -25
-                    && y < pointArray.get(i).y+25 && y > pointArray.get(i).y - 25){
+            if(x < pointArray.get(i).x+50 && x > pointArray.get(i).x -50
+                    && y < pointArray.get(i).y+50 && y > pointArray.get(i).y - 50){
                 within = true;
             }
 
@@ -1008,6 +1012,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void computeMarginalLikelihood() {
+        marginalLikelihood.clear();
         ArrayList<String> bssids = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.test_bssid2)));
         bssids = sortStringAlphabetically(bssids);
 
