@@ -3,9 +3,11 @@ package sw805f16.codenamewims;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.wifi.ScanResult;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.os.EnvironmentCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -587,16 +589,25 @@ public class MainActivity extends AppCompatActivity {
             }
             pointDump = constructJSONaddNeighbors(pointDump.getJSONArray("points"), mapData);
 
-            FileOutputStream stream = openFileOutput("json_dump", Context.MODE_APPEND);
-            stream.write(pointDump.toString().getBytes());
-            stream.write("\n\n\n".getBytes());
-            stream.write(likelihoodDump.toString().getBytes());
+            /*
+            File file = new File(Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DCIM) + "/json_dump");
+            file.mkdirs();
+            OutputStreamWriter stream = new OutputStreamWriter(openFileOutput("json_dump", MODE_WORLD_WRITEABLE));
+            stream.write(pointDump.toString());
+            stream.write("\n\n\n");
+            stream.write(likelihoodDump.toString());
+            stream.flush();
             stream.close();
+            */
+
+            Log.e("point_json", pointDump.toString());
+            Log.e("likelihood_json", likelihoodDump.toString());
         } catch (JSONException je) {
             je.printStackTrace();
-        } catch (IOException ie) {
+        } /*catch (IOException ie) {
             ie.printStackTrace();
-        }
+        }*/
     }
 
     /***
