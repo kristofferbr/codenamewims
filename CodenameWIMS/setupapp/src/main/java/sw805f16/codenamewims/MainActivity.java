@@ -452,7 +452,7 @@ public class MainActivity extends AppCompatActivity {
         while (!results.isEmpty()) {
             tmpRes = results.get(0);
             for (int i = 0; i < results.size(); i++) {
-                if (results.get(i).BSSID.compareTo(tmpRes.BSSID) > 0) {
+                if (results.get(i) != null && results.get(i).BSSID.compareTo(tmpRes.BSSID) > 0) {
                     tmpRes = results.get(i);
                 }
             }
@@ -918,7 +918,9 @@ public class MainActivity extends AppCompatActivity {
     public String concatBSSIDs(ArrayList<ScanResult> results) {
         String retString = "";
         for (ScanResult res : results) {
-            retString = retString + res.BSSID;
+            if (res != null) {
+                retString = retString + res.BSSID;
+            }
         }
         return retString;
     }
@@ -955,7 +957,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
                         int measurements;
-                        for (measurements = 0; measurements < 20; measurements++) {
+                        for (measurements = 0; measurements < 60; measurements++) {
                             try {
                                 Thread.sleep(1000);
                             } catch (InterruptedException e) {
@@ -1006,7 +1008,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void computeMarginalLikelihood() {
-        ArrayList<String> bssids = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.test_bssid)));
+        ArrayList<String> bssids = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.test_bssid2)));
         bssids = sortStringAlphabetically(bssids);
 
         ArrayList<String> configurations = new ArrayList<>();

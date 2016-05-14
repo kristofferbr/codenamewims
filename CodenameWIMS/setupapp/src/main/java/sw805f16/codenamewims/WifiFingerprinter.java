@@ -47,7 +47,7 @@ public class WifiFingerprinter{
 
     public ArrayList<ScanResult> filterScanResults(ArrayList<ScanResult> in) {
         //TODO: Change the resource later
-        List<String> filter = Arrays.asList(context.getResources().getStringArray(R.array.test_bssid));
+        List<String> filter = Arrays.asList(context.getResources().getStringArray(R.array.test_bssid2));
         ArrayList<ScanResult> tmpArray = new ArrayList<>();
         for (ScanResult result : in) {
             if (filter.contains(result.BSSID)) {

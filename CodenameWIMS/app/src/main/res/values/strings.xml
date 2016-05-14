@@ -294,5 +294,17 @@
         <item>fc:5b:39:94:a7:fd</item>
         <item>fc:5b:39:87:27:e2</item>
     </string-array>
->>>>>>> Bayes_impl
+
+    <string-array name="test_bssid2">
+        <item>00:1c:0e:42:d0:02</item>
+        <item>00:1d:a2:c9:1a:9d</item>
+        <item>00:1c:0e:42:d0:0d</item>
+        <item>00:1d:a2:c9:1a:92</item>
+        <item>fc:5b:39:87:37:e2</item>
+        <item>00:1c:0e:42:c9:22</item>
+        <item>fc:5b:39:78:7e:fd</item>
+        <item>fc:5b:39:87:37:ed</item>
+        <item>fc:5b:39:78:7e:f2</item>
+        <item>fc:5b:39:87:27:e2</item>
+    </string-array>
 </resources>

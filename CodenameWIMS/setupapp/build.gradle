@@ -1,18 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    signingConfigs {
-        Config {
-            keyAlias 'K'
-            keyPassword 'opan20'
-        }
-    }
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
     defaultConfig {
         applicationId "sw805f16.codenamewims"
         minSdkVersion 15
-        targetSdkVersion 23
+        targetSdkVersion 21
         versionCode 1
         versionName "1.0"
     }
