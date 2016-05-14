@@ -150,6 +150,9 @@ public final class JSONContainer {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                products.clear();
+                populateWithGlobalInformation(context);
+
                 error.printStackTrace();
             }
         });
