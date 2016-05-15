@@ -141,7 +141,7 @@ public class PositionOverlay {
         return overlay;
     }
 
-    private void findPath(WimsPoints StartPoint, WimsPoints EndPoint){
+    public void findPath(WimsPoints StartPoint, WimsPoints EndPoint){
 
         /*Start Values */
         ArrayList<WimsPoints> closedSet = new ArrayList<>();

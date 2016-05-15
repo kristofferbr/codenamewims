@@ -142,62 +142,18 @@
     </string>
 
     <string name="shop_json">
-       { 
-                 \"_id\": \"56e6a28a28c3e3314a6849df\", 
-                 \"products\": [ 
-                   { 
-                     \"_id\": \"56e6a9f028c3e3314a6849ea\", 
-                     \"product\": { 
-                       \"_id\": \"56e6a29528c3e3314a6849e2\", 
-                       \"name\": \"Milk\", 
-                       \"description\": \"Put it on cereal, drink it, or take a bath. Do whatever you want with it, you baught it!\" 
-                     }, 
-                     \"__v\": 0, 
-                     \"location\": { 
-                       \"x\": 250, 
-                       \"y\": 18 
-                     } 
-                   }, 
-                   { 
-                     \"_id\": \"56e6aa1b28c3e3314a6849eb\", 
-                     \"product\": { 
-                       \"_id\": \"56e6a29528c3e3314a6849e1\", 
-                       \"name\": \"Minced Beef\", 
-                       \"description\": \"Slaughtered cow cut into tiny pieces\" 
-                     }, 
-                     \"__v\": 0, 
-                     \"location\": { 
-                       \"x\": 125, 
-                       \"y\": 90 
-                     } 
-                   }, 
-                   { 
-                     \"_id\": \"56efb5d1aa6ece882b08b437\", 
-                     \"product\": { 
-                       \"_id\": \"56efb40344a68c0606122a3c\", 
-                       \"name\": \"Ost\", 
-                       \"description\": \"Det lugter\", 
-                       \"__v\": 0 
-                     }, 
-                     \"__v\": 0, 
-                     \"location\": { 
-                       \"x\": 400, 
-                       \"y\": 300 
-                     } 
-                   } 
-                 ] 
-               }
+       {\"_id\":\"56e6a28a28c3e3314a6849df\",\"products\":[{\"_id\":\"56e6a9f028c3e3314a6849ea\",\"product\":{\"_id\":\"56e6a29528c3e3314a6849e2\",\"name\":\"Milk\",\"description\":\"Putitoncereal,drinkit,ortakeabath.Dowhateveryouwantwithit,youbaughtit!\"},\"__v\":0,\"location\":{\"x\":250,\"y\":18}},{\"_id\":\"56e6aa1b28c3e3314a6849eb\",\"product\":{\"_id\":\"56e6a29528c3e3314a6849e1\",\"name\":\"MincedBeef\",\"description\":\"Slaughteredcowcutintotinypieces\"},\"__v\":0,\"location\":{\"x\":125,\"y\":90}},{\"_id\":\"56efb5d1aa6ece882b08b437\",\"product\":{\"_id\":\"56efb40344a68c0606122a3c\",\"name\":\"Ost\",\"description\":\"Detlugter\",\"__v\":0},\"__v\":0,\"location\":{\"x\":400,\"y\":300}}],\"marginalLikelihood\":[{\"configuration\":\"fc:5b:39:78:7e:f200:1d:a2:c9:1a:9200:1c:0e:42:d0:0d\",\"likelihood\":0.001515151537729032},{\"configuration\":\"00:1d:a2:c9:1a:9200:1c:0e:42:d0:0d00:1c:0e:42:d0:02\",\"likelihood\":0.453535353934223},{\"configuration\":\"fc:5b:39:78:7e:fdfc:5b:39:78:7e:f200:1d:a2:c9:1a:92\",\"likelihood\":0.009090909226374193},{\"configuration\":\"fc:5b:39:87:37:e200:1d:a2:c9:1a:9200:1c:0e:42:d0:02\",\"likelihood\":0.024747475530162003},{\"configuration\":\"fc:5b:39:78:7e:f200:1d:a2:c9:1a:9200:1c:0e:42:d0:02\",\"likelihood\":0.06262626340894988},{\"configuration\":\"fc:5b:39:87:37:ed00:1d:a2:c9:1a:9200:1c:0e:42:d0:02\",\"likelihood\":0.006060606263803713},{\"configuration\":\"fc:5b:39:78:7e:fdfc:5b:39:78:7e:f200:1c:0e:42:d0:02\",\"likelihood\":0.011616161601109938},{\"configuration\":\"00:1d:a2:c9:1a:9d00:1d:a2:c9:1a:9200:1c:0e:42:d0:02\",\"likelihood\":0.37070706994696095},{\"configuration\":\"fc:5b:39:78:7e:fd00:1d:a2:c9:1a:9200:1c:0e:42:d0:02\",\"likelihood\":0.04494949610847415},{\"configuration\":\"00:1d:a2:c9:1a:9d00:1c:0e:42:d0:0d00:1c:0e:42:d0:02\",\"likelihood\":0.002020202125563766},{\"configuration\":\"00:1d:a2:c9:1a:9d00:1d:a2:c9:1a:9200:1c:0e:42:d0:0d\",\"likelihood\":0.013131313590389309}]}
     </string>
 
     <string name="map_json">
-        {"points":[
-            {"x":476,"y":1438,"neighbors":[],"fingerprint":[]},
-            {"x":473,"y":997,"neighbors":[],"fingerprint":[]},
-            {"x":406,"y":456,"neighbors":[],"fingerprint":[]},
-            {"x":380,"y":250,"neighbors":[],"fingerprint":[]},
-            {"x":611,"y":85,"neighbors":[],"fingerprint":[]},
-            {"x":689,"y":84,"neighbors":[],"fingerprint":[]},
-            {"x":748,"y":91,"neighbors":[],"fingerprint":[]}
+        {\"points\":[
+            {\"x\":476,\"y\":1438,\"neighbors\":[],\"fingerprint\":[]},
+            {\"x\":473,\"y\":997,\"neighbors\":[],\"fingerprint\":[]},
+            {\"x\":406,\"y\":456,\"neighbors\":[],\"fingerprint\":[]},
+            {\"x\":380,\"y\":250,\"neighbors\":[],\"fingerprint\":[]},
+            {\"x\":611,\"y\":85,\"neighbors\":[],\"fingerprint\":[]},
+            {\"x\":689,\"y\":84,\"neighbors\":[],\"fingerprint\":[]},
+            {\"x\":748,\"y\":91,\"neighbors\":[],\"fingerprint\":[]}
             ]
         }
     </string>

@@ -49,4 +49,8 @@ public class PositionOverlayFactory{
     public ImageView getPositionOfFingerPrintPoint(int x, int y){
         return pos.generateImageViewForFingerpriting(x,y);
     }
+
+    public void findPath(WimsPoints start, WimsPoints end) {
+        pos.findPath(start, end);
+    }
 }

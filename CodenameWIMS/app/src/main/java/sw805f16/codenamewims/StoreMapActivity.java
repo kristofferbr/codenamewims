@@ -9,6 +9,9 @@ import android.graphics.Bitmap;
 import android.net.wifi.ScanResult;
 import android.os.Bundle;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -27,6 +30,7 @@ import android.widget.ImageView;
 
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -47,7 +51,7 @@ import java.util.List;
 public class StoreMapActivity extends WimsActivity {
 
     //TODO: Change this to better represent distance
-    private static final int maxDist = 25;
+    private static final int maxDist = 10;
 
     // URL til map /api/store/ID/map
     private boolean isInFront = false;
@@ -71,6 +75,7 @@ public class StoreMapActivity extends WimsActivity {
     private ArrayList<String> results = new ArrayList<>();
     private ArrayAdapter<String> adapter;
     private int maxDepth = 2;
+    private int mistakes;
     private HashMap<String, Double> marginalLikelihood = new HashMap<>();
 
     private ArrayList<WimsPoints> mapData = new ArrayList<>();
@@ -112,6 +117,20 @@ public class StoreMapActivity extends WimsActivity {
 
         requestMapData(store_id);
 
+        try{
+            String jsonString = getApplicationContext().getResources().getString(R.string.point_json);
+            JSONArray staticpoints = new JSONArray(jsonString);
+            mapData = deConstructJSON(staticpoints);
+            if(mapData.size() != 0) {
+                currentWimsPoint = mapData.get(0);
+            }
+            jsonString = getApplication().getResources().getString(R.string.shop_json);
+            JSONObject likelihood = new JSONObject(jsonString);
+            marginalLikelihood = getMarginalLikelihoodFromJson(likelihood);
+        }
+        catch(JSONException e){
+            e.printStackTrace();
+        }
 
         String url = "http://nielsema.ddns.net/sw8/api/store/" + store_id + "/products/";
 
@@ -215,6 +234,10 @@ public class StoreMapActivity extends WimsActivity {
 
         getMapLayout();
 
+        ImageView placeholderOverlay = new ImageView(this);
+        placeholderOverlay.setVisibility(View.INVISIBLE);
+        fram.addView(placeholderOverlay);
+
         positioningThread();
 
         if (scanningthread.getState() == Thread.State.NEW) {
@@ -247,6 +270,7 @@ public class StoreMapActivity extends WimsActivity {
         if (!fragment.getItemList().isEmpty()) {
             getItemListAndDrawRoute();
         }
+
     }
 
 
@@ -323,12 +347,11 @@ public class StoreMapActivity extends WimsActivity {
                                         }
                                         currentWimsPoint = location;
                                         maxDepth = 2;
+                                        mistakes = 0;
                                         confident = false;
                                     }
                                 });
-                            } else if (findPointInNeighborChain(location, currentWimsPoint, 0, maxDepth,
-                                    new ArrayList<WimsPoints>(), new ArrayList<WimsPoints>(),
-                                    new ArrayList<WimsPoints>())) {
+                            } else if (location.getDistance() < maxDepth) {
                                 fram.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -340,13 +363,16 @@ public class StoreMapActivity extends WimsActivity {
                                         }
                                         currentWimsPoint = location;
                                         maxDepth = 2;
+                                        mistakes = 0;
                                     }
                                 });
                             } else {
                                 maxDepth++;
+                                mistakes++;
                             }
                         } else {
                             maxDepth++;
+                            mistakes++;
                         }
                         try {
                             Thread.sleep(2000);
@@ -671,11 +697,17 @@ public class StoreMapActivity extends WimsActivity {
             WimsPoints point;
             for (int i = 0; i < array.length(); i++) {
                 point = new WimsPoints(array.getJSONObject(i).getInt("x"), array.getJSONObject(i).getInt("y"));
-                /*JSONArray probability = array.getJSONObject(i).getJSONArray("probabilities");
+                JSONArray probability = array.getJSONObject(i).getJSONArray("probabilities");
                 for (int n = 0; n < probability.length(); n++) {
                     point.setProbabilityDistributions(probability.getJSONObject(n).getString("configuration"),
                                                      (float) probability.getJSONObject(n).getDouble("probability"));
-                }*/
+                }
+                JSONArray fingerprint = array.getJSONObject(i).getJSONArray("fingerprint");
+                for (int k = 0; k < fingerprint.length(); k++) {
+                    point.fingerprint.put(fingerprint.getJSONObject(k).getString("bssid"),
+                                         (float) fingerprint.getJSONObject(k).getDouble("rssi"));
+                }
+                point.ID = array.getJSONObject(i).getString("_id");
                 mapdata.add(point);
             }
             for(int i = 0;i<array.length();i++ ){
@@ -695,6 +727,17 @@ public class StoreMapActivity extends WimsActivity {
             mapdata.add(new WimsPoints(90, 1000));
         }
         return mapdata;
+    }
+
+    public HashMap<String, Double> getMarginalLikelihoodFromJson(JSONObject object) throws JSONException {
+        JSONArray array = object.getJSONArray("marginalLikelihood");
+        HashMap<String, Double> retMap = new HashMap<>();
+
+        for (int i = 0; i < array.length(); i++) {
+            retMap.put(array.getJSONObject(i).getString("configuration"),
+                    array.getJSONObject(i).getDouble("likelihood"));
+        }
+        return retMap;
     }
 
     /***
@@ -787,48 +830,33 @@ public class StoreMapActivity extends WimsActivity {
 
         distance = Math.sqrt(distance);
 
-        point.setPriori(1/(distance+1));
+        point.setPriori(1/((distance+1)*(1/1.35)));
 
         return distance;
     }
 
-    public boolean findPointInNeighborChain(WimsPoints goal, WimsPoints current, int layer,
-                                            int maxDepth, ArrayList<WimsPoints> pointsInCurrentLayer,
-                                            ArrayList<WimsPoints> visited, ArrayList<WimsPoints> pointsInNextLayer) {
-        if (layer <= maxDepth) {
-            ArrayList<WimsPoints> neighbors = current.Neighbours;
+    public void distanceFromCurrentToCandidate(WimsPoints current, WimsPoints candidate) {
+        WimsPoints tmpCandidate = candidate;
+        posfac.findPath(current, tmpCandidate);
+        int steps = 0;
 
-            if (!neighbors.isEmpty()) {
-                for (WimsPoints neighbor : neighbors) {
-                    if (visited.contains(neighbor)) {
-                        continue;
-                    }
-                    if (neighbor.equals(goal)) {
-                        return true;
-                    }
-                    pointsInNextLayer.add(neighbor);
-                    visited.add(neighbor);
-                }
-                if (!pointsInCurrentLayer.isEmpty()) {
-                    current = pointsInCurrentLayer.get(0);
-                    pointsInCurrentLayer.remove(0);
-                    return findPointInNeighborChain(goal, current, layer, maxDepth, pointsInCurrentLayer, visited, pointsInNextLayer);
-                } else {
-                    return findPointInNeighborChain(goal, current, layer + 1, maxDepth, pointsInNextLayer, visited, new ArrayList<WimsPoints>());
-                }
-            } else if (!pointsInCurrentLayer.isEmpty()){
-                current = pointsInCurrentLayer.get(0);
-                pointsInCurrentLayer.remove(0);
-                return findPointInNeighborChain(goal, current, layer, maxDepth, pointsInCurrentLayer, visited, pointsInNextLayer);
-            } else if (!pointsInNextLayer.isEmpty()){
-                current = pointsInNextLayer.get(0);
-                pointsInNextLayer.remove(0);
-                return findPointInNeighborChain(goal, current, layer + 1, maxDepth, pointsInNextLayer, visited, new ArrayList<WimsPoints>());
-            } else {
-                return false;
+        while(tmpCandidate.Parent != null) {
+            if (tmpCandidate.Parent.equals(current)) {
+                break;
             }
-        } else {
-            return false;
+            tmpCandidate = tmpCandidate.Parent;
+            steps++;
+        }
+        if (steps != 0 && (mistakes % 3) != 0) {
+            candidate.setPriori(candidate.getPriori() + (1 / ((steps + 1) / (1 / 1.55))));
+        } else if (mistakes % 3 != 0){
+            candidate.setPriori(candidate.getPriori() + (1 / ((steps + 1) / (1 / 1.1))));
+        }
+        candidate.setDistance(steps);
+        while (candidate.Parent != null) {
+            tmpCandidate = candidate.Parent;
+            candidate.Parent = null;
+            candidate = tmpCandidate;
         }
     }
 
@@ -840,15 +868,20 @@ public class StoreMapActivity extends WimsActivity {
      */
     public WimsPoints positioningUser(ArrayList<ScanResult> scanResults, ArrayList<WimsPoints> mapData) {
         ArrayList<WimsPoints> candidates = kNearestNeighbor(mapData, 10, scanResults);
+        for (WimsPoints point : candidates) {
+            distanceFromCurrentToCandidate(currentWimsPoint, point);
+        }
 
         ArrayList<Float> candidateLikelihood = new ArrayList<>();
 
         String tmpKey = concatBSSIDs(scanResults);
-        double normaliser;
+        double normaliser = 1;
         if (marginalLikelihood.isEmpty()) {
             normaliser = 1;
         } else {
-            normaliser = marginalLikelihood.get(tmpKey);
+            if (marginalLikelihood.get(tmpKey) != null) {
+                normaliser = marginalLikelihood.get(tmpKey);
+            }
         }
         for (int i = 0; i < candidates.size(); i++) {
             candidateLikelihood.add((float) 0);
@@ -868,9 +901,8 @@ public class StoreMapActivity extends WimsActivity {
                 highestPosterior = posterior;
             }
         }
-
         if (highestPosterior != 0) {
-            if (highestPosterior > 0.8) {
+            if (highestPosterior > 0.8 || (mistakes % 3) == 0) {
                 confident = true;
                 return returnPoint;
             } else {

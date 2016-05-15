@@ -24,6 +24,7 @@ public class WimsPoints extends PointF implements Parcelable{
     public HashMap<String,Float> fingerprint = new HashMap<>();
     private HashMap<String, Float> probDist = new HashMap<>();
     private double priori = 0;
+    private int distance;
 
     public WimsPoints(){
 
@@ -78,5 +79,12 @@ public class WimsPoints extends PointF implements Parcelable{
     }
     public void setProductName(String value) {
         this.productName = value;
+    }
+
+    public void setDistance(int value) {
+        this.distance = value;
+    }
+    public int getDistance() {
+        return distance;
     }
 }
