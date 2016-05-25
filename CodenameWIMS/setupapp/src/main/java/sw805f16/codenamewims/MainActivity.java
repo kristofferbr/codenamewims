@@ -637,7 +637,8 @@ public class MainActivity extends AppCompatActivity {
                 neighbors = new JSONArray();
                 fingerprint = new JSONArray();
                 probDist = new JSONArray();
-                //Jsonpointdata.put("_id",i);
+                if(point.get(i).ID != null)
+                    Jsonpointdata.put("_id",point.get(i).ID);
                 Jsonpointdata.put("x",point.get(i).x);
                 Jsonpointdata.put("y",point.get(i).y);
 

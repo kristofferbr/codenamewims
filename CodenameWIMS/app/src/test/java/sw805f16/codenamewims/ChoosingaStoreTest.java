@@ -61,7 +61,7 @@ public class ChoosingaStoreTest {
         // Given I am a user
         // When I am at the home screen
         // And I search for the name of a store
-        JSONContainer.extractStoreInformationFromJson(dummyJson);
+        JSONContainer.extractStoreInformationFromJson(dummyJson, main);
         //We search for føtex
         search.setText("Føtex");
 
@@ -97,7 +97,7 @@ public class ChoosingaStoreTest {
     @Test
     public void extract_information_from_json_test() throws Exception {
         //The string is passed to the method
-        JSONContainer.extractStoreInformationFromJson(dummyJson);
+        JSONContainer.extractStoreInformationFromJson(dummyJson,main);
 
         HashMap<String, String> testMap = JSONContainer.getStores();
         //Here we assert whether it has extracted the name correctly and whether it is the right id
@@ -108,7 +108,7 @@ public class ChoosingaStoreTest {
     @Test
     public void search_result_ranking() throws Exception {
         //We pass the json array to the extract method
-        JSONContainer.extractStoreInformationFromJson(dummyJson);
+        JSONContainer.extractStoreInformationFromJson(dummyJson,main);
         //We make an iterator to go through the stores HashMap in MainActvity
         Iterator testIt = JSONContainer.getStores().entrySet().iterator();
         ArrayList<String> testValues = new ArrayList<>();
@@ -143,7 +143,7 @@ public class ChoosingaStoreTest {
 
     @Test
     public void change_from_start_to_storemap() throws Exception {
-        JSONContainer.extractStoreInformationFromJson(dummyJson);
+        JSONContainer.extractStoreInformationFromJson(dummyJson,main);
         Button testButton = (Button) main.findViewById(R.id.startStoreBtn);
 
         //We search for føtex and submit the search
@@ -159,7 +159,7 @@ public class ChoosingaStoreTest {
 
     @Test
     public void change_from_start_to_shopping_list() throws Exception {
-        JSONContainer.extractStoreInformationFromJson(dummyJson);
+        JSONContainer.extractStoreInformationFromJson(dummyJson,main);
         Button testButton = (Button) main.findViewById(R.id.startShoppingBtn);
 
         //We search for føtex and submit the search

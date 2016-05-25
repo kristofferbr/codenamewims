@@ -25,13 +25,12 @@ public final class JSONContainer {
     static HashMap<String, String> stores = new HashMap<>();
     static JSONArray dummyJson;
 
-    public static void populateWithGlobalInformation(Context context){
-        String jsonString = context.getResources().getString(R.string.global_json);
+    public static void populateWithStringInformation(String str){
         String key = "";
         WimsPoints wimsPoints;
         int locX, locY;
         try {
-            dummyJson = new JSONArray(jsonString);
+            dummyJson = new JSONArray(str);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -52,6 +51,11 @@ public final class JSONContainer {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static void populateWithGlobalInformation(Context context){
+        String jsonString = context.getResources().getString(R.string.global_json);
+        populateWithStringInformation(jsonString);
     }
 
     /**
@@ -88,14 +92,13 @@ public final class JSONContainer {
         }
     }
 
-    public static void getGlobalStoreInformationFromJson(Context context) {
-        String jsonString = context.getResources().getString(R.string.store_json);
+    public static void getStoreInformationFromJsonString(String str, Context context){
         JSONObject tmpObject;
         String key = "";
         JSONArray storeJson = new JSONArray();
 
         try {
-            storeJson = new JSONArray(jsonString);
+            storeJson = new JSONArray(str);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -111,6 +114,11 @@ public final class JSONContainer {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void getGlobalStoreInformationFromJson(Context context) {
+        String jsonString = context.getResources().getString(R.string.store_json);
+        getStoreInformationFromJsonString(jsonString, context);
     }
 
     /**
@@ -227,5 +235,9 @@ public final class JSONContainer {
      */
     public static HashMap<String, String> getStores() {
         return stores;
+    }
+
+    public static void forceClearProducts(){
+        products.clear();
     }
 }

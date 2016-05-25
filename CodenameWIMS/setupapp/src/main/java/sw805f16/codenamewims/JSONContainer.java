@@ -16,6 +16,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Created by Kogni on 11-Apr-16.
@@ -224,5 +225,69 @@ public final class JSONContainer {
      */
     public static HashMap<String, String> getStores() {
         return stores;
+    }
+
+    public JSONObject constructJson(ArrayList<WimsPoints> point){
+
+        JSONObject tosend = new JSONObject();
+        JSONArray pointArray = new JSONArray();
+        JSONObject Jsonpointdata;
+        JSONArray neighbors;
+        JSONArray fingerprint;
+        JSONArray probDist;
+
+
+        try {
+            for(int i = 0; i < point.size(); i++)
+            {
+                Jsonpointdata = new JSONObject();
+                Jsonpointdata.put("_id",point.get(i).ID);
+                Jsonpointdata.put("x",point.get(i).x);
+                Jsonpointdata.put("y",point.get(i).y);
+                neighbors = new JSONArray();
+                fingerprint = new JSONArray();
+                probDist = new JSONArray();
+
+
+                if(point.get(i).fingerprint != null) {
+                    Iterator it = point.get(i).fingerprint.entrySet().iterator();
+                    if (it.hasNext()) {
+                        while (it.hasNext()) {
+                            HashMap.Entry pair = (HashMap.Entry) it.next();
+                            JSONObject print = new JSONObject();
+                            print.put("bssid", pair.getKey().toString());
+                            print.put("rssi", pair.getValue());
+                            fingerprint.put(print);
+                        }
+                    }
+                }
+                if(point.get(i).getProbabilityDistribution() != null) {
+                    Iterator it = point.get(i).getProbabilityDistribution().entrySet().iterator();
+                    if (it.hasNext()) {
+                        while (it.hasNext()) {
+                            HashMap.Entry pair = (HashMap.Entry) it.next();
+                            JSONObject probabilities = new JSONObject();
+                            probabilities.put("configuration", pair.getKey().toString());
+                            probabilities.put("probability", pair.getValue());
+                            probDist.put(probabilities);
+                        }
+                    }
+                }
+                Jsonpointdata.put("neighbors",neighbors);
+                Jsonpointdata.put("fingerprint",fingerprint);
+                Jsonpointdata.put("probabilities", probDist);
+                pointArray.put(Jsonpointdata);
+
+
+            }
+            tosend.put("points", pointArray);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        return tosend;
+
     }
 }
