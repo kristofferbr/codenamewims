@@ -783,6 +783,24 @@ public class StoreMapActivity extends WimsActivity {
         return retString;
     }
 
+    public WimsPoints nearestNeighbour(WimsPoints start, ArrayList<WimsPoints> locations) {
+        if (start.x >= 0 && start.y >=0) {
+            float distance = Float.MAX_VALUE;
+            WimsPoints retPoint = null;
+            for (WimsPoints point : locations) {
+                if (point.x >= 0 && point.y >= 0) {
+                    if (start.distance(point.x, point.y) < distance) {
+                        retPoint = point;
+                        distance = start.distance(point.x, point.y);
+                    }
+                }
+            }
+            return retPoint;
+        } else {
+            return null;
+        }
+    }
+
     /***
      * A simple nearest neighbor algorithm for positioning
      * @param mapData The data of the map
